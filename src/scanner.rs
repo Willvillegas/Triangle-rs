@@ -29,22 +29,24 @@ static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
     "while" => TokenKind::While,
 };
 
-pub struct Scanner<'a> {
-    source_file: &'a Path,
+pub struct Scanner {
+    source_file: SourceFile,
 }
 
-impl<'a> Scanner<'a> {
-    pub fn new(source_file: &'a str) -> Self {
+impl Scanner {
+    pub fn new(source_file: &'static str) -> Self {
         Scanner {
-            source_file: Path::new(source_file),
+            source_file: SourceFile::new(source_file),
         }
     }
 
     pub fn scan_token(&mut self) -> GenResult<Token> {
-        Err(GenError::from(ScannerError::new("todo")))
+        unimplemented!()
     }
 }
 
+// Represents the start and end of a token in the source code
+#[derive(Debug, Copy, Clone)]
 pub struct SourcePosition {
     start: Position,
     finish: Position,
