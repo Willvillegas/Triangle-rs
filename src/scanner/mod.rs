@@ -1,25 +1,135 @@
 //! The scanner module
 
-pub struct Scanner {}
+use crate::error::{GenError, GenResult, ScannerError};
+use std::fmt;
+use std::path::Path;
 
-#[derive(PartialEq, Eq)]
-pub struct Token {}
+pub struct Scanner<'a> {
+    source_file: &'a Path,
+}
 
-#[derive(PartialEq, Eq)]
-pub enum TokenKind {}
+impl<'a> Scanner<'a> {
+    pub fn new(source_file: &'a str) -> Self {
+        Scanner {
+            source_file: Path::new(source_file),
+        }
+    }
+
+    pub fn scan_token(&mut self) -> GenResult<Token> {
+        Err(GenError::from(ScannerError::new("todo")))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Token {
+    kind: TokenKind,
+    spelling: String,
+}
+
+impl Token {
+    pub fn new(kind: TokenKind, spelling: String) -> Self {
+        Token { kind, spelling }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum TokenKind {
+    Array,
+    Becomes,
+    Begin,
+    Colon,
+    Comma,
+    Const,
+    Do,
+    Dot,
+    Else,
+    End,
+    Eof,
+    Eot,
+    Func,
+    Identifier,
+    If,
+    In,
+    Is,
+    LeftBracket,
+    LeftParen,
+    LeftSquareBracket,
+    Let,
+    Number,
+    Operator,
+    Proc,
+    Record,
+    RightBracket,
+    RightParen,
+    RightSquareBracket,
+    SemiColon,
+    Then,
+    Type,
+    Var,
+    While,
+}
+
+impl fmt::Display for TokenKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+impl TokenKind {
+    pub fn as_str(&self) -> &'static str {
+        match *self {
+            TokenKind::Array => "array",
+            TokenKind::Becomes => ":=",
+            TokenKind::Begin => "begin",
+            TokenKind::Colon => ":",
+            TokenKind::Comma => ",",
+            TokenKind::Const => "const",
+            TokenKind::Do => "do",
+            TokenKind::Dot => ".",
+            TokenKind::Else => "else",
+            TokenKind::End => "end",
+            TokenKind::Eof => "<eof>",
+            TokenKind::Eot => "<eot>",
+            TokenKind::Func => "function",
+            TokenKind::Identifier => "identifier",
+            TokenKind::If => "if",
+            TokenKind::In => "in",
+            TokenKind::Is => "~",
+            TokenKind::LeftBracket => "{",
+            TokenKind::LeftParen => "(",
+            TokenKind::LeftSquareBracket => "[",
+            TokenKind::Let => "let",
+            TokenKind::Number => "number",
+            TokenKind::Operator => "operator",
+            TokenKind::Proc => "proc",
+            TokenKind::Record => "record",
+            TokenKind::RightBracket => "}",
+            TokenKind::RightParen => ")",
+            TokenKind::RightSquareBracket => "]",
+            TokenKind::SemiColon => ";",
+            TokenKind::Then => "then",
+            TokenKind::Type => "type",
+            TokenKind::Var => "var",
+            TokenKind::While => "while",
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[derive(PartialEq, Eq)]
-    struct ScannerTestCase {
-        kind: TokenKind,
-        spelling: [u8],
-    }
-
     #[test]
-    fn test_emptycommandeot() {}
+    fn test_emptycommandeot() {
+        let source_file = "samples/source/emptycommandeot.t";
+        let scanner = Scanner::new(source_file);
+        let test_cases = vec![Token::new(TokenKind::Eof, "-1")];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_emptycommandeot_degenerate() {}
