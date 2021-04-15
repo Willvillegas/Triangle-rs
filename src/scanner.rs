@@ -1,8 +1,33 @@
 //! The scanner module
 
-use crate::error::{GenError, GenResult, ScannerError};
+use crate::error::{self, GenError, GenResult, ScannerError};
+use phf::phf_map;
 use std::fmt;
+use std::fs::File;
+use std::io::{BufReader, Read};
+use std::iter::Iterator;
 use std::path::Path;
+
+pub const NULL: char = '\x00';
+
+static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
+    "array" => TokenKind::Array,
+    "begin" => TokenKind::Begin,
+    "const" => TokenKind::Const,
+    "do" => TokenKind::Do,
+    "else" => TokenKind::Else,
+    "end" => TokenKind::End,
+    "func" => TokenKind::Function,
+    "if" => TokenKind::If,
+    "in" => TokenKind::In,
+    "let" => TokenKind::Let,
+    "proc" => TokenKind::Procedure,
+    "record" => TokenKind::Record,
+    "then" => TokenKind::Then,
+    "type" => TokenKind::Type,
+    "var" => TokenKind::Var,
+    "while" => TokenKind::While,
+};
 
 pub struct Scanner<'a> {
     source_file: &'a Path,
@@ -20,19 +45,112 @@ impl<'a> Scanner<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Token {
-    kind: TokenKind,
-    spelling: String,
+pub struct SourcePosition {
+    start: Position,
+    finish: Position,
 }
 
-impl Token {
-    pub fn new(kind: TokenKind, spelling: String) -> Self {
-        Token { kind, spelling }
+struct Position {
+    line: isize,
+    column: isize,
+}
+
+#[derive(Debug, Copy, Clone)]
+struct Char {
+    c: char,
+    line: isize,
+    column: isize,
+}
+
+impl Char {
+    pub fn new(c: char, line: isize, column: isize) -> Self {
+        Char { c, line, column }
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+/// Abstraction of a source file - an iterator that returns the next available character
+/// from the file stream.
+struct SourceFile {
+    curr_idx: usize,
+    characters: Vec<Char>,
+}
+
+impl SourceFile {
+    pub fn new(source_file: &str) -> Self {
+        let characters = match SourceFile::load_source_file(source_file) {
+            Err(e) => error::report_error_and_exit(GenError::from(e)),
+            Ok(val) => val,
+        };
+
+        SourceFile {
+            curr_idx: 0,
+            characters: characters,
+        }
+    }
+
+    fn load_source_file(source_file: &str) -> GenResult<Vec<Char>> {
+        let mut reader = BufReader::new(File::open(source_file)?);
+        let mut text = String::new();
+        reader.read_to_string(&mut text)?;
+
+        let mut line = 1;
+        let mut column = 1;
+        let mut contents = Vec::new();
+
+        for c in text.chars() {
+            if c == '\n' {
+                line += 1;
+                column = 1;
+            }
+            contents.push(Char::new(c, line, column));
+        }
+        contents.push(Char::new(NULL, -1, -1));
+
+        Ok(contents)
+    }
+}
+
+impl Iterator for SourceFile {
+    type Item = Char;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.curr_idx >= self.characters.len() {
+            return None;
+        }
+        let val = self.characters[self.curr_idx];
+        self.curr_idx += 1;
+        Some(val)
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct Token {
+    kind: TokenKind,
+    spelling: &'static str,
+}
+
+impl Token {
+    pub fn new(kind: TokenKind, spelling: &'static str) -> Self {
+        if Token::is_keyword(spelling) {
+            Token {
+                kind: Token::get_token_kind_for_keyword(spelling),
+                spelling: spelling,
+            }
+        } else {
+            Token { kind, spelling }
+        }
+    }
+
+    pub fn is_keyword(spelling: &'static str) -> bool {
+        KEYWORDS.contains_key(spelling)
+    }
+
+    pub fn get_token_kind_for_keyword(spelling: &'static str) -> TokenKind {
+        *KEYWORDS.get(spelling).unwrap()
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum TokenKind {
     Array,
     Becomes,
@@ -46,7 +164,7 @@ pub enum TokenKind {
     End,
     Eof,
     Eot,
-    Func,
+    Function,
     Identifier,
     If,
     In,
@@ -57,7 +175,7 @@ pub enum TokenKind {
     Let,
     Number,
     Operator,
-    Proc,
+    Procedure,
     Record,
     RightBracket,
     RightParen,
@@ -90,7 +208,7 @@ impl TokenKind {
             TokenKind::End => "end",
             TokenKind::Eof => "<eof>",
             TokenKind::Eot => "<eot>",
-            TokenKind::Func => "function",
+            TokenKind::Function => "function",
             TokenKind::Identifier => "identifier",
             TokenKind::If => "if",
             TokenKind::In => "in",
@@ -101,7 +219,7 @@ impl TokenKind {
             TokenKind::Let => "let",
             TokenKind::Number => "number",
             TokenKind::Operator => "operator",
-            TokenKind::Proc => "proc",
+            TokenKind::Procedure => "proc",
             TokenKind::Record => "record",
             TokenKind::RightBracket => "}",
             TokenKind::RightParen => ")",
@@ -122,11 +240,11 @@ mod tests {
     #[test]
     fn test_emptycommandeot() {
         let source_file = "samples/source/emptycommandeot.t";
-        let scanner = Scanner::new(source_file);
+        let mut scanner = Scanner::new(source_file);
         let test_cases = vec![Token::new(TokenKind::Eof, "-1")];
 
         for tt in test_cases {
-            let token = scanner.scan_token();
+            let token = scanner.scan_token().unwrap();
             assert_eq!(tt, token);
         }
     }
