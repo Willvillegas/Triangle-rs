@@ -43,12 +43,15 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(source_file: &str) -> Self {
-        Scanner {
+        let mut scanner = Scanner {
             source_file: SourceFile::new(source_file),
             current_char: Char::null_char(),
             current_position: SourcePosition::null_source_position(),
             current_spelling: String::new(),
-        }
+        };
+
+        scanner.skip_it();
+        scanner
     }
 
     fn start(&mut self) {
@@ -79,6 +82,11 @@ impl Scanner {
     }
 
     fn eat_it(&mut self) {
+        if self.current_char.c == NULL {
+            self.current_spelling.push(self.current_char.c);
+            return;
+        }
+
         if let Some(next_char) = self.source_file.next() {
             self.current_spelling.push(self.current_char.c);
             self.current_char = next_char;
@@ -89,6 +97,7 @@ impl Scanner {
             )));
         }
     }
+
     pub fn scan_token(&mut self) -> Token {
         while self.current_char.c.is_whitespace() || self.current_char.c == '!' {
             self.skip_whitespace();
@@ -400,7 +409,7 @@ impl Iterator for SourceFile {
 }
 
 /// Token - the basic lexeme in the source language
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct Token {
     kind: TokenType,
     spelling: String,
@@ -430,6 +439,14 @@ impl Token {
         *KEYWORDS.get(spelling).unwrap()
     }
 }
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Token) -> bool {
+        self.kind == other.kind && self.spelling == other.spelling
+    }
+}
+
+impl Eq for Token {}
 
 /// All the possible kinds of tokens
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -560,10 +577,50 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_commandsemicolon() {}
+    fn test_emptycommandsemicolon() {
+        let source_file = "samples/source/emptycommandsemicolon.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::null_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                "\x00",
+                SourcePosition::null_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
-    fn test_empty_commandsemicolon_degenerate() {}
+    fn test_emptycommandsemicolon_degenerate() {
+        let source_file = "samples/source/emptycommandsemicolon_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::null_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                "\x00",
+                SourcePosition::null_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_hello() {}
