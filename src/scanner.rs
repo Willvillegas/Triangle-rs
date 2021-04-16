@@ -11,6 +11,7 @@ use std::io::{BufReader, Read};
 use std::iter::Iterator;
 
 pub const NULL: char = '\x00';
+pub const NULL_STR: &'static str = "\x00";
 
 static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
     "array" => TokenType::Array,
@@ -46,7 +47,7 @@ impl Scanner {
         let mut scanner = Scanner {
             source_file: SourceFile::new(source_file),
             current_char: Char::null_char(),
-            current_position: SourcePosition::null_source_position(),
+            current_position: SourcePosition::dummy_source_position(),
             current_spelling: String::new(),
         };
 
@@ -65,8 +66,21 @@ impl Scanner {
     }
 
     fn skip_whitespace(&mut self) {
-        while self.current_char.c.is_whitespace() {
-            self.skip_it();
+        match self.current_char.c {
+            '!' => {
+                while self.current_char.c != '\n' {
+                    self.skip_it();
+                }
+                self.skip('\n');
+            }
+
+            c if c.is_whitespace() => {
+                while self.current_char.c.is_whitespace() {
+                    self.skip_it();
+                }
+            }
+
+            _ => {}
         }
     }
 
@@ -76,6 +90,20 @@ impl Scanner {
         } else {
             error::report_error_and_exit(GenError::from(ScannerError::new(
                 "tried to skip character, found no more characters",
+                self.current_position,
+            )));
+        }
+    }
+
+    fn skip(&mut self, expected_char: char) {
+        if self.current_char.c == expected_char {
+            self.skip_it();
+        } else {
+            error::report_error_and_exit(GenError::from(ScannerError::new(
+                &format!(
+                    "expected to skip {}, but found {}",
+                    expected_char, self.current_char.c
+                ),
                 self.current_position,
             )));
         }
@@ -92,7 +120,7 @@ impl Scanner {
             self.current_char = next_char;
         } else {
             error::report_error_and_exit(GenError::from(ScannerError::new(
-                "expected to eat character, found no more characters",
+                "expected to eat character, but found no more characters",
                 self.current_position,
             )));
         }
@@ -110,7 +138,7 @@ impl Scanner {
 
     fn scan(&mut self) -> TokenType {
         let kind;
-        self.current_position = SourcePosition::null_source_position();
+        self.current_position = SourcePosition::dummy_source_position();
         self.start();
 
         match self.current_char.c {
@@ -161,53 +189,43 @@ impl Scanner {
                 kind = TokenType::RightSquareBracket;
             }
 
-            '+' | '-' | '*' | '=' => {
-                self.finish();
-                self.eat_it();
-                kind = TokenType::Operator;
-            }
-
-            '/' => {
+            '+' | '-' | '*' | '=' | '/' | '\\' | '<' | '>' => {
+                let curr_matched_char = self.current_char.c;
                 self.finish();
                 self.eat_it();
 
-                if self.current_char.c == '\\' || self.current_char.c == '/' {
-                    self.finish();
-                    self.eat_it();
+                match curr_matched_char {
+                    '/' => {
+                        if self.current_char.c == '\\' || self.current_char.c == '/' {
+                            self.finish();
+                            self.eat_it();
+                        }
+                    }
+
+                    '\\' => {
+                        if self.current_char.c == '=' {
+                            self.finish();
+                            self.eat_it();
+                        }
+                    }
+
+                    '<' => {
+                        if self.current_char.c == '=' {
+                            self.finish();
+                            self.eat_it();
+                        }
+                    }
+
+                    '>' => {
+                        if self.current_char.c == '=' {
+                            self.finish();
+                            self.eat_it();
+                        }
+                    }
+
+                    _ => {}
                 }
-                kind = TokenType::Operator;
-            }
 
-            '\\' => {
-                self.finish();
-                self.eat_it();
-
-                if self.current_char.c == '=' {
-                    self.finish();
-                    self.eat_it();
-                }
-                kind = TokenType::Operator;
-            }
-
-            '<' => {
-                self.finish();
-                self.eat_it();
-
-                if self.current_char.c == '=' {
-                    self.finish();
-                    self.eat_it();
-                }
-                kind = TokenType::Operator;
-            }
-
-            '>' => {
-                self.finish();
-                self.eat_it();
-
-                if self.current_char.c == '=' {
-                    self.finish();
-                    self.eat_it();
-                }
                 kind = TokenType::Operator;
             }
 
@@ -242,7 +260,7 @@ impl Scanner {
                 }
             }
 
-            'a'..='z' | 'A'..='Z' => {
+            'a'..='z' | 'A'..='Z' | '_' => {
                 self.finish();
                 self.eat_it();
 
@@ -296,10 +314,10 @@ impl SourcePosition {
         SourcePosition { start, finish }
     }
 
-    pub fn null_source_position() -> Self {
+    pub fn dummy_source_position() -> Self {
         SourcePosition {
-            start: Position::null_position(),
-            finish: Position::null_position(),
+            start: Position::dummy_position(),
+            finish: Position::dummy_position(),
         }
     }
 }
@@ -315,7 +333,7 @@ impl Position {
         Position { line, column }
     }
 
-    pub fn null_position() -> Self {
+    pub fn dummy_position() -> Self {
         Position {
             line: -1,
             column: -1,
@@ -550,8 +568,8 @@ mod tests {
         let mut scanner = Scanner::new(source_file);
         let test_cases = vec![Token::new(
             TokenType::Eot,
-            "\x00",
-            SourcePosition::null_source_position(),
+            NULL_STR,
+            SourcePosition::dummy_source_position(),
         )];
 
         for tt in test_cases {
@@ -566,8 +584,8 @@ mod tests {
         let mut scanner = Scanner::new(source_file);
         let test_cases = vec![Token::new(
             TokenType::Eot,
-            "\x00",
-            SourcePosition::null_source_position(),
+            NULL_STR,
+            SourcePosition::dummy_source_position(),
         )];
 
         for tt in test_cases {
@@ -584,12 +602,12 @@ mod tests {
             Token::new(
                 TokenType::SemiColon,
                 ";",
-                SourcePosition::null_source_position(),
+                SourcePosition::dummy_source_position(),
             ),
             Token::new(
                 TokenType::Eot,
-                "\x00",
-                SourcePosition::null_source_position(),
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
             ),
         ];
 
@@ -607,12 +625,12 @@ mod tests {
             Token::new(
                 TokenType::SemiColon,
                 ";",
-                SourcePosition::null_source_position(),
+                SourcePosition::dummy_source_position(),
             ),
             Token::new(
                 TokenType::Eot,
-                "\x00",
-                SourcePosition::null_source_position(),
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
             ),
         ];
 
@@ -623,10 +641,80 @@ mod tests {
     }
 
     #[test]
-    fn test_hello() {}
+    fn test_hello() {
+        let source_file = "samples/source/hello.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Number,
+                "42",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
-    fn test_hello_degenerate() {}
+    fn test_hello_degenerate() {
+        let source_file = "samples/source/hello_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Number,
+                "42",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_eqnoteq() {}
