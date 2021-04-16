@@ -46,7 +46,7 @@ impl Scanner {
     pub fn new(source_file: &str) -> Self {
         let mut scanner = Scanner {
             source_file: SourceFile::new(source_file),
-            current_char: Char::null_char(),
+            current_char: Char::dummy_char(),
             current_position: SourcePosition::dummy_source_position(),
             current_spelling: String::new(),
         };
@@ -68,10 +68,13 @@ impl Scanner {
     fn skip_whitespace(&mut self) {
         match self.current_char.c {
             '!' => {
-                while self.current_char.c != '\n' {
+                while self.current_char.c != '\n' && self.current_char.c != NULL {
                     self.skip_it();
                 }
-                self.skip('\n');
+
+                if self.current_char.c == '\n' {
+                    self.skip('\n');
+                }
             }
 
             c if c.is_whitespace() => {
@@ -362,7 +365,7 @@ impl Char {
         Char { c, line, column }
     }
 
-    pub fn null_char() -> Self {
+    pub fn dummy_char() -> Self {
         Char {
             c: NULL,
             line: -1,
@@ -414,6 +417,7 @@ impl SourceFile {
                 column = 1;
             }
             contents.push(Char::new(c, line, column));
+            column += 1;
         }
         contents.push(Char::new(NULL, -1, -1));
 
@@ -566,7 +570,7 @@ mod tests {
 
     #[test]
     fn test_sourcefile() {
-        let mut source_file = SourceFile::new("samples/source/rationals.t");
+        let mut source_file = SourceFile::new("samples/source/odd_degenerate.t");
         while let Some(c) = source_file.next() {
             println!("{:?}", c);
         }
@@ -1324,13 +1328,667 @@ mod tests {
     }
 
     #[test]
-    fn test_echo_degenerate() {}
+    fn test_echo_degenerate() {
+        let source_file = "samples/source/echo_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Let,
+                "let",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "ch",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Char",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Procedure,
+                "proc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "echo",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Is, "~", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::While,
+                "while",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "\\",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "eol",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Do, "do", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "get",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "ch",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "put",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "ch",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::In, "in", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Identifier,
+                "echo",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
-    fn test_odd() {}
+    fn test_odd() {
+        let source_file = "samples/source/odd.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Let,
+                "let",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Function,
+                "func",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "odd",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Boolean",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Is, "~", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "//",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "2",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "\\=",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "0",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::In, "in", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "getint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::If, "if", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Identifier,
+                "odd",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Then,
+                "then",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "1",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Else,
+                "else",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "2",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
-    fn test_odd_degenerate() {}
+    fn test_odd_degenerate() {
+        let source_file = "samples/source/odd_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Let,
+                "let",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Function,
+                "func",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "odd",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Boolean",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Is, "~", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "//",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "2",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "\\=",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "0",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::In, "in", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "getint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Semicolon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::If, "if", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Identifier,
+                "odd",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Then,
+                "then",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "1",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Else,
+                "else",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "2",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_sum_proc() {}
