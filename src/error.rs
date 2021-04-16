@@ -41,7 +41,35 @@ impl fmt::Display for ScannerError {
 impl Error for ScannerError {}
 
 #[derive(Debug)]
-pub(crate) struct ParserError {}
+pub(crate) struct ParserError {
+    message: String,
+    position: SourcePosition,
+}
+
+impl ParserError {
+    pub fn new(message: &str, position: SourcePosition) -> Self {
+        ParserError {
+            message: String::from(message),
+            position: position,
+        }
+    }
+}
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Parser error from line {}, column {} to line {}, column {}: {}",
+            self.position.start.line,
+            self.position.start.column,
+            self.position.finish.line,
+            self.position.finish.column,
+            &self.message
+        )
+    }
+}
+
+impl Error for ParserError {}
 
 #[derive(Debug)]
 pub(crate) struct CheckerError {}
