@@ -206,7 +206,7 @@ impl Scanner {
                     }
 
                     '\\' => {
-                        if self.current_char.c == '=' {
+                        if self.current_char.c == '=' || self.current_char.c == '/' {
                             self.finish();
                             self.eat_it();
                         }
