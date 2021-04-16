@@ -165,7 +165,7 @@ impl Scanner {
             '{' => {
                 self.finish();
                 self.eat_it();
-                kind = TokenType::LeftBracket;
+                kind = TokenType::LeftCurlyBracket;
             }
 
             '[' => {
@@ -183,7 +183,7 @@ impl Scanner {
             '}' => {
                 self.finish();
                 self.eat_it();
-                kind = TokenType::RightBracket;
+                kind = TokenType::RightCurlyBracket;
             }
 
             ']' => {
@@ -499,7 +499,7 @@ pub enum TokenType {
     In,
     IntegerLiteral,
     Is,
-    LeftBracket,
+    LeftCurlyBracket,
     LeftParen,
     LeftSquareBracket,
     Let,
@@ -507,7 +507,7 @@ pub enum TokenType {
     Operator,
     Procedure,
     Record,
-    RightBracket,
+    RightCurlyBracket,
     RightParen,
     RightSquareBracket,
     Semicolon,
@@ -544,7 +544,7 @@ impl TokenType {
             TokenType::In => "in",
             TokenType::IntegerLiteral => "IntegerLiteral",
             TokenType::Is => "~",
-            TokenType::LeftBracket => "{",
+            TokenType::LeftCurlyBracket => "{",
             TokenType::LeftParen => "(",
             TokenType::LeftSquareBracket => "[",
             TokenType::Let => "let",
@@ -552,7 +552,7 @@ impl TokenType {
             TokenType::Operator => "operator",
             TokenType::Procedure => "proc",
             TokenType::Record => "record",
-            TokenType::RightBracket => "}",
+            TokenType::RightCurlyBracket => "}",
             TokenType::RightParen => ")",
             TokenType::RightSquareBracket => "]",
             TokenType::Semicolon => ";",
