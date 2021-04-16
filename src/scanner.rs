@@ -441,9 +441,9 @@ impl Iterator for SourceFile {
 /// Token - the basic lexeme in the source language
 #[derive(Clone, Debug)]
 pub struct Token {
-    kind: TokenType,
-    spelling: String,
-    position: SourcePosition,
+    pub kind: TokenType,
+    pub spelling: String,
+    pub position: SourcePosition,
 }
 
 impl Token {
