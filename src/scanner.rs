@@ -279,7 +279,15 @@ impl Scanner {
                     self.finish();
                     self.eat_it();
                 }
-                kind = TokenType::Number;
+                kind = TokenType::IntegerLiteral;
+            }
+
+            '\'' => {
+                self.skip_it();
+                self.finish();
+                self.eat_it();
+                self.skip('\'');
+                kind = TokenType::CharacterLiteral;
             }
 
             '\x00' => {
@@ -472,6 +480,7 @@ pub enum TokenType {
     Array,
     Becomes,
     Begin,
+    CharacterLiteral,
     Colon,
     Comma,
     Const,
@@ -484,12 +493,12 @@ pub enum TokenType {
     Identifier,
     If,
     In,
+    IntegerLiteral,
     Is,
     LeftBracket,
     LeftParen,
     LeftSquareBracket,
     Let,
-    Number,
     Of,
     Operator,
     Procedure,
@@ -516,6 +525,7 @@ impl TokenType {
             TokenType::Array => "array",
             TokenType::Becomes => ":=",
             TokenType::Begin => "begin",
+            TokenType::CharacterLiteral => "CharacterLiteral",
             TokenType::Colon => ":",
             TokenType::Comma => ",",
             TokenType::Const => "const",
@@ -528,12 +538,12 @@ impl TokenType {
             TokenType::Identifier => "identifier",
             TokenType::If => "if",
             TokenType::In => "in",
+            TokenType::IntegerLiteral => "IntegerLiteral",
             TokenType::Is => "~",
             TokenType::LeftBracket => "{",
             TokenType::LeftParen => "(",
             TokenType::LeftSquareBracket => "[",
             TokenType::Let => "let",
-            TokenType::Number => "number",
             TokenType::Of => "of",
             TokenType::Operator => "operator",
             TokenType::Procedure => "proc",
@@ -656,7 +666,7 @@ mod tests {
                 SourcePosition::dummy_source_position(),
             ),
             Token::new(
-                TokenType::Number,
+                TokenType::IntegerLiteral,
                 "42",
                 SourcePosition::dummy_source_position(),
             ),
@@ -694,7 +704,7 @@ mod tests {
                 SourcePosition::dummy_source_position(),
             ),
             Token::new(
-                TokenType::Number,
+                TokenType::IntegerLiteral,
                 "42",
                 SourcePosition::dummy_source_position(),
             ),
@@ -723,10 +733,414 @@ mod tests {
     fn test_eqnoteq_degenerate() {}
 
     #[test]
-    fn test_inc() {}
+    fn test_inc() {
+        let source_file = "samples/source/inc.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Let,
+                "let",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Procedure,
+                "proc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "inc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Is, "~", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Becomes,
+                ":=",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "+",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "1",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::In, "in", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "getint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "inc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
-    fn test_inc_degenerate() {}
+    fn test_inc_degenerate() {
+        let source_file = "samples/source/inc_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![
+            Token::new(
+                TokenType::Let,
+                "let",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Procedure,
+                "proc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "inc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Colon,
+                ":",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "Integer",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::Is, "~", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Becomes,
+                ":=",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "n",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Operator,
+                "+",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::IntegerLiteral,
+                "1",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(TokenType::In, "in", SourcePosition::dummy_source_position()),
+            Token::new(
+                TokenType::Begin,
+                "begin",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "getint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "inc",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Var,
+                "var",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::SemiColon,
+                ";",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "putint",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::LeftParen,
+                "(",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Identifier,
+                "x",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::RightParen,
+                ")",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::End,
+                "end",
+                SourcePosition::dummy_source_position(),
+            ),
+            Token::new(
+                TokenType::Eot,
+                NULL_STR,
+                SourcePosition::dummy_source_position(),
+            ),
+        ];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_echo() {}
