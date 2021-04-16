@@ -1,5 +1,6 @@
 //! Error-handling module.
 
+use crate::scanner::SourcePosition;
 use std::error::Error;
 use std::fmt;
 use std::io::{stderr, Write};
@@ -15,19 +16,25 @@ pub fn report_error_and_exit(error: GenError) -> ! {
 #[derive(Debug)]
 pub(crate) struct ScannerError {
     message: String,
+    position: SourcePosition,
 }
 
 impl ScannerError {
-    pub fn new(message: &str) -> Self {
+    pub fn new(message: &str, position: SourcePosition) -> Self {
         ScannerError {
             message: String::from(message),
+            position: position,
         }
     }
 }
 
 impl fmt::Display for ScannerError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", &self.message)
+        write!(
+            f,
+            "Scanner error at line {}, column {}: {}",
+            self.position.start.line, self.position.start.column, &self.message
+        )
     }
 }
 

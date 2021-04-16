@@ -1,4 +1,7 @@
 //! The scanner module
+//!
+//! Scan the source file into a stream of tokens that are consumed by the parser, one token at a
+//! time.
 
 use crate::error::{self, GenError, GenResult, ScannerError};
 use phf::phf_map;
@@ -6,69 +9,340 @@ use std::fmt;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::iter::Iterator;
-use std::path::Path;
 
 pub const NULL: char = '\x00';
 
-static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
-    "array" => TokenKind::Array,
-    "begin" => TokenKind::Begin,
-    "const" => TokenKind::Const,
-    "do" => TokenKind::Do,
-    "else" => TokenKind::Else,
-    "end" => TokenKind::End,
-    "func" => TokenKind::Function,
-    "if" => TokenKind::If,
-    "in" => TokenKind::In,
-    "let" => TokenKind::Let,
-    "proc" => TokenKind::Procedure,
-    "record" => TokenKind::Record,
-    "then" => TokenKind::Then,
-    "type" => TokenKind::Type,
-    "var" => TokenKind::Var,
-    "while" => TokenKind::While,
+static KEYWORDS: phf::Map<&'static str, TokenType> = phf_map! {
+    "array" => TokenType::Array,
+    "begin" => TokenType::Begin,
+    "const" => TokenType::Const,
+    "do" => TokenType::Do,
+    "else" => TokenType::Else,
+    "end" => TokenType::End,
+    "func" => TokenType::Function,
+    "if" => TokenType::If,
+    "in" => TokenType::In,
+    "let" => TokenType::Let,
+    "of" => TokenType::Of,
+    "proc" => TokenType::Procedure,
+    "record" => TokenType::Record,
+    "then" => TokenType::Then,
+    "type" => TokenType::Type,
+    "var" => TokenType::Var,
+    "while" => TokenType::While,
 };
 
+/// Scanner - read a character at a time from the underlying source file,
+/// and generate a token on demand.
 pub struct Scanner {
     source_file: SourceFile,
+    current_char: Char,
+    current_spelling: String,
+    current_position: SourcePosition,
 }
 
 impl Scanner {
-    pub fn new(source_file: &'static str) -> Self {
+    pub fn new(source_file: &str) -> Self {
         Scanner {
             source_file: SourceFile::new(source_file),
+            current_char: Char::null_char(),
+            current_position: SourcePosition::null_source_position(),
+            current_spelling: String::new(),
         }
     }
 
-    pub fn scan_token(&mut self) -> GenResult<Token> {
-        unimplemented!()
+    fn start(&mut self) {
+        self.current_position.start.line = self.current_char.line;
+        self.current_position.start.column = self.current_char.column;
+    }
+
+    fn finish(&mut self) {
+        self.current_position.finish.line = self.current_char.line;
+        self.current_position.finish.column = self.current_char.column;
+    }
+
+    fn skip_whitespace(&mut self) {
+        while self.current_char.c.is_whitespace() {
+            self.skip_it();
+        }
+    }
+
+    fn skip_it(&mut self) {
+        if let Some(next_char) = self.source_file.next() {
+            self.current_char = next_char;
+        } else {
+            error::report_error_and_exit(GenError::from(ScannerError::new(
+                "tried to skip character, found no more characters",
+                self.current_position,
+            )));
+        }
+    }
+
+    fn eat_it(&mut self) {
+        if let Some(next_char) = self.source_file.next() {
+            self.current_spelling.push(self.current_char.c);
+            self.current_char = next_char;
+        } else {
+            error::report_error_and_exit(GenError::from(ScannerError::new(
+                "expected to eat character, found no more characters",
+                self.current_position,
+            )));
+        }
+    }
+    pub fn scan_token(&mut self) -> Token {
+        while self.current_char.c.is_whitespace() || self.current_char.c == '!' {
+            self.skip_whitespace();
+        }
+
+        self.current_spelling = String::new();
+        let current_kind = self.scan();
+        Token::new(current_kind, &self.current_spelling, self.current_position)
+    }
+
+    fn scan(&mut self) -> TokenType {
+        let kind;
+        self.current_position = SourcePosition::null_source_position();
+        self.start();
+
+        match self.current_char.c {
+            '!' => {
+                self.skip_whitespace();
+                return self.scan();
+            }
+
+            '~' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::Is;
+            }
+
+            '(' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::LeftParen;
+            }
+
+            '{' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::LeftBracket;
+            }
+
+            '[' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::LeftSquareBracket;
+            }
+
+            ')' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::RightParen;
+            }
+
+            '}' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::RightBracket;
+            }
+
+            ']' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::RightSquareBracket;
+            }
+
+            '+' | '-' | '*' | '=' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::Operator;
+            }
+
+            '/' => {
+                self.finish();
+                self.eat_it();
+
+                if self.current_char.c == '\\' || self.current_char.c == '/' {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Operator;
+            }
+
+            '\\' => {
+                self.finish();
+                self.eat_it();
+
+                if self.current_char.c == '=' {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Operator;
+            }
+
+            '<' => {
+                self.finish();
+                self.eat_it();
+
+                if self.current_char.c == '=' {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Operator;
+            }
+
+            '>' => {
+                self.finish();
+                self.eat_it();
+
+                if self.current_char.c == '=' {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Operator;
+            }
+
+            ',' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::Comma;
+            }
+
+            '.' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::Dot;
+            }
+
+            ';' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::SemiColon;
+            }
+
+            ':' => {
+                self.finish();
+                self.eat_it();
+
+                if self.current_char.c == '=' {
+                    self.finish();
+                    self.eat_it();
+                    kind = TokenType::Becomes;
+                } else {
+                    kind = TokenType::Colon;
+                }
+            }
+
+            'a'..='z' | 'A'..='Z' => {
+                self.finish();
+                self.eat_it();
+
+                while self.current_char.c.is_alphanumeric() {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Identifier;
+            }
+
+            '0'..='9' => {
+                self.finish();
+                self.eat_it();
+
+                while self.current_char.c.is_numeric() {
+                    self.finish();
+                    self.eat_it();
+                }
+                kind = TokenType::Number;
+            }
+
+            '\x00' => {
+                self.finish();
+                self.eat_it();
+                kind = TokenType::Eot;
+            }
+
+            _ => {
+                error::report_error_and_exit(GenError::from(ScannerError::new(
+                    &format!("unexpected character {}", self.current_char.c),
+                    self.current_position,
+                )));
+            }
+        }
+
+        kind
     }
 }
 
-// Represents the start and end of a token in the source code
-#[derive(Debug, Copy, Clone)]
+/// Represents the start and end of a token in the source code.
+/// Both the beginning and the end of the token are recorded for
+/// error reporting.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SourcePosition {
-    start: Position,
-    finish: Position,
+    pub start: Position,
+    pub finish: Position,
 }
 
-struct Position {
-    line: isize,
-    column: isize,
+impl SourcePosition {
+    pub fn new(start: Position, finish: Position) -> Self {
+        SourcePosition { start, finish }
+    }
+
+    pub fn null_source_position() -> Self {
+        SourcePosition {
+            start: Position::null_position(),
+            finish: Position::null_position(),
+        }
+    }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct Position {
+    pub line: isize,
+    pub column: isize,
+}
+
+impl Position {
+    pub fn new(line: isize, column: isize) -> Self {
+        Position { line, column }
+    }
+
+    pub fn null_position() -> Self {
+        Position {
+            line: -1,
+            column: -1,
+        }
+    }
+}
+
+/// Simple wrapper around a character in the source file
 #[derive(Debug, Copy, Clone)]
 struct Char {
-    c: char,
-    line: isize,
-    column: isize,
+    pub c: char,
+    pub line: isize,
+    pub column: isize,
 }
 
 impl Char {
     pub fn new(c: char, line: isize, column: isize) -> Self {
         Char { c, line, column }
     }
+
+    pub fn null_char() -> Self {
+        Char {
+            c: NULL,
+            line: -1,
+            column: -1,
+        }
+    }
 }
+
+impl PartialEq for Char {
+    fn eq(&self, other: &Char) -> bool {
+        return self.c == other.c;
+    }
+}
+
+impl Eq for Char {}
 
 /// Abstraction of a source file - an iterator that returns the next available character
 /// from the file stream.
@@ -125,35 +399,41 @@ impl Iterator for SourceFile {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+/// Token - the basic lexeme in the source language
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Token {
-    kind: TokenKind,
-    spelling: &'static str,
+    kind: TokenType,
+    spelling: String,
+    position: SourcePosition,
 }
 
 impl Token {
-    pub fn new(kind: TokenKind, spelling: &'static str) -> Self {
-        if Token::is_keyword(spelling) {
-            Token {
-                kind: Token::get_token_kind_for_keyword(spelling),
-                spelling: spelling,
-            }
-        } else {
-            Token { kind, spelling }
+    pub fn new(kind: TokenType, spelling: &str, position: SourcePosition) -> Self {
+        let mut token = Token {
+            kind: kind,
+            spelling: String::from(spelling),
+            position: position,
+        };
+
+        if Token::is_keyword(&token.spelling) {
+            token.kind = Token::get_token_kind_for_keyword(&token.spelling);
         }
+
+        token
     }
 
-    pub fn is_keyword(spelling: &'static str) -> bool {
+    pub fn is_keyword(spelling: &str) -> bool {
         KEYWORDS.contains_key(spelling)
     }
 
-    pub fn get_token_kind_for_keyword(spelling: &'static str) -> TokenKind {
+    pub fn get_token_kind_for_keyword(spelling: &str) -> TokenType {
         *KEYWORDS.get(spelling).unwrap()
     }
 }
 
+/// All the possible kinds of tokens
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum TokenKind {
+pub enum TokenType {
     Array,
     Becomes,
     Begin,
@@ -164,7 +444,6 @@ pub enum TokenKind {
     Dot,
     Else,
     End,
-    Eof,
     Eot,
     Function,
     Identifier,
@@ -176,6 +455,7 @@ pub enum TokenKind {
     LeftSquareBracket,
     Let,
     Number,
+    Of,
     Operator,
     Procedure,
     Record,
@@ -189,48 +469,48 @@ pub enum TokenKind {
     While,
 }
 
-impl fmt::Display for TokenKind {
+impl fmt::Display for TokenType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
 
-impl TokenKind {
+impl TokenType {
     pub fn as_str(&self) -> &'static str {
         match *self {
-            TokenKind::Array => "array",
-            TokenKind::Becomes => ":=",
-            TokenKind::Begin => "begin",
-            TokenKind::Colon => ":",
-            TokenKind::Comma => ",",
-            TokenKind::Const => "const",
-            TokenKind::Do => "do",
-            TokenKind::Dot => ".",
-            TokenKind::Else => "else",
-            TokenKind::End => "end",
-            TokenKind::Eof => "<eof>",
-            TokenKind::Eot => "<eot>",
-            TokenKind::Function => "function",
-            TokenKind::Identifier => "identifier",
-            TokenKind::If => "if",
-            TokenKind::In => "in",
-            TokenKind::Is => "~",
-            TokenKind::LeftBracket => "{",
-            TokenKind::LeftParen => "(",
-            TokenKind::LeftSquareBracket => "[",
-            TokenKind::Let => "let",
-            TokenKind::Number => "number",
-            TokenKind::Operator => "operator",
-            TokenKind::Procedure => "proc",
-            TokenKind::Record => "record",
-            TokenKind::RightBracket => "}",
-            TokenKind::RightParen => ")",
-            TokenKind::RightSquareBracket => "]",
-            TokenKind::SemiColon => ";",
-            TokenKind::Then => "then",
-            TokenKind::Type => "type",
-            TokenKind::Var => "var",
-            TokenKind::While => "while",
+            TokenType::Array => "array",
+            TokenType::Becomes => ":=",
+            TokenType::Begin => "begin",
+            TokenType::Colon => ":",
+            TokenType::Comma => ",",
+            TokenType::Const => "const",
+            TokenType::Do => "do",
+            TokenType::Dot => ".",
+            TokenType::Else => "else",
+            TokenType::End => "end",
+            TokenType::Eot => "<eot>",
+            TokenType::Function => "function",
+            TokenType::Identifier => "identifier",
+            TokenType::If => "if",
+            TokenType::In => "in",
+            TokenType::Is => "~",
+            TokenType::LeftBracket => "{",
+            TokenType::LeftParen => "(",
+            TokenType::LeftSquareBracket => "[",
+            TokenType::Let => "let",
+            TokenType::Number => "number",
+            TokenType::Of => "of",
+            TokenType::Operator => "operator",
+            TokenType::Procedure => "proc",
+            TokenType::Record => "record",
+            TokenType::RightBracket => "}",
+            TokenType::RightParen => ")",
+            TokenType::RightSquareBracket => "]",
+            TokenType::SemiColon => ";",
+            TokenType::Then => "then",
+            TokenType::Type => "type",
+            TokenType::Var => "var",
+            TokenType::While => "while",
         }
     }
 }
@@ -240,19 +520,44 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_sourcefile() {
+        let mut source_file = SourceFile::new("samples/source/rationals.t");
+        while let Some(c) = source_file.next() {
+            println!("{:?}", c);
+        }
+    }
+
+    #[test]
     fn test_emptycommandeot() {
         let source_file = "samples/source/emptycommandeot.t";
         let mut scanner = Scanner::new(source_file);
-        let test_cases = vec![Token::new(TokenKind::Eof, "-1")];
+        let test_cases = vec![Token::new(
+            TokenType::Eot,
+            "\x00",
+            SourcePosition::null_source_position(),
+        )];
 
         for tt in test_cases {
-            let token = scanner.scan_token().unwrap();
+            let token = scanner.scan_token();
             assert_eq!(tt, token);
         }
     }
 
     #[test]
-    fn test_emptycommandeot_degenerate() {}
+    fn test_emptycommandeot_degenerate() {
+        let source_file = "samples/source/emptycommandeot_degenerate.t";
+        let mut scanner = Scanner::new(source_file);
+        let test_cases = vec![Token::new(
+            TokenType::Eot,
+            "\x00",
+            SourcePosition::null_source_position(),
+        )];
+
+        for tt in test_cases {
+            let token = scanner.scan_token();
+            assert_eq!(tt, token);
+        }
+    }
 
     #[test]
     fn test_empty_commandsemicolon() {}
