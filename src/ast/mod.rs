@@ -18,7 +18,9 @@ pub mod records;
 pub mod typedenoters;
 pub mod vnames;
 
-pub trait Ast {}
+pub trait Ast {
+    fn accept(&mut self, visitor: &dyn AstVisitor);
+}
 
 /// The AstVisitor visitor will be used by the parser, checker, and encoder for different
 /// processing of the Ast, returning different values at each phase, or even within the
@@ -31,9 +33,11 @@ pub enum AstObject {
     Size(usize),
 }
 
+// todo - fill this out with all the possible concrete types of asts
 pub trait AstVisitor {
-    fn visit_program(&self, p: &mut Program) -> AstObject;
-    fn visit_command(&self, c: &mut commands::Command) -> AstObject;
+    fn visit_program(&self, prog: &mut Program) -> AstObject;
+    fn visit_command(&self, cmd: &mut commands::Command) -> AstObject;
+    fn visit_expression(&self, expr: &mut expressions::Expression) -> AstObject;
 }
 
 /// A frame represents the runtime state of execution of a function
@@ -144,7 +148,11 @@ impl Program {
     }
 }
 
-impl Ast for Program {}
+impl Ast for Program {
+    fn accept(&mut self, visitor: &dyn AstVisitor) {
+        visitor.visit_program(self);
+    }
+}
 
 impl PartialEq for Program {
     fn eq(&self, other: &Program) -> bool {

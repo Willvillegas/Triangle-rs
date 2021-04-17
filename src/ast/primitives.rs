@@ -4,28 +4,63 @@ use super::declarations::Declaration;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
 
-pub struct IntegerLiteral {}
+pub struct IntegerLiteral {
+    pub spelling: String,
+    pub common_state: CommonState,
+}
 
-impl IntegerLiteral {}
+impl IntegerLiteral {
+    pub fn new(spelling: &str) -> Self {
+        IntegerLiteral {
+            spelling: String::from(spelling),
+            common_state: CommonState::default(),
+        }
+    }
+}
 
-pub struct CharacterLiteral {}
+impl PartialEq for IntegerLiteral {
+    fn eq(&self, other: &Self) -> bool {
+        self.spelling == other.spelling
+    }
+}
 
-impl CharacterLiteral {}
+impl Eq for IntegerLiteral {}
 
-// TODO: factor out the type denoter and decl
+pub struct CharacterLiteral {
+    pub spelling: String,
+    pub common_state: CommonState,
+}
+
+impl CharacterLiteral {
+    pub fn new(spelling: &str) -> Self {
+        CharacterLiteral {
+            spelling: String::from(spelling),
+            common_state: CommonState::default(),
+        }
+    }
+}
+
+impl PartialEq for CharacterLiteral {
+    fn eq(&self, other: &Self) -> bool {
+        self.spelling == other.spelling
+    }
+}
+
+impl Eq for CharacterLiteral {}
+
 pub struct Identifier {
     pub spelling: String,
-    pub td: TypeDenoter,
-    pub decl: Declaration,
+    pub td: Option<TypeDenoter>,
+    pub decl: Option<Declaration>,
     pub common_state: CommonState,
 }
 
 impl Identifier {
-    pub fn new(spelling: &str, td: TypeDenoter, decl: Declaration) -> Self {
+    pub fn new(spelling: &str) -> Self {
         Identifier {
             spelling: String::from(spelling),
-            td: td,
-            decl: decl,
+            td: None,
+            decl: None,
             common_state: CommonState::default(),
         }
     }
@@ -39,6 +74,26 @@ impl PartialEq for Identifier {
 
 impl Eq for Identifier {}
 
-pub struct Operator {}
+pub struct Operator {
+    pub spelling: String,
+    pub decl: Option<Declaration>,
+    pub common_state: CommonState,
+}
 
-impl Operator {}
+impl Operator {
+    pub fn new(spelling: &str) -> Self {
+        Operator {
+            spelling: String::from(spelling),
+            decl: None,
+            common_state: CommonState::default(),
+        }
+    }
+}
+
+impl PartialEq for Operator {
+    fn eq(&self, other: &Self) -> bool {
+        self.spelling == other.spelling
+    }
+}
+
+impl Eq for Operator {}
