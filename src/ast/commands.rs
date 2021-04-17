@@ -5,7 +5,7 @@ use super::expressions::Expression;
 use super::parameters::ActualParameterSequence;
 use super::primitives::Identifier;
 use super::vnames::Vname;
-use super::{Ast, AstVisitor, CommonState};
+use super::{Ast, AstObject, AstVisitor, CommonState};
 
 #[derive(Debug)]
 pub enum Command {
@@ -19,8 +19,8 @@ pub enum Command {
 }
 
 impl Ast for Command {
-    fn accept(&mut self, visitor: &dyn AstVisitor) {
-        visitor.visit_command(self);
+    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
+        visitor.visit_command(self)
     }
 }
 

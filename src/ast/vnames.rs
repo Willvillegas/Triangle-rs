@@ -11,7 +11,7 @@ pub enum Vname {
 
 impl PartialEq for Vname {
     fn eq(&self, other: &Self) -> bool {
-        true
+        todo!()
     }
 }
 

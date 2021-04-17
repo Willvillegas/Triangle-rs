@@ -53,8 +53,8 @@ impl Eq for CharacterLiteral {}
 #[derive(Debug)]
 pub struct Identifier {
     pub spelling: String,
-    pub td: Option<TypeDenoter>,
-    pub decl: Option<Declaration>,
+    pub td: Option<Box<TypeDenoter>>,
+    pub decl: Option<Box<Declaration>>,
     pub common_state: CommonState,
 }
 
@@ -80,7 +80,7 @@ impl Eq for Identifier {}
 #[derive(Debug)]
 pub struct Operator {
     pub spelling: String,
-    pub decl: Option<Declaration>,
+    pub decl: Option<Box<Declaration>>,
     pub common_state: CommonState,
 }
 

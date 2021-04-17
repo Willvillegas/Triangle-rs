@@ -21,9 +21,11 @@ pub mod vnames;
 use commands::Command;
 use declarations::Declaration;
 use expressions::Expression;
+use typedenoters::TypeDenoter;
+use vnames::Vname;
 
 pub trait Ast {
-    fn accept(&mut self, visitor: &dyn AstVisitor);
+    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject;
 }
 
 /// The AstVisitor visitor will be used by the parser, checker, and encoder for different
@@ -43,6 +45,8 @@ pub trait AstVisitor {
     fn visit_command(&self, cmd: &mut Command) -> AstObject;
     fn visit_expression(&self, expr: &mut Expression) -> AstObject;
     fn visit_declaration(&self, decl: &mut Declaration) -> AstObject;
+    fn visit_vname(&self, vname: &mut Vname) -> AstObject;
+    fn visit_type_denoter(&self, td: &mut TypeDenoter) -> AstObject;
 }
 
 /// A frame represents the runtime state of execution of a function
@@ -168,8 +172,8 @@ impl Program {
 }
 
 impl Ast for Program {
-    fn accept(&mut self, visitor: &dyn AstVisitor) {
-        visitor.visit_program(self);
+    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
+        visitor.visit_program(self)
     }
 }
 

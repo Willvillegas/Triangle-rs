@@ -6,7 +6,7 @@ use super::parameters::ActualParameterSequence;
 use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
 use super::records::RecordAggregate;
 use super::vnames::Vname;
-use super::{Ast, AstVisitor, CommonState};
+use super::{Ast, AstObject, AstVisitor, CommonState};
 
 #[derive(Debug)]
 pub enum Expression {
@@ -24,8 +24,8 @@ pub enum Expression {
 }
 
 impl Ast for Expression {
-    fn accept(&mut self, visitor: &dyn AstVisitor) {
-        visitor.visit_expression(self);
+    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
+        visitor.visit_expression(self)
     }
 }
 
