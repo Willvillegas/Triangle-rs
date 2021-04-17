@@ -1,6 +1,6 @@
 //! type-denoter asts
 
-use super::CommonState;
+use super::{Ast, AstObject, AstVisitor, CommonState};
 
 #[derive(Debug)]
 pub enum TypeDenoter {}
