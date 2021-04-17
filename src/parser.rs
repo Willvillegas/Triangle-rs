@@ -3,7 +3,8 @@
 //! This module consumes the stream of tokens produced by the Scanner, and constructs an AST for
 //! Triangle, which is then used by all subsequent phases of the compiler.
 
-use crate::ast::{Command, Program};
+use crate::ast::commands::Command;
+use crate::ast::Program;
 use crate::error::report_error_and_exit;
 use crate::scanner::Scanner;
 
