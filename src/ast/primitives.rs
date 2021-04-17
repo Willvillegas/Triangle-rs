@@ -4,6 +4,7 @@ use super::declarations::Declaration;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
 
+#[derive(Debug)]
 pub struct IntegerLiteral {
     pub spelling: String,
     pub common_state: CommonState,
@@ -26,6 +27,7 @@ impl PartialEq for IntegerLiteral {
 
 impl Eq for IntegerLiteral {}
 
+#[derive(Debug)]
 pub struct CharacterLiteral {
     pub spelling: String,
     pub common_state: CommonState,
@@ -48,6 +50,7 @@ impl PartialEq for CharacterLiteral {
 
 impl Eq for CharacterLiteral {}
 
+#[derive(Debug)]
 pub struct Identifier {
     pub spelling: String,
     pub td: Option<TypeDenoter>,
@@ -74,6 +77,7 @@ impl PartialEq for Identifier {
 
 impl Eq for Identifier {}
 
+#[derive(Debug)]
 pub struct Operator {
     pub spelling: String,
     pub decl: Option<Declaration>,

@@ -1,18 +1,21 @@
 //! record asts
 
+#[derive(Debug)]
 pub enum RecordAggregate {
-    SingleRecordAggregate(Box<SingleRecordAggregateState>),
-    MultipleRecordAggregate(Box<MultipleRecordAggregate>),
+    SingleRecordAggregate(SingleRecordAggregateState),
+    MultipleRecordAggregate(MultipleRecordAggregateState),
 }
 
 impl PartialEq for RecordAggregate {
     fn eq(&self, other: &Self) -> bool {
-        true // todo
+        todo!()
     }
 }
 
 impl Eq for RecordAggregate {}
 
+#[derive(Debug)]
 pub struct SingleRecordAggregateState {}
 
-pub struct MultipleRecordAggregate {}
+#[derive(Debug)]
+pub struct MultipleRecordAggregateState {}

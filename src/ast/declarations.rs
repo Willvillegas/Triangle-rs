@@ -2,6 +2,7 @@
 
 use super::CommonState;
 
+#[derive(Debug)]
 pub enum Declaration {}
 
 impl PartialEq for Declaration {

@@ -8,6 +8,7 @@ use super::records::RecordAggregate;
 use super::vnames::Vname;
 use super::{Ast, AstVisitor, CommonState};
 
+#[derive(Debug)]
 pub enum Expression {
     EmptyExpression,
     IntegerExpression(IntegerExpressionState),
@@ -31,27 +32,13 @@ impl Ast for Expression {
 // todo - fill this out
 impl PartialEq for Expression {
     fn eq(&self, other: &Self) -> bool {
-        use Expression::*;
-        //match (self, other) {
-        //    (EmptyExpression, EmptyExpression) => true,
-        //    (IntegerExpression(ref ies1), IntegerExpression(ref ies2)) => ines1 == ies2,
-        //    (CharacterExpression(ref ches1), CharacterExpression(ref ches2)) => *ches1 == *ches2,
-        //    (VnameExpression(ref ves1), VnameExpression(ref ves2)) => ves1 == ves2,
-        //    (CallExpression(ref ces1), CallExpression(ref ces2)) => ces1 == ces2,
-        //    (IfExpression(ref ies1), IfExpression(ref ies2)) => ies1 == ies2,
-        //    (CharacterExpression(ref ces1), CharacterExpression(ref ces2)) => ces1 == ces2,
-        //    (CharacterExpression(ref ces1), CharacterExpression(ref ces2)) => ces1 == ces2,
-        //    (CharacterExpression(ref ces1), CharacterExpression(ref ces2)) => ces1 == ces2,
-        //    (ArrayExpression(ref aes1), ArrayExpression(ref aes2)) => aes1 == aes2,
-        //    (RecordExpression(ref res1), RecordExpression(ref res2)) => res1 == res2
-        //    (_, _) => false,
-        //}
-        true
+        todo!()
     }
 }
 
 impl Eq for Expression {}
 
+#[derive(Debug)]
 pub struct IntegerExpressionState {
     il: IntegerLiteral,
     common_state: CommonState,
@@ -74,6 +61,7 @@ impl PartialEq for IntegerExpressionState {
 
 impl Eq for IntegerExpressionState {}
 
+#[derive(Debug)]
 pub struct CharacterExpressionState {
     cl: CharacterLiteral,
     common_state: CommonState,
@@ -88,6 +76,7 @@ impl CharacterExpressionState {
     }
 }
 
+#[derive(Debug)]
 pub struct VnameExpressionState {
     vname: Vname,
     common_state: CommonState,
@@ -110,6 +99,7 @@ impl PartialEq for VnameExpressionState {
 
 impl Eq for VnameExpressionState {}
 
+#[derive(Debug)]
 pub struct CallExpressionState {
     id: Identifier,
     aps: ActualParameterSequence,
@@ -134,6 +124,7 @@ impl PartialEq for CallExpressionState {
 
 impl Eq for CallExpressionState {}
 
+#[derive(Debug)]
 pub struct IfExpressionState {
     expr1: Box<Expression>,
     expr2: Box<Expression>,
@@ -160,6 +151,7 @@ impl PartialEq for IfExpressionState {
 
 impl Eq for IfExpressionState {}
 
+#[derive(Debug)]
 pub struct LetExpressionState {
     decl: Box<Declaration>,
     expr: Box<Expression>,
@@ -184,6 +176,7 @@ impl PartialEq for LetExpressionState {
 
 impl Eq for LetExpressionState {}
 
+#[derive(Debug)]
 pub struct UnaryExpressionState {
     op: Operator,
     expr: Box<Expression>,
@@ -208,6 +201,7 @@ impl PartialEq for UnaryExpressionState {
 
 impl Eq for UnaryExpressionState {}
 
+#[derive(Debug)]
 pub struct BinaryExpressionState {
     expr1: Box<Expression>,
     op: Operator,
@@ -234,8 +228,9 @@ impl PartialEq for BinaryExpressionState {
 
 impl Eq for BinaryExpressionState {}
 
+#[derive(Debug)]
 pub struct ArrayExpressionState {
-    aa: ArrayAggregate,
+    aa: Box<ArrayAggregate>,
     elem_count: usize,
     common_state: CommonState,
 }
@@ -243,7 +238,7 @@ pub struct ArrayExpressionState {
 impl ArrayExpressionState {
     pub fn new(aa: ArrayAggregate, elem_count: usize) -> Self {
         ArrayExpressionState {
-            aa: aa,
+            aa: Box::new(aa),
             elem_count: elem_count,
             common_state: CommonState::default(),
         }
@@ -258,15 +253,16 @@ impl PartialEq for ArrayExpressionState {
 
 impl Eq for ArrayExpressionState {}
 
+#[derive(Debug)]
 pub struct RecordExpressionState {
-    ra: RecordAggregate,
+    ra: Box<RecordAggregate>,
     common_state: CommonState,
 }
 
 impl RecordExpressionState {
     pub fn new(ra: RecordAggregate) -> Self {
         RecordExpressionState {
-            ra: ra,
+            ra: Box::new(ra),
             common_state: CommonState::default(),
         }
     }

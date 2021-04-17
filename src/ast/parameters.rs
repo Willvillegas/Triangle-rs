@@ -6,6 +6,7 @@ use super::typedenoters::TypeDenoter;
 use super::vnames::Vname;
 use super::CommonState;
 
+#[derive(Debug)]
 pub enum FormalParameterSequence {
     SingleFormalParameterSequence(Box<SingleFormalParameterSequenceState>),
     MultipleFormalParameterSequence(Box<MultipleFormalParameterSequenceState>),
@@ -19,6 +20,7 @@ impl PartialEq for FormalParameterSequence {
 
 impl Eq for FormalParameterSequence {}
 
+#[derive(Debug)]
 pub struct SingleFormalParameterSequenceState {
     pub fp: FormalParameter,
     pub common_state: CommonState,
@@ -33,6 +35,7 @@ impl SingleFormalParameterSequenceState {
     }
 }
 
+#[derive(Debug)]
 pub struct MultipleFormalParameterSequenceState {
     pub fp: FormalParameter,
     pub fps: FormalParameterSequence,
@@ -49,6 +52,7 @@ impl MultipleFormalParameterSequenceState {
     }
 }
 
+#[derive(Debug)]
 pub enum FormalParameter {
     VarFormalParameter(Box<VarFormalParameterState>),
     ConstFormalParameter(Box<ConstFormalParameterState>),
@@ -56,6 +60,7 @@ pub enum FormalParameter {
     FuncFormalParameter(Box<FuncFormalParameterState>),
 }
 
+#[derive(Debug)]
 pub struct VarFormalParameterState {
     pub id: Identifier,
     pub td: TypeDenoter,
@@ -72,6 +77,7 @@ impl VarFormalParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct ConstFormalParameterState {
     pub id: Identifier,
     pub td: TypeDenoter,
@@ -88,6 +94,7 @@ impl ConstFormalParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct ProcFormalParameterState {
     pub id: Identifier,
     pub fps: FormalParameterSequence,
@@ -104,6 +111,7 @@ impl ProcFormalParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct FuncFormalParameterState {
     pub id: Identifier,
     pub fps: FormalParameterSequence,
@@ -122,6 +130,7 @@ impl FuncFormalParameterState {
     }
 }
 
+#[derive(Debug)]
 pub enum ActualParameterSequence {
     SingleActualParamterSequence(Box<SingleActualParamterSequenceState>),
     MultipleActualParameterSequence(Box<MultipleActualParameterSequenceState>),
@@ -135,6 +144,7 @@ impl PartialEq for ActualParameterSequence {
 
 impl Eq for ActualParameterSequence {}
 
+#[derive(Debug)]
 pub struct SingleActualParamterSequenceState {
     pub ap: ActualParameter,
     pub common_state: CommonState,
@@ -149,6 +159,7 @@ impl SingleActualParamterSequenceState {
     }
 }
 
+#[derive(Debug)]
 pub struct MultipleActualParameterSequenceState {
     pub ap: ActualParameter,
     pub aps: ActualParameterSequence,
@@ -165,6 +176,7 @@ impl MultipleActualParameterSequenceState {
     }
 }
 
+#[derive(Debug)]
 pub enum ActualParameter {
     VarActualParameter(Box<VarActualParameterState>),
     ConstActualParameter(Box<ConstActualParameterState>),
@@ -172,6 +184,7 @@ pub enum ActualParameter {
     FuncActualParameter(Box<FuncActualParameterState>),
 }
 
+#[derive(Debug)]
 pub struct VarActualParameterState {
     pub vname: Vname,
     pub common_state: CommonState,
@@ -186,6 +199,7 @@ impl VarActualParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct ConstActualParameterState {
     pub expr: Expression,
     pub common_state: CommonState,
@@ -200,6 +214,7 @@ impl ConstActualParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct ProcActualParameterState {
     pub id: Identifier,
     pub common_state: CommonState,
@@ -214,6 +229,7 @@ impl ProcActualParameterState {
     }
 }
 
+#[derive(Debug)]
 pub struct FuncActualParameterState {
     pub id: Identifier,
     pub common_state: CommonState,

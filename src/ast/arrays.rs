@@ -4,20 +4,22 @@ use super::expressions::Expression;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
 
+#[derive(Debug)]
 pub enum ArrayAggregate {
-    SingleArrayAggregate(Box<SingleArrayAggregateState>),
-    MultipleArrayAggregate(Box<MultipleArrayAggregateState>),
+    SingleArrayAggregate(SingleArrayAggregateState),
+    MultipleArrayAggregate(MultipleArrayAggregateState),
 }
 
 impl PartialEq for ArrayAggregate {
     fn eq(&self, other: &Self) -> bool {
-        true // todo
+        todo!()
     }
 }
 
+#[derive(Debug)]
 pub struct SingleArrayAggregateState {
-    expr: Expression,
-    td: Option<TypeDenoter>,
+    expr: Box<Expression>,
+    td: Option<Box<TypeDenoter>>,
     elem_count: usize,
     common_state: CommonState,
 }
@@ -25,7 +27,7 @@ pub struct SingleArrayAggregateState {
 impl SingleArrayAggregateState {
     pub fn new(expr: Expression) -> Self {
         SingleArrayAggregateState {
-            expr: expr,
+            expr: Box::new(expr),
             td: None,
             elem_count: 0,
             common_state: CommonState::default(),
@@ -41,10 +43,11 @@ impl PartialEq for SingleArrayAggregateState {
 
 impl Eq for SingleArrayAggregateState {}
 
+#[derive(Debug)]
 pub struct MultipleArrayAggregateState {
-    expr: Expression,
-    aa: ArrayAggregate,
-    td: Option<TypeDenoter>,
+    expr: Box<Expression>,
+    aa: Box<ArrayAggregate>,
+    td: Option<Box<TypeDenoter>>,
     elem_count: usize,
     common_state: CommonState,
 }
@@ -52,8 +55,8 @@ pub struct MultipleArrayAggregateState {
 impl MultipleArrayAggregateState {
     pub fn new(expr: Expression, aa: ArrayAggregate) -> Self {
         MultipleArrayAggregateState {
-            expr: expr,
-            aa: aa,
+            expr: Box::new(expr),
+            aa: Box::new(aa),
             td: None,
             elem_count: 0,
             common_state: CommonState::default(),

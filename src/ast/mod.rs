@@ -50,61 +50,73 @@ pub struct Frame {
 /// runtime entities - these entities are used by the encoder to
 /// generate the correct bytecode for the TAM (Triangle Abstract Machine).
 
+#[derive(Debug)]
 pub enum RuntimeEntity {
     None,
-    KnownAddress(Box<KnownAddressState>),
-    UnknownAddress(Box<UnknownAddressState>),
-    KnownValue(Box<KnownValueState>),
-    UnknownValue(Box<UnknownValueState>),
-    PrimitiveRoutine(Box<PrimitiveRoutineState>),
-    EqualityRoutine(Box<EqualityRoutineState>),
-    UnknownRoutine(Box<UnknownRoutineState>),
-    Field(Box<FieldState>),
-    TypeDeclaration(Box<TypeDeclarationState>),
+    KnownAddress(KnownAddressState),
+    UnknownAddress(UnknownAddressState),
+    KnownValue(KnownValueState),
+    UnknownValue(UnknownValueState),
+    PrimitiveRoutine(PrimitiveRoutineState),
+    EqualityRoutine(EqualityRoutineState),
+    UnknownRoutine(UnknownRoutineState),
+    Field(FieldState),
+    TypeDeclaration(TypeDeclarationState),
 }
 
 /// represents the declared state of an entity
+#[derive(Debug)]
 pub struct EntityAddress {
     level: usize,
     displacement: usize,
 }
 
+#[derive(Debug)]
 pub struct KnownAddressState {}
 
 impl KnownAddressState {}
 
+#[derive(Debug)]
 pub struct UnknownAddressState {}
 
 impl UnknownAddressState {}
 
+#[derive(Debug)]
 pub struct KnownValueState {}
 
 impl KnownValueState {}
 
+#[derive(Debug)]
 pub struct UnknownValueState {}
 
 impl UnknownValueState {}
 
+#[derive(Debug)]
 pub struct KnownRoutineState {}
 
 impl KnownRoutineState {}
 
+#[derive(Debug)]
 pub struct UnknownRoutineState {}
 
 impl UnknownRoutineState {}
 
+#[derive(Debug)]
 pub struct PrimitiveRoutineState {}
 
 impl PrimitiveRoutineState {}
 
+#[derive(Debug)]
 pub struct EqualityRoutineState {}
 
 impl EqualityRoutineState {}
 
+#[derive(Debug)]
 pub struct FieldState {}
 
 impl FieldState {}
 
+#[derive(Debug)]
 pub struct TypeDeclarationState {}
 
 impl TypeDeclarationState {}
@@ -114,6 +126,7 @@ impl TypeDeclarationState {}
 
 /// represents the common state that every Ast
 /// must have.
+#[derive(Debug)]
 pub struct CommonState {
     pub position: SourcePosition,
     pub entity: RuntimeEntity,
@@ -134,6 +147,7 @@ impl default::Default for CommonState {
     }
 }
 
+#[derive(Debug)]
 pub struct Program {
     pub cmd: commands::Command,
     pub common_state: CommonState,
