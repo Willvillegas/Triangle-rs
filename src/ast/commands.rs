@@ -5,22 +5,38 @@ use super::expressions::Expression;
 use super::parameters::ActualParameterSequence;
 use super::primitives::Identifier;
 use super::vnames::Vname;
-use super::CommonState;
+use super::{Ast, AstVisitor, CommonState};
 
 #[derive(Debug)]
 pub enum Command {
-    EmptyCommand,
     AssignCommand(AssignCommandState),
     CallCommand(CallCommandState),
-    BracketedCommand(BracketedCommandState),
-    LetCommand(LetCommandState),
+    EmptyCommand,
     IfCommand(IfCommandState),
+    LetCommand(LetCommandState),
+    SequentialCommand(SequentialCommandState),
     WhileCommand(WhileCommandState),
+}
+
+impl Ast for Command {
+    fn accept(&mut self, visitor: &dyn AstVisitor) {
+        visitor.visit_command(self);
+    }
 }
 
 impl PartialEq for Command {
     fn eq(&self, other: &Self) -> bool {
-        true
+        use Command::*;
+        match (self, other) {
+            (EmptyCommand, EmptyCommand) => true,
+            (AssignCommand(ref asscmd1), AssignCommand(ref asscmd2)) => asscmd1 == asscmd2,
+            (CallCommand(ref callcmd1), CallCommand(ref callcmd2)) => callcmd1 == callcmd2,
+            (IfCommand(ref ifcmd1), IfCommand(ref ifcmd2)) => ifcmd1 == ifcmd2,
+            (LetCommand(ref letcmd1), LetCommand(ref letcmd2)) => letcmd1 == letcmd2,
+            (SequentialCommand(ref seqcmd1), SequentialCommand(ref seqcmd2)) => seqcmd1 == seqcmd2,
+            (WhileCommand(ref whilecmd1), WhileCommand(ref whilecmd2)) => whilecmd1 == whilecmd2,
+            (_, _) => false,
+        }
     }
 }
 
@@ -77,29 +93,6 @@ impl PartialEq for CallCommandState {
 impl Eq for CallCommandState {}
 
 #[derive(Debug)]
-pub struct BracketedCommandState {
-    pub cmd: Box<Command>,
-    common_state: CommonState,
-}
-
-impl BracketedCommandState {
-    pub fn new(cmd: Command) -> Self {
-        BracketedCommandState {
-            cmd: Box::new(cmd),
-            common_state: CommonState::default(),
-        }
-    }
-}
-
-impl PartialEq for BracketedCommandState {
-    fn eq(&self, other: &BracketedCommandState) -> bool {
-        self.cmd == other.cmd
-    }
-}
-
-impl Eq for BracketedCommandState {}
-
-#[derive(Debug)]
 pub struct LetCommandState {
     decl: Box<Declaration>,
     cmd: Box<Command>,
@@ -152,14 +145,51 @@ impl PartialEq for IfCommandState {
 impl Eq for IfCommandState {}
 
 #[derive(Debug)]
-pub struct WhileCommandState {}
+pub struct WhileCommandState {
+    expr: Box<Expression>,
+    cmd: Box<Command>,
+    common_state: CommonState,
+}
 
-impl WhileCommandState {}
+impl WhileCommandState {
+    pub fn new(expr: Expression, cmd: Command) -> Self {
+        WhileCommandState {
+            expr: Box::new(expr),
+            cmd: Box::new(cmd),
+            common_state: CommonState::default(),
+        }
+    }
+}
 
 impl PartialEq for WhileCommandState {
     fn eq(&self, other: &Self) -> bool {
-        todo!()
+        self.expr == other.expr && self.cmd == other.cmd
     }
 }
 
 impl Eq for WhileCommandState {}
+
+#[derive(Debug)]
+pub struct SequentialCommandState {
+    cmd1: Box<Command>,
+    cmd2: Box<Command>,
+    common_state: CommonState,
+}
+
+impl SequentialCommandState {
+    pub fn new(cmd1: Command, cmd2: Command) -> Self {
+        SequentialCommandState {
+            cmd1: Box::new(cmd1),
+            cmd2: Box::new(cmd2),
+            common_state: CommonState::default(),
+        }
+    }
+}
+
+impl PartialEq for SequentialCommandState {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmd1 == other.cmd1 && self.cmd1 == other.cmd2
+    }
+}
+
+impl Eq for SequentialCommandState {}

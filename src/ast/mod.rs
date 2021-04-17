@@ -18,6 +18,10 @@ pub mod records;
 pub mod typedenoters;
 pub mod vnames;
 
+use commands::Command;
+use declarations::Declaration;
+use expressions::Expression;
+
 pub trait Ast {
     fn accept(&mut self, visitor: &dyn AstVisitor);
 }
@@ -36,8 +40,9 @@ pub enum AstObject {
 // todo - fill this out with all the possible concrete types of asts
 pub trait AstVisitor {
     fn visit_program(&self, prog: &mut Program) -> AstObject;
-    fn visit_command(&self, cmd: &mut commands::Command) -> AstObject;
-    fn visit_expression(&self, expr: &mut expressions::Expression) -> AstObject;
+    fn visit_command(&self, cmd: &mut Command) -> AstObject;
+    fn visit_expression(&self, expr: &mut Expression) -> AstObject;
+    fn visit_declaration(&self, decl: &mut Declaration) -> AstObject;
 }
 
 /// A frame represents the runtime state of execution of a function

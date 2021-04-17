@@ -10,17 +10,17 @@ use super::{Ast, AstVisitor, CommonState};
 
 #[derive(Debug)]
 pub enum Expression {
-    EmptyExpression,
-    IntegerExpression(IntegerExpressionState),
-    CharacterExpression(CharacterExpressionState),
-    VnameExpression(VnameExpressionState),
-    CallExpression(CallExpressionState),
-    IfExpression(IfExpressionState),
-    LetExpression(LetExpressionState),
-    UnaryExpression(UnaryExpressionState),
-    BinaryExpression(BinaryExpressionState),
     ArrayExpression(ArrayExpressionState),
+    BinaryExpression(BinaryExpressionState),
+    CallExpression(CallExpressionState),
+    CharacterExpression(CharacterExpressionState),
+    EmptyExpression,
+    IfExpression(IfExpressionState),
+    IntegerExpression(IntegerExpressionState),
+    LetExpression(LetExpressionState),
     RecordExpression(RecordExpressionState),
+    UnaryExpression(UnaryExpressionState),
+    VnameExpression(VnameExpressionState),
 }
 
 impl Ast for Expression {
@@ -32,7 +32,22 @@ impl Ast for Expression {
 // todo - fill this out
 impl PartialEq for Expression {
     fn eq(&self, other: &Self) -> bool {
-        todo!()
+        use Expression::*;
+
+        match (self, other) {
+            (ArrayExpression(ref arr1), ArrayExpression(ref arr2)) => arr1 == arr2,
+            (BinaryExpression(ref bexpr1), BinaryExpression(ref bexpr2)) => bexpr1 == bexpr2,
+            (CallExpression(ref cexpr1), CallExpression(ref cexpr2)) => cexpr1 == cexpr2,
+            (CharacterExpression(ref cexpr1), CharacterExpression(ref cexpr2)) => cexpr1 == cexpr2,
+            (EmptyExpression, EmptyExpression) => true,
+            (IfExpression(ref ifexpr1), IfExpression(ref ifexpr2)) => ifexpr1 == ifexpr2,
+            (IntegerExpression(ref iexpr1), IntegerExpression(ref iexpr2)) => iexpr1 == iexpr2,
+            (LetExpression(ref lexpr1), LetExpression(ref lexpr2)) => lexpr1 == lexpr2,
+            (RecordExpression(ref rec1), RecordExpression(ref rec2)) => rec1 == rec2,
+            (UnaryExpression(ref unexpr1), UnaryExpression(ref unexpr2)) => unexpr1 == unexpr2,
+            (VnameExpression(ref vexpr1), VnameExpression(ref vexpr2)) => vexpr1 == vexpr2,
+            (_, __) => false,
+        }
     }
 }
 
@@ -75,6 +90,14 @@ impl CharacterExpressionState {
         }
     }
 }
+
+impl PartialEq for CharacterExpressionState {
+    fn eq(&self, other: &Self) -> bool {
+        self.cl == other.cl
+    }
+}
+
+impl Eq for CharacterExpressionState {}
 
 #[derive(Debug)]
 pub struct VnameExpressionState {
