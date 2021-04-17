@@ -8,24 +8,19 @@
 use crate::scanner::SourcePosition;
 use std::default;
 
-pub mod arrays;
+pub mod aggregates;
 pub mod commands;
 pub mod declarations;
 pub mod expressions;
 pub mod parameters;
 pub mod primitives;
-pub mod records;
 pub mod typedenoters;
 pub mod vnames;
 
-use commands::Command;
-use declarations::Declaration;
-use expressions::Expression;
-use typedenoters::TypeDenoter;
-use vnames::Vname;
+use primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
 
 pub trait Ast {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject;
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject;
 }
 
 /// The AstVisitor visitor will be used by the parser, checker, and encoder for different
@@ -39,14 +34,296 @@ pub enum AstObject {
     Size(usize),
 }
 
-// todo - fill this out with all the possible concrete types of asts
+/// Visitor for the Triangle Ast - both the checker and the encoder (code generator)
+/// make use of this visitor to traverse the parsed and checked asts respectively.
 pub trait AstVisitor {
-    fn visit_program(&self, prog: &mut Program) -> AstObject;
-    fn visit_command(&self, cmd: &mut Command) -> AstObject;
-    fn visit_expression(&self, expr: &mut Expression) -> AstObject;
-    fn visit_declaration(&self, decl: &mut Declaration) -> AstObject;
-    fn visit_vname(&self, vname: &mut Vname) -> AstObject;
-    fn visit_type_denoter(&self, td: &mut TypeDenoter) -> AstObject;
+    fn visit_program(&self, program: &mut Program, arg: AstObject) -> AstObject;
+
+    fn visit_empty_command(
+        &self,
+        cmd: &mut commands::EmptyCommandState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_assign_command(
+        &self,
+        cmd: &mut commands::AssignCommandState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_call_command(&self, cmd: &mut commands::CallCommandState, arg: AstObject)
+        -> AstObject;
+    fn visit_let_command(&self, cmd: &mut commands::LetCommandState, arg: AstObject) -> AstObject;
+    fn visit_if_command(&self, cmd: &mut commands::IfCommandState, arg: AstObject) -> AstObject;
+    fn visit_while_command(
+        &self,
+        cmd: &mut commands::WhileCommandState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_sequential_command(
+        &self,
+        cmd: &mut commands::SequentialCommandState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_empty_expression(
+        &self,
+        expr: &mut expressions::EmptyExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_integer_expression(
+        &self,
+        expr: &mut expressions::IntegerExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_character_expression(
+        &self,
+        expr: &mut expressions::CharacterExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_vname_expression(
+        &self,
+        expr: &mut expressions::VnameExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_let_expression(
+        &self,
+        expr: &mut expressions::LetExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_call_expression(
+        &self,
+        expr: &mut expressions::CallExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_if_expression(
+        &self,
+        expr: &mut expressions::IfExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_unary_expression(
+        &self,
+        expr: &mut expressions::UnaryExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_binary_expression(
+        &self,
+        expr: &mut expressions::BinaryExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_array_expression(
+        &self,
+        expr: &mut expressions::ArrayExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_record_expression(
+        &self,
+        expr: &mut expressions::RecordExpressionState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_single_array_aggregate(
+        &self,
+        agg: &mut aggregates::SingleArrayAggregateState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_multiple_array_aggregate(
+        &self,
+        agg: &mut aggregates::MultipleArrayAggregateState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_single_record_aggregate(
+        &self,
+        agg: &mut aggregates::SingleRecordAggregateState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_multiple_record_aggregate(
+        &self,
+        agg: &mut aggregates::MultipleRecordAggregateState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_const_declaration(
+        &self,
+        decl: &mut declarations::ConstDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_var_declaration(
+        &self,
+        decl: &mut declarations::VarDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_proc_declaration(
+        &self,
+        decl: &mut declarations::ProcDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_func_declaration(
+        &self,
+        decl: &mut declarations::FuncDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_type_declaration(
+        &self,
+        decl: &mut declarations::TypeDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_unary_operator_declaration(
+        &self,
+        decl: &mut declarations::UnaryOperatorDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_binary_operator_declaration(
+        &self,
+        decl: &mut declarations::BinaryOperatorDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_sequential_declaration(
+        &self,
+        decl: &mut declarations::SequentialDeclarationState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_any_type_denoter(
+        &self,
+        td: &mut typedenoters::AnyTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_error_type_denoter(
+        &self,
+        td: &mut typedenoters::ErrorTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_bool_type_denoter(
+        &self,
+        td: &mut typedenoters::BoolTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_char_type_denoter(
+        &self,
+        td: &mut typedenoters::CharTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_int_type_denoter(
+        &self,
+        td: &mut typedenoters::IntTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_array_type_denoter(
+        &self,
+        td: &mut typedenoters::ArrayTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_simple_type_denoter(
+        &self,
+        td: &mut typedenoters::SimpleTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_single_field_type_denoter(
+        &self,
+        td: &mut typedenoters::SingleFieldTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_multiple_field_type_denoter(
+        &self,
+        td: &mut typedenoters::MultipleFieldTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_record_type_denoter(
+        &self,
+        td: &mut typedenoters::RecordTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_empty_formal_parameter_sequence(
+        &self,
+        fps: &mut parameters::EmptyFormalParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_single_formal_parameter_sequence(
+        &self,
+        fps: &mut parameters::SingleFormalParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_multiple_formal_parameter_sequence(
+        &self,
+        fps: &mut parameters::MultipleFormalParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_const_formal_parameter(
+        &self,
+        fp: &mut parameters::ConstFormalParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_var_formal_parameter(
+        &self,
+        fp: &mut parameters::VarFormalParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_proc_formal_parameter(
+        &self,
+        fp: &mut parameters::ProcFormalParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_func_formal_parameter(
+        &self,
+        fp: &mut parameters::FuncFormalParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_empty_actual_parameter_sequence(
+        &self,
+        aps: &mut parameters::EmptyActualParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_single_actual_parameter_sequence(
+        &self,
+        aps: &mut parameters::SingleActualParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_multiple_actual_parameter_sequence(
+        &self,
+        aps: &mut parameters::MultipleActualParameterSequenceState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_const_actual_parameter(
+        &self,
+        ap: &mut parameters::ConstActualParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_var_actual_parameter(
+        &self,
+        ap: &mut parameters::VarActualParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_proc_actual_parameter(
+        &self,
+        ap: &mut parameters::ProcActualParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_func_actual_parameter(
+        &self,
+        ap: &mut parameters::FuncActualParameterState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_simple_vname(&self, vname: &mut vnames::SimpleVnameState, arg: AstObject)
+        -> AstObject;
+    fn visit_dot_vname(&self, vname: &mut vnames::DotVnameState, arg: AstObject) -> AstObject;
+    fn visit_subscript_vname(
+        &self,
+        vname: &mut vnames::SubscriptVnameState,
+        arg: AstObject,
+    ) -> AstObject;
+
+    fn visit_identifier(&self, id: primitives::Identifier, arg: AstObject) -> AstObject;
+    fn visit_integer_literal(&self, il: primitives::IntegerLiteral, arg: AstObject) -> AstObject;
+    fn visit_character_literal(
+        &self,
+        cl: primitives::CharacterLiteral,
+        arg: AstObject,
+    ) -> AstObject;
+    fn visit_operator(&self, op: primitives::Operator, arg: AstObject) -> AstObject;
 }
 
 /// A frame represents the runtime state of execution of a function
@@ -172,8 +449,8 @@ impl Program {
 }
 
 impl Ast for Program {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
-        visitor.visit_program(self)
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_program(self, arg)
     }
 }
 

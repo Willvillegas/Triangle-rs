@@ -1,4 +1,4 @@
-//! array asts
+//! aggregate asts
 
 use super::expressions::Expression;
 use super::typedenoters::TypeDenoter;
@@ -71,3 +71,23 @@ impl PartialEq for MultipleArrayAggregateState {
 }
 
 impl Eq for MultipleArrayAggregateState {}
+
+#[derive(Debug)]
+pub enum RecordAggregate {
+    SingleRecordAggregate(SingleRecordAggregateState),
+    MultipleRecordAggregate(MultipleRecordAggregateState),
+}
+
+impl PartialEq for RecordAggregate {
+    fn eq(&self, other: &Self) -> bool {
+        todo!()
+    }
+}
+
+impl Eq for RecordAggregate {}
+
+#[derive(Debug)]
+pub struct SingleRecordAggregateState {}
+
+#[derive(Debug)]
+pub struct MultipleRecordAggregateState {}

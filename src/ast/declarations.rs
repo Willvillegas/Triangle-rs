@@ -20,14 +20,27 @@ pub enum Declaration {
 }
 
 impl Ast for Declaration {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
-        visitor.visit_declaration(self)
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Declaration::*;
+
+        match *self {
+            BinaryOperatorDeclaration(ref mut binopdecl) => binopdecl.accept(visitor, arg),
+            ConstDeclaration(ref mut constdecl) => constdecl.accept(visitor, arg),
+            FuncDeclaration(ref mut funcdecl) => funcdecl.accept(visitor, arg),
+            ProcDeclaration(ref mut procdecl) => procdecl.accept(visitor, arg),
+            SequentialDeclaration(ref mut seqdecl) => seqdecl.accept(visitor, arg),
+            TypeDeclaration(ref mut typedecl) => typedecl.accept(visitor, arg),
+            UnaryOperatorDeclaration(ref mut unopdecl) => unopdecl.accept(visitor, arg),
+            BinaryOperatorDeclaration(ref mut binopdecl) => binopdecl.accept(visitor, arg),
+            VarDeclaration(ref mut vardecl) => vardecl.accept(visitor, arg),
+        }
     }
 }
 
 impl PartialEq for Declaration {
     fn eq(&self, other: &Self) -> bool {
         use Declaration::*;
+
         match (self, other) {
             (
                 BinaryOperatorDeclaration(ref binopdecl1),
@@ -94,6 +107,12 @@ impl PartialEq for BinaryOperatorDeclarationState {
 
 impl Eq for BinaryOperatorDeclarationState {}
 
+impl Ast for BinaryOperatorDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_binary_operator_declaration(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct UnaryOperatorDeclarationState {
     op: Operator,
@@ -121,6 +140,12 @@ impl PartialEq for UnaryOperatorDeclarationState {
 
 impl Eq for UnaryOperatorDeclarationState {}
 
+impl Ast for UnaryOperatorDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_unary_operator_declaration(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct ConstDeclarationState {
     id: Identifier,
@@ -146,6 +171,12 @@ impl PartialEq for ConstDeclarationState {
 
 impl Eq for ConstDeclarationState {}
 
+impl Ast for ConstDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_const_declaration(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct VarDeclarationState {
     id: Identifier,
@@ -166,6 +197,14 @@ impl VarDeclarationState {
 impl PartialEq for VarDeclarationState {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id && self.td == other.td
+    }
+}
+
+impl Eq for VarDeclarationState {}
+
+impl Ast for VarDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_var_declaration(self, arg)
     }
 }
 
@@ -196,6 +235,11 @@ impl PartialEq for ProcDeclarationState {
 
 impl Eq for ProcDeclarationState {}
 
+impl Ast for ProcDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_proc_declaration(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct FuncDeclarationState {
     id: Identifier,
@@ -233,6 +277,11 @@ impl PartialEq for FuncDeclarationState {
 
 impl Eq for FuncDeclarationState {}
 
+impl Ast for FuncDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_func_declaration(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct TypeDeclarationState {
     id: Identifier,
@@ -258,6 +307,11 @@ impl PartialEq for TypeDeclarationState {
 
 impl Eq for TypeDeclarationState {}
 
+impl Ast for TypeDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_type_declaration(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct SequentialDeclarationState {
     decl1: Box<Declaration>,
@@ -278,5 +332,13 @@ impl SequentialDeclarationState {
 impl PartialEq for SequentialDeclarationState {
     fn eq(&self, other: &Self) -> bool {
         self.decl1 == other.decl1 && self.decl2 == other.decl2
+    }
+}
+
+impl Eq for SequentialDeclarationState {}
+
+impl Ast for SequentialDeclarationState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_sequential_declaration(self, arg)
     }
 }

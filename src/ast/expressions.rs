@@ -1,10 +1,9 @@
 //! expression asts
 
-use super::arrays::ArrayAggregate;
+use super::aggregates::{ArrayAggregate, RecordAggregate};
 use super::declarations::Declaration;
 use super::parameters::ActualParameterSequence;
 use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
-use super::records::RecordAggregate;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 
@@ -14,7 +13,7 @@ pub enum Expression {
     BinaryExpression(BinaryExpressionState),
     CallExpression(CallExpressionState),
     CharacterExpression(CharacterExpressionState),
-    EmptyExpression,
+    EmptyExpression(EmptyExpressionState),
     IfExpression(IfExpressionState),
     IntegerExpression(IntegerExpressionState),
     LetExpression(LetExpressionState),
@@ -24,8 +23,22 @@ pub enum Expression {
 }
 
 impl Ast for Expression {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
-        visitor.visit_expression(self)
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Expression::*;
+
+        match *self {
+            ArrayExpression(ref mut arrayexpr) => arrayexpr.accept(visitor, arg),
+            BinaryExpression(ref mut binexpr) => binexpr.accept(visitor, arg),
+            CallExpression(ref mut callexpr) => callexpr.accept(visitor, arg),
+            CharacterExpression(ref mut charexpr) => charexpr.accept(visitor, arg),
+            EmptyExpression(ref mut emptyexpr) => emptyexpr.accept(visitor, arg),
+            IfExpression(ref mut ifexpr) => ifexpr.accept(visitor, arg),
+            IntegerExpression(ref mut intexpr) => intexpr.accept(visitor, arg),
+            LetExpression(ref mut letexpr) => letexpr.accept(visitor, arg),
+            RecordExpression(ref mut recexpr) => recexpr.accept(visitor, arg),
+            UnaryExpression(ref mut unexpr) => unexpr.accept(visitor, arg),
+            VnameExpression(ref mut vexpr) => vexpr.accept(visitor, arg),
+        }
     }
 }
 
@@ -39,7 +52,7 @@ impl PartialEq for Expression {
             (BinaryExpression(ref bexpr1), BinaryExpression(ref bexpr2)) => bexpr1 == bexpr2,
             (CallExpression(ref cexpr1), CallExpression(ref cexpr2)) => cexpr1 == cexpr2,
             (CharacterExpression(ref cexpr1), CharacterExpression(ref cexpr2)) => cexpr1 == cexpr2,
-            (EmptyExpression, EmptyExpression) => true,
+            (EmptyExpression(_), EmptyExpression(_)) => true,
             (IfExpression(ref ifexpr1), IfExpression(ref ifexpr2)) => ifexpr1 == ifexpr2,
             (IntegerExpression(ref iexpr1), IntegerExpression(ref iexpr2)) => iexpr1 == iexpr2,
             (LetExpression(ref lexpr1), LetExpression(ref lexpr2)) => lexpr1 == lexpr2,
@@ -76,6 +89,12 @@ impl PartialEq for IntegerExpressionState {
 
 impl Eq for IntegerExpressionState {}
 
+impl Ast for IntegerExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_integer_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct CharacterExpressionState {
     cl: CharacterLiteral,
@@ -99,6 +118,21 @@ impl PartialEq for CharacterExpressionState {
 
 impl Eq for CharacterExpressionState {}
 
+impl Ast for CharacterExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_character_expression(self, arg)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct EmptyExpressionState;
+
+impl Ast for EmptyExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_empty_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct VnameExpressionState {
     vname: Vname,
@@ -121,6 +155,12 @@ impl PartialEq for VnameExpressionState {
 }
 
 impl Eq for VnameExpressionState {}
+
+impl Ast for VnameExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_vname_expression(self, arg)
+    }
+}
 
 #[derive(Debug)]
 pub struct CallExpressionState {
@@ -146,6 +186,12 @@ impl PartialEq for CallExpressionState {
 }
 
 impl Eq for CallExpressionState {}
+
+impl Ast for CallExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_call_expression(self, arg)
+    }
+}
 
 #[derive(Debug)]
 pub struct IfExpressionState {
@@ -174,6 +220,12 @@ impl PartialEq for IfExpressionState {
 
 impl Eq for IfExpressionState {}
 
+impl Ast for IfExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_if_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct LetExpressionState {
     decl: Box<Declaration>,
@@ -199,6 +251,12 @@ impl PartialEq for LetExpressionState {
 
 impl Eq for LetExpressionState {}
 
+impl Ast for LetExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_let_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct UnaryExpressionState {
     op: Operator,
@@ -223,6 +281,12 @@ impl PartialEq for UnaryExpressionState {
 }
 
 impl Eq for UnaryExpressionState {}
+
+impl Ast for UnaryExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_unary_expression(self, arg)
+    }
+}
 
 #[derive(Debug)]
 pub struct BinaryExpressionState {
@@ -251,6 +315,12 @@ impl PartialEq for BinaryExpressionState {
 
 impl Eq for BinaryExpressionState {}
 
+impl Ast for BinaryExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_binary_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct ArrayExpressionState {
     aa: Box<ArrayAggregate>,
@@ -276,6 +346,12 @@ impl PartialEq for ArrayExpressionState {
 
 impl Eq for ArrayExpressionState {}
 
+impl Ast for ArrayExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_array_expression(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct RecordExpressionState {
     ra: Box<RecordAggregate>,
@@ -298,3 +374,9 @@ impl PartialEq for RecordExpressionState {
 }
 
 impl Eq for RecordExpressionState {}
+
+impl Ast for RecordExpressionState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_record_expression(self, arg)
+    }
+}

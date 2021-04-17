@@ -11,7 +11,7 @@ use super::{Ast, AstObject, AstVisitor, CommonState};
 pub enum Command {
     AssignCommand(AssignCommandState),
     CallCommand(CallCommandState),
-    EmptyCommand,
+    EmptyCommand(EmptyCommandState),
     IfCommand(IfCommandState),
     LetCommand(LetCommandState),
     SequentialCommand(SequentialCommandState),
@@ -19,16 +19,27 @@ pub enum Command {
 }
 
 impl Ast for Command {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
-        visitor.visit_command(self)
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Command::*;
+
+        match *self {
+            AssignCommand(ref mut asscmd) => asscmd.accept(visitor, arg),
+            CallCommand(ref mut callcmd) => callcmd.accept(visitor, arg),
+            EmptyCommand(ref mut emptycmd) => emptycmd.accept(visitor, arg),
+            IfCommand(ref mut ifcmd) => ifcmd.accept(visitor, arg),
+            LetCommand(ref mut letcmd) => letcmd.accept(visitor, arg),
+            SequentialCommand(ref mut seqcmd) => seqcmd.accept(visitor, arg),
+            WhileCommand(ref mut whilecmd) => whilecmd.accept(visitor, arg),
+        }
     }
 }
 
 impl PartialEq for Command {
     fn eq(&self, other: &Self) -> bool {
         use Command::*;
+
         match (self, other) {
-            (EmptyCommand, EmptyCommand) => true,
+            (EmptyCommand(_), EmptyCommand(_)) => true,
             (AssignCommand(ref asscmd1), AssignCommand(ref asscmd2)) => asscmd1 == asscmd2,
             (CallCommand(ref callcmd1), CallCommand(ref callcmd2)) => callcmd1 == callcmd2,
             (IfCommand(ref ifcmd1), IfCommand(ref ifcmd2)) => ifcmd1 == ifcmd2,
@@ -67,6 +78,12 @@ impl PartialEq for AssignCommandState {
 
 impl Eq for AssignCommandState {}
 
+impl Ast for AssignCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_assign_command(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct CallCommandState {
     pub id: Identifier,
@@ -92,6 +109,20 @@ impl PartialEq for CallCommandState {
 
 impl Eq for CallCommandState {}
 
+impl Ast for CallCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_call_command(self, arg)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct EmptyCommandState;
+
+impl Ast for EmptyCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_empty_command(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct LetCommandState {
     decl: Box<Declaration>,
@@ -117,6 +148,11 @@ impl PartialEq for LetCommandState {
 
 impl Eq for LetCommandState {}
 
+impl Ast for LetCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_let_command(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct IfCommandState {
     expr: Box<Expression>,
@@ -144,6 +180,12 @@ impl PartialEq for IfCommandState {
 
 impl Eq for IfCommandState {}
 
+impl Ast for IfCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_if_command(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct WhileCommandState {
     expr: Box<Expression>,
@@ -169,6 +211,12 @@ impl PartialEq for WhileCommandState {
 
 impl Eq for WhileCommandState {}
 
+impl Ast for WhileCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_while_command(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct SequentialCommandState {
     cmd1: Box<Command>,
@@ -193,3 +241,9 @@ impl PartialEq for SequentialCommandState {
 }
 
 impl Eq for SequentialCommandState {}
+
+impl Ast for SequentialCommandState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_sequential_command(self, arg)
+    }
+}

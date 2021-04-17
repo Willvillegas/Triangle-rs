@@ -12,8 +12,14 @@ pub enum Vname {
 }
 
 impl Ast for Vname {
-    fn accept(&mut self, visitor: &dyn AstVisitor) -> AstObject {
-        visitor.visit_vname(self)
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Vname::*;
+
+        match *self {
+            DotVname(ref mut dotvname) => dotvname.accept(visitor, arg),
+            SimpleVname(ref mut simplevname) => simplevname.accept(visitor, arg),
+            SubscriptVname(ref mut subscriptvname) => subscriptvname.accept(visitor, arg),
+        }
     }
 }
 
@@ -54,6 +60,11 @@ impl PartialEq for SimpleVnameState {
 
 impl Eq for SimpleVnameState {}
 
+impl Ast for SimpleVnameState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_simple_vname(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct SubscriptVnameState {
     vname: Box<Vname>,
@@ -79,6 +90,11 @@ impl PartialEq for SubscriptVnameState {
 
 impl Eq for SubscriptVnameState {}
 
+impl Ast for SubscriptVnameState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_subscript_vname(self, arg)
+    }
+}
 #[derive(Debug)]
 pub struct DotVnameState {
     vname: Box<Vname>,
@@ -103,3 +119,9 @@ impl PartialEq for DotVnameState {
 }
 
 impl Eq for DotVnameState {}
+
+impl Ast for DotVnameState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_dot_vname(self, arg)
+    }
+}
