@@ -5,7 +5,7 @@
 //! Checker, and ultimately used by the Encoder to generate binary code for the TAM (Triangle
 //! Abstract Machine).
 
-use crate::scanner::SourcePosition;
+use crate::scanner;
 use std::default;
 
 pub mod aggregates;
@@ -17,8 +17,6 @@ pub mod primitives;
 pub mod runtime_entities;
 pub mod typedenoters;
 pub mod vnames;
-
-use runtime_entities::RuntimeEntity;
 
 /// Any entity that wants to be traversable needs to implement this trait
 pub trait Ast {
@@ -331,12 +329,12 @@ pub struct Frame {
 /// Common state that is shared by every Ast
 #[derive(Debug)]
 pub struct CommonState {
-    pub position: SourcePosition,
-    pub entity: RuntimeEntity,
+    pub position: scanner::SourcePosition,
+    pub entity: runtime_entities::RuntimeEntity,
 }
 
 impl CommonState {
-    pub fn new(position: SourcePosition, entity: RuntimeEntity) -> Self {
+    pub fn new(position: scanner::SourcePosition, entity: runtime_entities::RuntimeEntity) -> Self {
         CommonState { position, entity }
     }
 }
@@ -344,8 +342,8 @@ impl CommonState {
 impl default::Default for CommonState {
     fn default() -> Self {
         CommonState {
-            position: SourcePosition::dummy_source_position(),
-            entity: RuntimeEntity::None,
+            position: scanner::SourcePosition::default(),
+            entity: runtime_entities::RuntimeEntity::None,
         }
     }
 }
@@ -362,6 +360,12 @@ impl Program {
             cmd: cmd,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(cmd: commands::Command, position: scanner::SourcePosition) -> Self {
+        let mut program = Program::new(cmd);
+        program.common_state.position = position;
+        program
     }
 }
 

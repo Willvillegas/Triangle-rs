@@ -6,6 +6,7 @@ use super::parameters::ActualParameterSequence;
 use super::primitives::Identifier;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 
 #[derive(Debug)]
 pub enum Command {
@@ -231,6 +232,12 @@ impl SequentialCommandState {
             cmd2: Box::new(cmd2),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(cmd1: Command, cmd2: Command, position: SourcePosition) -> Self {
+        let mut seqcmd = SequentialCommandState::new(cmd1, cmd2);
+        seqcmd.common_state.position = position;
+        seqcmd
     }
 }
 

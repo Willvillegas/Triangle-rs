@@ -5,6 +5,7 @@
 
 use crate::error::{self, GenError, GenResult, ScannerError};
 use phf::phf_map;
+use std::default;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -46,8 +47,8 @@ impl Scanner {
     pub fn new(source_file: &str) -> Self {
         let mut scanner = Scanner {
             source_file: SourceFile::new(source_file),
-            current_char: Char::dummy_char(),
-            current_position: SourcePosition::dummy_source_position(),
+            current_char: Char::default(),
+            current_position: SourcePosition::default(),
             current_spelling: String::new(),
         };
 
@@ -141,7 +142,7 @@ impl Scanner {
 
     fn scan(&mut self) -> TokenType {
         let kind;
-        self.current_position = SourcePosition::dummy_source_position();
+        self.current_position = SourcePosition::default();
         self.start();
 
         match self.current_char.c {
@@ -324,11 +325,13 @@ impl SourcePosition {
     pub fn new(start: Position, finish: Position) -> Self {
         SourcePosition { start, finish }
     }
+}
 
-    pub fn dummy_source_position() -> Self {
+impl default::Default for SourcePosition {
+    fn default() -> Self {
         SourcePosition {
-            start: Position::dummy_position(),
-            finish: Position::dummy_position(),
+            start: Position::default(),
+            finish: Position::default(),
         }
     }
 }
@@ -343,8 +346,10 @@ impl Position {
     pub fn new(line: isize, column: isize) -> Self {
         Position { line, column }
     }
+}
 
-    pub fn dummy_position() -> Self {
+impl default::Default for Position {
+    fn default() -> Self {
         Position {
             line: -1,
             column: -1,
@@ -364,8 +369,10 @@ impl Char {
     pub fn new(c: char, line: isize, column: isize) -> Self {
         Char { c, line, column }
     }
+}
 
-    pub fn dummy_char() -> Self {
+impl default::Default for Char {
+    fn default() -> Self {
         Char {
             c: NULL,
             line: -1,
