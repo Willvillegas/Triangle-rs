@@ -11,6 +11,21 @@ pub enum Vname {
     SubscriptVname(SubscriptVnameState),
 }
 
+impl PartialEq for Vname {
+    fn eq(&self, other: &Self) -> bool {
+        use Vname::*;
+
+        match (self, other) {
+            (DotVname(ref dotvn1), DotVname(ref dotvn2)) => dotvn1 == dotvn2,
+            (SimpleVname(ref simplevn1), SimpleVname(ref simplevn2)) => simplevn1 == simplevn2,
+            (SubscriptVname(ref subsvn1), SubscriptVname(ref subsvn2)) => subsvn1 == subsvn2,
+            (_, _) => false,
+        }
+    }
+}
+
+impl Eq for Vname {}
+
 impl Ast for Vname {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         use Vname::*;
@@ -23,24 +38,10 @@ impl Ast for Vname {
     }
 }
 
-impl PartialEq for Vname {
-    fn eq(&self, other: &Self) -> bool {
-        use Vname::*;
-        match (self, other) {
-            (DotVname(ref dotvn1), DotVname(ref dotvn2)) => dotvn1 == dotvn2,
-            (SimpleVname(ref simplevn1), SimpleVname(ref simplevn2)) => simplevn1 == simplevn2,
-            (SubscriptVname(ref subsvn1), SubscriptVname(ref subsvn2)) => subsvn1 == subsvn2,
-            (_, _) => false,
-        }
-    }
-}
-
-impl Eq for Vname {}
-
 #[derive(Debug)]
 pub struct SimpleVnameState {
-    id: Identifier,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub common_state: CommonState,
 }
 
 impl SimpleVnameState {
@@ -67,9 +68,9 @@ impl Ast for SimpleVnameState {
 }
 #[derive(Debug)]
 pub struct SubscriptVnameState {
-    vname: Box<Vname>,
-    expr: Box<Expression>,
-    common_state: CommonState,
+    pub vname: Box<Vname>,
+    pub expr: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl SubscriptVnameState {
@@ -97,9 +98,9 @@ impl Ast for SubscriptVnameState {
 }
 #[derive(Debug)]
 pub struct DotVnameState {
-    vname: Box<Vname>,
-    id: Identifier,
-    common_state: CommonState,
+    pub vname: Box<Vname>,
+    pub id: Identifier,
+    pub common_state: CommonState,
 }
 
 impl DotVnameState {

@@ -18,22 +18,6 @@ pub enum Command {
     WhileCommand(WhileCommandState),
 }
 
-impl Ast for Command {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        use Command::*;
-
-        match *self {
-            AssignCommand(ref mut asscmd) => asscmd.accept(visitor, arg),
-            CallCommand(ref mut callcmd) => callcmd.accept(visitor, arg),
-            EmptyCommand(ref mut emptycmd) => emptycmd.accept(visitor, arg),
-            IfCommand(ref mut ifcmd) => ifcmd.accept(visitor, arg),
-            LetCommand(ref mut letcmd) => letcmd.accept(visitor, arg),
-            SequentialCommand(ref mut seqcmd) => seqcmd.accept(visitor, arg),
-            WhileCommand(ref mut whilecmd) => whilecmd.accept(visitor, arg),
-        }
-    }
-}
-
 impl PartialEq for Command {
     fn eq(&self, other: &Self) -> bool {
         use Command::*;
@@ -52,6 +36,22 @@ impl PartialEq for Command {
 }
 
 impl Eq for Command {}
+
+impl Ast for Command {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Command::*;
+
+        match *self {
+            AssignCommand(ref mut asscmd) => asscmd.accept(visitor, arg),
+            CallCommand(ref mut callcmd) => callcmd.accept(visitor, arg),
+            EmptyCommand(ref mut emptycmd) => emptycmd.accept(visitor, arg),
+            IfCommand(ref mut ifcmd) => ifcmd.accept(visitor, arg),
+            LetCommand(ref mut letcmd) => letcmd.accept(visitor, arg),
+            SequentialCommand(ref mut seqcmd) => seqcmd.accept(visitor, arg),
+            WhileCommand(ref mut whilecmd) => whilecmd.accept(visitor, arg),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct AssignCommandState {
@@ -125,9 +125,9 @@ impl Ast for EmptyCommandState {
 }
 #[derive(Debug)]
 pub struct LetCommandState {
-    decl: Box<Declaration>,
-    cmd: Box<Command>,
-    common_state: CommonState,
+    pub decl: Box<Declaration>,
+    pub cmd: Box<Command>,
+    pub common_state: CommonState,
 }
 
 impl LetCommandState {
@@ -155,10 +155,10 @@ impl Ast for LetCommandState {
 }
 #[derive(Debug)]
 pub struct IfCommandState {
-    expr: Box<Expression>,
-    cmd1: Box<Command>,
-    cmd2: Box<Command>,
-    common_state: CommonState,
+    pub expr: Box<Expression>,
+    pub cmd1: Box<Command>,
+    pub cmd2: Box<Command>,
+    pub common_state: CommonState,
 }
 
 impl IfCommandState {
@@ -188,9 +188,9 @@ impl Ast for IfCommandState {
 
 #[derive(Debug)]
 pub struct WhileCommandState {
-    expr: Box<Expression>,
-    cmd: Box<Command>,
-    common_state: CommonState,
+    pub expr: Box<Expression>,
+    pub cmd: Box<Command>,
+    pub common_state: CommonState,
 }
 
 impl WhileCommandState {
@@ -219,9 +219,9 @@ impl Ast for WhileCommandState {
 
 #[derive(Debug)]
 pub struct SequentialCommandState {
-    cmd1: Box<Command>,
-    cmd2: Box<Command>,
-    common_state: CommonState,
+    pub cmd1: Box<Command>,
+    pub cmd2: Box<Command>,
+    pub common_state: CommonState,
 }
 
 impl SequentialCommandState {

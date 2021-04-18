@@ -19,24 +19,6 @@ pub enum Declaration {
     VarDeclaration(VarDeclarationState),
 }
 
-impl Ast for Declaration {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        use Declaration::*;
-
-        match *self {
-            BinaryOperatorDeclaration(ref mut binopdecl) => binopdecl.accept(visitor, arg),
-            ConstDeclaration(ref mut constdecl) => constdecl.accept(visitor, arg),
-            FuncDeclaration(ref mut funcdecl) => funcdecl.accept(visitor, arg),
-            ProcDeclaration(ref mut procdecl) => procdecl.accept(visitor, arg),
-            SequentialDeclaration(ref mut seqdecl) => seqdecl.accept(visitor, arg),
-            TypeDeclaration(ref mut typedecl) => typedecl.accept(visitor, arg),
-            UnaryOperatorDeclaration(ref mut unopdecl) => unopdecl.accept(visitor, arg),
-            BinaryOperatorDeclaration(ref mut binopdecl) => binopdecl.accept(visitor, arg),
-            VarDeclaration(ref mut vardecl) => vardecl.accept(visitor, arg),
-        }
-    }
-}
-
 impl PartialEq for Declaration {
     fn eq(&self, other: &Self) -> bool {
         use Declaration::*;
@@ -51,7 +33,7 @@ impl PartialEq for Declaration {
             }
             (FuncDeclaration(ref funcdecl1), FuncDeclaration(funcdecl2)) => funcdecl1 == funcdecl2,
             (ProcDeclaration(ref procdecl1), ProcDeclaration(ref procdecl2)) => {
-                procdecl1 == procdecl1
+                procdecl1 == procdecl2
             }
             (SequentialDeclaration(ref seqdecl1), SequentialDeclaration(ref seqdecl2)) => {
                 seqdecl1 == seqdecl2
@@ -70,13 +52,30 @@ impl PartialEq for Declaration {
 
 impl Eq for Declaration {}
 
+impl Ast for Declaration {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Declaration::*;
+
+        match *self {
+            BinaryOperatorDeclaration(ref mut binopdecl) => binopdecl.accept(visitor, arg),
+            ConstDeclaration(ref mut constdecl) => constdecl.accept(visitor, arg),
+            FuncDeclaration(ref mut funcdecl) => funcdecl.accept(visitor, arg),
+            ProcDeclaration(ref mut procdecl) => procdecl.accept(visitor, arg),
+            SequentialDeclaration(ref mut seqdecl) => seqdecl.accept(visitor, arg),
+            TypeDeclaration(ref mut typedecl) => typedecl.accept(visitor, arg),
+            UnaryOperatorDeclaration(ref mut unopdecl) => unopdecl.accept(visitor, arg),
+            VarDeclaration(ref mut vardecl) => vardecl.accept(visitor, arg),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct BinaryOperatorDeclarationState {
-    arg1type: Box<TypeDenoter>,
-    op: Operator,
-    arg2type: Box<TypeDenoter>,
-    restype: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub arg1type: Box<TypeDenoter>,
+    pub op: Operator,
+    pub arg2type: Box<TypeDenoter>,
+    pub restype: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl BinaryOperatorDeclarationState {
@@ -115,10 +114,10 @@ impl Ast for BinaryOperatorDeclarationState {
 
 #[derive(Debug)]
 pub struct UnaryOperatorDeclarationState {
-    op: Operator,
-    argtype: Box<TypeDenoter>,
-    restype: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub op: Operator,
+    pub argtype: Box<TypeDenoter>,
+    pub restype: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl UnaryOperatorDeclarationState {
@@ -148,9 +147,9 @@ impl Ast for UnaryOperatorDeclarationState {
 
 #[derive(Debug)]
 pub struct ConstDeclarationState {
-    id: Identifier,
-    expr: Box<Expression>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub expr: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl ConstDeclarationState {
@@ -179,9 +178,9 @@ impl Ast for ConstDeclarationState {
 
 #[derive(Debug)]
 pub struct VarDeclarationState {
-    id: Identifier,
-    td: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub td: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl VarDeclarationState {
@@ -210,10 +209,10 @@ impl Ast for VarDeclarationState {
 
 #[derive(Debug)]
 pub struct ProcDeclarationState {
-    id: Identifier,
-    fps: Box<FormalParameterSequence>,
-    cmd: Box<Command>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub fps: Box<FormalParameterSequence>,
+    pub cmd: Box<Command>,
+    pub common_state: CommonState,
 }
 
 impl ProcDeclarationState {
@@ -242,11 +241,11 @@ impl Ast for ProcDeclarationState {
 }
 #[derive(Debug)]
 pub struct FuncDeclarationState {
-    id: Identifier,
-    fps: Box<FormalParameterSequence>,
-    td: Box<TypeDenoter>,
-    expr: Box<Expression>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub fps: Box<FormalParameterSequence>,
+    pub td: Box<TypeDenoter>,
+    pub expr: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl FuncDeclarationState {
@@ -284,9 +283,9 @@ impl Ast for FuncDeclarationState {
 }
 #[derive(Debug)]
 pub struct TypeDeclarationState {
-    id: Identifier,
-    td: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub td: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl TypeDeclarationState {
@@ -314,9 +313,9 @@ impl Ast for TypeDeclarationState {
 }
 #[derive(Debug)]
 pub struct SequentialDeclarationState {
-    decl1: Box<Declaration>,
-    decl2: Box<Declaration>,
-    common_state: CommonState,
+    pub decl1: Box<Declaration>,
+    pub decl2: Box<Declaration>,
+    pub common_state: CommonState,
 }
 
 impl SequentialDeclarationState {

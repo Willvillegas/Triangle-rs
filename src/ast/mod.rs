@@ -14,11 +14,13 @@ pub mod declarations;
 pub mod expressions;
 pub mod parameters;
 pub mod primitives;
+pub mod runtime_entities;
 pub mod typedenoters;
 pub mod vnames;
 
-use primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
+use runtime_entities::RuntimeEntity;
 
+/// Any entity that wants to be traversable needs to implement this trait
 pub trait Ast {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject;
 }
@@ -38,7 +40,6 @@ pub enum AstObject {
 /// make use of this visitor to traverse the parsed and checked asts respectively.
 pub trait AstVisitor {
     fn visit_program(&self, program: &mut Program, arg: AstObject) -> AstObject;
-
     fn visit_empty_command(
         &self,
         cmd: &mut commands::EmptyCommandState,
@@ -119,7 +120,6 @@ pub trait AstVisitor {
         expr: &mut expressions::RecordExpressionState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_single_array_aggregate(
         &self,
         agg: &mut aggregates::SingleArrayAggregateState,
@@ -140,7 +140,6 @@ pub trait AstVisitor {
         agg: &mut aggregates::MultipleRecordAggregateState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_const_declaration(
         &self,
         decl: &mut declarations::ConstDeclarationState,
@@ -181,7 +180,6 @@ pub trait AstVisitor {
         decl: &mut declarations::SequentialDeclarationState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_any_type_denoter(
         &self,
         td: &mut typedenoters::AnyTypeDenoterState,
@@ -232,7 +230,6 @@ pub trait AstVisitor {
         td: &mut typedenoters::RecordTypeDenoterState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_empty_formal_parameter_sequence(
         &self,
         fps: &mut parameters::EmptyFormalParameterSequenceState,
@@ -248,7 +245,6 @@ pub trait AstVisitor {
         fps: &mut parameters::MultipleFormalParameterSequenceState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_const_formal_parameter(
         &self,
         fp: &mut parameters::ConstFormalParameterState,
@@ -269,7 +265,6 @@ pub trait AstVisitor {
         fp: &mut parameters::FuncFormalParameterState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_empty_actual_parameter_sequence(
         &self,
         aps: &mut parameters::EmptyActualParameterSequenceState,
@@ -285,7 +280,6 @@ pub trait AstVisitor {
         aps: &mut parameters::MultipleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_const_actual_parameter(
         &self,
         ap: &mut parameters::ConstActualParameterState,
@@ -306,7 +300,6 @@ pub trait AstVisitor {
         ap: &mut parameters::FuncActualParameterState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_simple_vname(&self, vname: &mut vnames::SimpleVnameState, arg: AstObject)
         -> AstObject;
     fn visit_dot_vname(&self, vname: &mut vnames::DotVnameState, arg: AstObject) -> AstObject;
@@ -315,7 +308,6 @@ pub trait AstVisitor {
         vname: &mut vnames::SubscriptVnameState,
         arg: AstObject,
     ) -> AstObject;
-
     fn visit_identifier(&self, id: primitives::Identifier, arg: AstObject) -> AstObject;
     fn visit_integer_literal(&self, il: primitives::IntegerLiteral, arg: AstObject) -> AstObject;
     fn visit_character_literal(
@@ -329,89 +321,14 @@ pub trait AstVisitor {
 /// A frame represents the runtime state of execution of a function
 #[derive(Debug)]
 pub struct Frame {
-    level: usize,
-    size: usize,
+    pub level: usize,
+    pub size: usize,
 }
-
-/// runtime entities - these entities are used by the encoder to
-/// generate the correct bytecode for the TAM (Triangle Abstract Machine).
-
-#[derive(Debug)]
-pub enum RuntimeEntity {
-    None,
-    KnownAddress(KnownAddressState),
-    UnknownAddress(UnknownAddressState),
-    KnownValue(KnownValueState),
-    UnknownValue(UnknownValueState),
-    PrimitiveRoutine(PrimitiveRoutineState),
-    EqualityRoutine(EqualityRoutineState),
-    UnknownRoutine(UnknownRoutineState),
-    Field(FieldState),
-    TypeDeclaration(TypeDeclarationState),
-}
-
-/// represents the declared state of an entity
-#[derive(Debug)]
-pub struct EntityAddress {
-    level: usize,
-    displacement: usize,
-}
-
-#[derive(Debug)]
-pub struct KnownAddressState {}
-
-impl KnownAddressState {}
-
-#[derive(Debug)]
-pub struct UnknownAddressState {}
-
-impl UnknownAddressState {}
-
-#[derive(Debug)]
-pub struct KnownValueState {}
-
-impl KnownValueState {}
-
-#[derive(Debug)]
-pub struct UnknownValueState {}
-
-impl UnknownValueState {}
-
-#[derive(Debug)]
-pub struct KnownRoutineState {}
-
-impl KnownRoutineState {}
-
-#[derive(Debug)]
-pub struct UnknownRoutineState {}
-
-impl UnknownRoutineState {}
-
-#[derive(Debug)]
-pub struct PrimitiveRoutineState {}
-
-impl PrimitiveRoutineState {}
-
-#[derive(Debug)]
-pub struct EqualityRoutineState {}
-
-impl EqualityRoutineState {}
-
-#[derive(Debug)]
-pub struct FieldState {}
-
-impl FieldState {}
-
-#[derive(Debug)]
-pub struct TypeDeclarationState {}
-
-impl TypeDeclarationState {}
 
 /// The core AST types representing the entities
 /// of the Triangle language.
 
-/// represents the common state that every Ast
-/// must have.
+/// Common state that is shared by every Ast
 #[derive(Debug)]
 pub struct CommonState {
     pub position: SourcePosition,
@@ -448,12 +365,6 @@ impl Program {
     }
 }
 
-impl Ast for Program {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        visitor.visit_program(self, arg)
-    }
-}
-
 impl PartialEq for Program {
     fn eq(&self, other: &Program) -> bool {
         self.cmd == other.cmd
@@ -461,3 +372,9 @@ impl PartialEq for Program {
 }
 
 impl Eq for Program {}
+
+impl Ast for Program {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_program(self, arg)
+    }
+}

@@ -15,27 +15,70 @@ pub enum FormalParameterSequence {
 
 impl PartialEq for FormalParameterSequence {
     fn eq(&self, other: &Self) -> bool {
-        todo!()
+        use FormalParameterSequence::*;
+
+        match (self, other) {
+            (EmptyFormalParameterSequence(_), EmptyFormalParameterSequence(__)) => true,
+            (SingleFormalParameterSequence(ref sfp1), SingleFormalParameterSequence(ref sfp2)) => {
+                sfp1 == sfp2
+            }
+            (MultipleFormalParameterSequence(ref mfp1), MultipleFormalParameterSequence(mfp2)) => {
+                mfp1 == mfp2
+            }
+            (_, __) => false,
+        }
     }
 }
 
 impl Eq for FormalParameterSequence {}
 
+impl Ast for FormalParameterSequence {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use FormalParameterSequence::*;
+
+        match *self {
+            EmptyFormalParameterSequence(ref mut efps) => efps.accept(visitor, arg),
+            SingleFormalParameterSequence(ref mut sfps) => sfps.accept(visitor, arg),
+            MultipleFormalParameterSequence(ref mut mfps) => mfps.accept(visitor, arg),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct EmptyFormalParameterSequenceState;
 
+impl Ast for EmptyFormalParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_empty_formal_parameter_sequence(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct SingleFormalParameterSequenceState {
-    pub fp: FormalParameter,
+    pub fp: Box<FormalParameter>,
     pub common_state: CommonState,
 }
 
 impl SingleFormalParameterSequenceState {
     pub fn new(fp: FormalParameter) -> Self {
         SingleFormalParameterSequenceState {
-            fp: fp,
+            fp: Box::new(fp),
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for SingleFormalParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        self.fp == other.fp
+    }
+}
+
+impl Eq for SingleFormalParameterSequenceState {}
+
+impl Ast for SingleFormalParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_single_formal_parameter_sequence(self, arg)
     }
 }
 
@@ -56,6 +99,20 @@ impl MultipleFormalParameterSequenceState {
     }
 }
 
+impl PartialEq for MultipleFormalParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        self.fp == other.fp && self.fps == other.fps
+    }
+}
+
+impl Eq for MultipleFormalParameterSequenceState {}
+
+impl Ast for MultipleFormalParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_multiple_formal_parameter_sequence(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub enum FormalParameter {
     VarFormalParameter(VarFormalParameterState),
@@ -63,6 +120,35 @@ pub enum FormalParameter {
     ProcFormalParameter(ProcFormalParameterState),
     FuncFormalParameter(FuncFormalParameterState),
 }
+
+impl Ast for FormalParameter {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use FormalParameter::*;
+
+        match *self {
+            VarFormalParameter(ref mut vfp) => vfp.accept(visitor, arg),
+            ConstFormalParameter(ref mut cfp) => cfp.accept(visitor, arg),
+            ProcFormalParameter(ref mut pfp) => pfp.accept(visitor, arg),
+            FuncFormalParameter(ref mut ffp) => ffp.accept(visitor, arg),
+        }
+    }
+}
+
+impl PartialEq for FormalParameter {
+    fn eq(&self, other: &Self) -> bool {
+        use FormalParameter::*;
+
+        match (self, other) {
+            (VarFormalParameter(ref vfp1), VarFormalParameter(ref vfp2)) => vfp1 == vfp2,
+            (ConstFormalParameter(ref cfp1), ConstFormalParameter(ref cfp2)) => cfp1 == cfp2,
+            (ProcFormalParameter(ref pfp1), ProcFormalParameter(ref pfp2)) => pfp1 == pfp2,
+            (FuncFormalParameter(ref ffp1), FuncFormalParameter(ref ffp2)) => ffp1 == ffp2,
+            (_, _) => false,
+        }
+    }
+}
+
+impl Eq for FormalParameter {}
 
 #[derive(Debug)]
 pub struct VarFormalParameterState {
@@ -78,6 +164,20 @@ impl VarFormalParameterState {
             td: Box::new(td),
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for VarFormalParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.td == other.td
+    }
+}
+
+impl Eq for VarFormalParameterState {}
+
+impl Ast for VarFormalParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_var_formal_parameter(self, arg)
     }
 }
 
@@ -98,6 +198,20 @@ impl ConstFormalParameterState {
     }
 }
 
+impl PartialEq for ConstFormalParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.td == other.td
+    }
+}
+
+impl Eq for ConstFormalParameterState {}
+
+impl Ast for ConstFormalParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_const_formal_parameter(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct ProcFormalParameterState {
     pub id: Identifier,
@@ -112,6 +226,20 @@ impl ProcFormalParameterState {
             fps: Box::new(fps),
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for ProcFormalParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.fps == other.fps
+    }
+}
+
+impl Eq for ProcFormalParameterState {}
+
+impl Ast for ProcFormalParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_proc_formal_parameter(self, arg)
     }
 }
 
@@ -134,6 +262,20 @@ impl FuncFormalParameterState {
     }
 }
 
+impl PartialEq for FuncFormalParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.fps == other.fps && self.td == other.td
+    }
+}
+
+impl Eq for FuncFormalParameterState {}
+
+impl Ast for FuncFormalParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_func_formal_parameter(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub enum ActualParameterSequence {
     EmptyActualParameterSequence(EmptyActualParameterSequenceState),
@@ -143,7 +285,19 @@ pub enum ActualParameterSequence {
 
 impl PartialEq for ActualParameterSequence {
     fn eq(&self, other: &Self) -> bool {
-        todo!()
+        use ActualParameterSequence::*;
+
+        match (self, other) {
+            (EmptyActualParameterSequence(_), EmptyActualParameterSequence(_)) => true,
+            (SingleActualParamterSequence(ref saps1), SingleActualParamterSequence(ref saps2)) => {
+                saps1 == saps2
+            }
+            (
+                MultipleActualParameterSequence(ref maps1),
+                MultipleActualParameterSequence(ref maps2),
+            ) => maps1 == maps2,
+            (_, _) => false,
+        }
     }
 }
 
@@ -151,12 +305,24 @@ impl Eq for ActualParameterSequence {}
 
 impl Ast for ActualParameterSequence {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        todo!()
+        use ActualParameterSequence::*;
+
+        match *self {
+            EmptyActualParameterSequence(ref mut eaps) => eaps.accept(visitor, arg),
+            SingleActualParamterSequence(ref mut saps) => saps.accept(visitor, arg),
+            MultipleActualParameterSequence(ref mut maps) => maps.accept(visitor, arg),
+        }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct EmptyActualParameterSequenceState;
+
+impl Ast for EmptyActualParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_empty_actual_parameter_sequence(self, arg)
+    }
+}
 
 #[derive(Debug)]
 pub struct SingleActualParameterSequenceState {
@@ -170,6 +336,20 @@ impl SingleActualParameterSequenceState {
             ap: Box::new(ap),
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for SingleActualParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        self.ap == other.ap
+    }
+}
+
+impl Eq for SingleActualParameterSequenceState {}
+
+impl Ast for SingleActualParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_single_actual_parameter_sequence(self, arg)
     }
 }
 
@@ -190,12 +370,55 @@ impl MultipleActualParameterSequenceState {
     }
 }
 
+impl PartialEq for MultipleActualParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        self.ap == other.ap && self.aps == other.aps
+    }
+}
+
+impl Eq for MultipleActualParameterSequenceState {}
+
+impl Ast for MultipleActualParameterSequenceState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_multiple_actual_parameter_sequence(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub enum ActualParameter {
     VarActualParameter(VarActualParameterState),
     ConstActualParameter(ConstActualParameterState),
     ProcActualParameter(ProcActualParameterState),
     FuncActualParameter(FuncActualParameterState),
+}
+
+impl PartialEq for ActualParameter {
+    fn eq(&self, other: &Self) -> bool {
+        use ActualParameter::*;
+
+        match (self, other) {
+            (VarActualParameter(ref vap1), VarActualParameter(ref vap2)) => vap1 == vap2,
+            (ConstActualParameter(ref cap1), ConstActualParameter(ref cap2)) => cap1 == cap2,
+            (ProcActualParameter(ref pap1), ProcActualParameter(ref pap2)) => pap1 == pap2,
+            (FuncActualParameter(ref fap1), FuncActualParameter(ref fap2)) => fap1 == fap2,
+            (_, _) => false,
+        }
+    }
+}
+
+impl Eq for ActualParameter {}
+
+impl Ast for ActualParameter {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use ActualParameter::*;
+
+        match *self {
+            VarActualParameter(ref mut vap) => vap.accept(visitor, arg),
+            ConstActualParameter(ref mut cap) => cap.accept(visitor, arg),
+            ProcActualParameter(ref mut pap) => pap.accept(visitor, arg),
+            FuncActualParameter(ref mut fap) => fap.accept(visitor, arg),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -210,6 +433,20 @@ impl VarActualParameterState {
             vname: Box::new(vname),
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for VarActualParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.vname == other.vname
+    }
+}
+
+impl Eq for VarActualParameterState {}
+
+impl Ast for VarActualParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_var_actual_parameter(self, arg)
     }
 }
 
@@ -228,6 +465,20 @@ impl ConstActualParameterState {
     }
 }
 
+impl PartialEq for ConstActualParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.expr == other.expr
+    }
+}
+
+impl Eq for ConstActualParameterState {}
+
+impl Ast for ConstActualParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_const_actual_parameter(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct ProcActualParameterState {
     pub id: Identifier,
@@ -243,6 +494,20 @@ impl ProcActualParameterState {
     }
 }
 
+impl PartialEq for ProcActualParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for ProcActualParameterState {}
+
+impl Ast for ProcActualParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_proc_actual_parameter(self, arg)
+    }
+}
+
 #[derive(Debug)]
 pub struct FuncActualParameterState {
     pub id: Identifier,
@@ -255,5 +520,19 @@ impl FuncActualParameterState {
             id: id,
             common_state: CommonState::default(),
         }
+    }
+}
+
+impl PartialEq for FuncActualParameterState {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for FuncActualParameterState {}
+
+impl Ast for FuncActualParameterState {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_func_actual_parameter(self, arg)
     }
 }

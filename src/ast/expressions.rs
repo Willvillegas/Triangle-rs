@@ -22,27 +22,6 @@ pub enum Expression {
     VnameExpression(VnameExpressionState),
 }
 
-impl Ast for Expression {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        use Expression::*;
-
-        match *self {
-            ArrayExpression(ref mut arrayexpr) => arrayexpr.accept(visitor, arg),
-            BinaryExpression(ref mut binexpr) => binexpr.accept(visitor, arg),
-            CallExpression(ref mut callexpr) => callexpr.accept(visitor, arg),
-            CharacterExpression(ref mut charexpr) => charexpr.accept(visitor, arg),
-            EmptyExpression(ref mut emptyexpr) => emptyexpr.accept(visitor, arg),
-            IfExpression(ref mut ifexpr) => ifexpr.accept(visitor, arg),
-            IntegerExpression(ref mut intexpr) => intexpr.accept(visitor, arg),
-            LetExpression(ref mut letexpr) => letexpr.accept(visitor, arg),
-            RecordExpression(ref mut recexpr) => recexpr.accept(visitor, arg),
-            UnaryExpression(ref mut unexpr) => unexpr.accept(visitor, arg),
-            VnameExpression(ref mut vexpr) => vexpr.accept(visitor, arg),
-        }
-    }
-}
-
-// todo - fill this out
 impl PartialEq for Expression {
     fn eq(&self, other: &Self) -> bool {
         use Expression::*;
@@ -66,10 +45,30 @@ impl PartialEq for Expression {
 
 impl Eq for Expression {}
 
+impl Ast for Expression {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use Expression::*;
+
+        match *self {
+            ArrayExpression(ref mut arrayexpr) => arrayexpr.accept(visitor, arg),
+            BinaryExpression(ref mut binexpr) => binexpr.accept(visitor, arg),
+            CallExpression(ref mut callexpr) => callexpr.accept(visitor, arg),
+            CharacterExpression(ref mut charexpr) => charexpr.accept(visitor, arg),
+            EmptyExpression(ref mut emptyexpr) => emptyexpr.accept(visitor, arg),
+            IfExpression(ref mut ifexpr) => ifexpr.accept(visitor, arg),
+            IntegerExpression(ref mut intexpr) => intexpr.accept(visitor, arg),
+            LetExpression(ref mut letexpr) => letexpr.accept(visitor, arg),
+            RecordExpression(ref mut recexpr) => recexpr.accept(visitor, arg),
+            UnaryExpression(ref mut unexpr) => unexpr.accept(visitor, arg),
+            VnameExpression(ref mut vexpr) => vexpr.accept(visitor, arg),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct IntegerExpressionState {
-    il: IntegerLiteral,
-    common_state: CommonState,
+    pub il: IntegerLiteral,
+    pub common_state: CommonState,
 }
 
 impl IntegerExpressionState {
@@ -97,8 +96,8 @@ impl Ast for IntegerExpressionState {
 
 #[derive(Debug)]
 pub struct CharacterExpressionState {
-    cl: CharacterLiteral,
-    common_state: CommonState,
+    pub cl: CharacterLiteral,
+    pub common_state: CommonState,
 }
 
 impl CharacterExpressionState {
@@ -135,8 +134,8 @@ impl Ast for EmptyExpressionState {
 
 #[derive(Debug)]
 pub struct VnameExpressionState {
-    vname: Vname,
-    common_state: CommonState,
+    pub vname: Vname,
+    pub common_state: CommonState,
 }
 
 impl VnameExpressionState {
@@ -164,9 +163,9 @@ impl Ast for VnameExpressionState {
 
 #[derive(Debug)]
 pub struct CallExpressionState {
-    id: Identifier,
-    aps: ActualParameterSequence,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub aps: ActualParameterSequence,
+    pub common_state: CommonState,
 }
 
 impl CallExpressionState {
@@ -195,10 +194,10 @@ impl Ast for CallExpressionState {
 
 #[derive(Debug)]
 pub struct IfExpressionState {
-    expr1: Box<Expression>,
-    expr2: Box<Expression>,
-    expr3: Box<Expression>,
-    common_state: CommonState,
+    pub expr1: Box<Expression>,
+    pub expr2: Box<Expression>,
+    pub expr3: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl IfExpressionState {
@@ -228,9 +227,9 @@ impl Ast for IfExpressionState {
 
 #[derive(Debug)]
 pub struct LetExpressionState {
-    decl: Box<Declaration>,
-    expr: Box<Expression>,
-    common_state: CommonState,
+    pub decl: Box<Declaration>,
+    pub expr: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl LetExpressionState {
@@ -259,9 +258,9 @@ impl Ast for LetExpressionState {
 
 #[derive(Debug)]
 pub struct UnaryExpressionState {
-    op: Operator,
-    expr: Box<Expression>,
-    common_state: CommonState,
+    pub op: Operator,
+    pub expr: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl UnaryExpressionState {
@@ -290,10 +289,10 @@ impl Ast for UnaryExpressionState {
 
 #[derive(Debug)]
 pub struct BinaryExpressionState {
-    expr1: Box<Expression>,
-    op: Operator,
-    expr2: Box<Expression>,
-    common_state: CommonState,
+    pub expr1: Box<Expression>,
+    pub op: Operator,
+    pub expr2: Box<Expression>,
+    pub common_state: CommonState,
 }
 
 impl BinaryExpressionState {
@@ -323,9 +322,9 @@ impl Ast for BinaryExpressionState {
 
 #[derive(Debug)]
 pub struct ArrayExpressionState {
-    aa: Box<ArrayAggregate>,
-    elem_count: usize,
-    common_state: CommonState,
+    pub aa: Box<ArrayAggregate>,
+    pub elem_count: usize,
+    pub common_state: CommonState,
 }
 
 impl ArrayExpressionState {
@@ -354,8 +353,8 @@ impl Ast for ArrayExpressionState {
 
 #[derive(Debug)]
 pub struct RecordExpressionState {
-    ra: Box<RecordAggregate>,
-    common_state: CommonState,
+    pub ra: Box<RecordAggregate>,
+    pub common_state: CommonState,
 }
 
 impl RecordExpressionState {

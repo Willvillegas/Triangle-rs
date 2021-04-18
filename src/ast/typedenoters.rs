@@ -15,23 +15,6 @@ pub enum TypeDenoter {
     RecordTypeDenoter(RecordTypeDenoterState),
 }
 
-impl Ast for TypeDenoter {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
-        use TypeDenoter::*;
-
-        match *self {
-            BoolTypeDenoter(ref mut btd) => btd.accept(visitor, arg),
-            CharTypeDenoter(ref mut ctd) => ctd.accept(visitor, arg),
-            IntTypeDenoter(ref mut itd) => itd.accept(visitor, arg),
-            AnyTypeDenoter(ref mut anytd) => anytd.accept(visitor, arg),
-            ErrorTypeDenoter(ref mut etd) => etd.accept(visitor, arg),
-            SimpleTypeDenoter(ref mut std) => std.accept(visitor, arg),
-            ArrayTypeDenoter(ref mut atd) => atd.accept(visitor, arg),
-            RecordTypeDenoter(ref mut rtd) => rtd.accept(visitor, arg),
-        }
-    }
-}
-
 impl PartialEq for TypeDenoter {
     fn eq(&self, other: &Self) -> bool {
         use TypeDenoter::*;
@@ -51,6 +34,23 @@ impl PartialEq for TypeDenoter {
 
 impl Eq for TypeDenoter {}
 
+impl Ast for TypeDenoter {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        use TypeDenoter::*;
+
+        match *self {
+            BoolTypeDenoter(ref mut btd) => btd.accept(visitor, arg),
+            CharTypeDenoter(ref mut ctd) => ctd.accept(visitor, arg),
+            IntTypeDenoter(ref mut itd) => itd.accept(visitor, arg),
+            AnyTypeDenoter(ref mut anytd) => anytd.accept(visitor, arg),
+            ErrorTypeDenoter(ref mut etd) => etd.accept(visitor, arg),
+            SimpleTypeDenoter(ref mut std) => std.accept(visitor, arg),
+            ArrayTypeDenoter(ref mut atd) => atd.accept(visitor, arg),
+            RecordTypeDenoter(ref mut rtd) => rtd.accept(visitor, arg),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum FieldTypeDenoter {
     SingleFieldTypeDenoter(SingleFieldTypeDenoterState),
@@ -60,6 +60,7 @@ pub enum FieldTypeDenoter {
 impl PartialEq for FieldTypeDenoter {
     fn eq(&self, other: &Self) -> bool {
         use FieldTypeDenoter::*;
+
         match (self, other) {
             (SingleFieldTypeDenoter(ref sftd1), SingleFieldTypeDenoter(ref sftd2)) => {
                 sftd1 == sftd2
@@ -115,8 +116,8 @@ impl Ast for ErrorTypeDenoterState {
 }
 #[derive(Debug)]
 pub struct SimpleTypeDenoterState {
-    id: Identifier,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub common_state: CommonState,
 }
 
 impl SimpleTypeDenoterState {
@@ -143,9 +144,9 @@ impl Ast for SimpleTypeDenoterState {
 }
 #[derive(Debug)]
 pub struct ArrayTypeDenoterState {
-    il: IntegerLiteral,
-    td: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub il: IntegerLiteral,
+    pub td: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl ArrayTypeDenoterState {
@@ -174,8 +175,8 @@ impl Ast for ArrayTypeDenoterState {
 
 #[derive(Debug)]
 pub struct RecordTypeDenoterState {
-    ftd: Box<FieldTypeDenoter>,
-    common_state: CommonState,
+    pub ftd: Box<FieldTypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl RecordTypeDenoterState {
@@ -203,9 +204,9 @@ impl Ast for RecordTypeDenoterState {
 
 #[derive(Debug)]
 pub struct SingleFieldTypeDenoterState {
-    id: Identifier,
-    td: Box<TypeDenoter>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub td: Box<TypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl SingleFieldTypeDenoterState {
@@ -234,10 +235,10 @@ impl Ast for SingleFieldTypeDenoterState {
 
 #[derive(Debug)]
 pub struct MultipleFieldTypeDenoterState {
-    id: Identifier,
-    td: Box<TypeDenoter>,
-    ftd: Box<FieldTypeDenoter>,
-    common_state: CommonState,
+    pub id: Identifier,
+    pub td: Box<TypeDenoter>,
+    pub ftd: Box<FieldTypeDenoter>,
+    pub common_state: CommonState,
 }
 
 impl MultipleFieldTypeDenoterState {
