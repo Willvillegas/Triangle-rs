@@ -18,8 +18,8 @@ fn test_emptycommandeot() {
 }
 
 #[test]
-fn test_emptycommandeot_degenerate() {
-    let source_file = "samples/source/emptycommandeot_degenerate.t";
+fn test_emptycommandsemicolon() {
+    let source_file = "samples/source/emptycommandsemicolon.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let expected_program = Program::new(EmptyCommand(EmptyCommandState));
     let actual_program = parser.parse_program();
@@ -27,26 +27,8 @@ fn test_emptycommandeot_degenerate() {
 }
 
 #[test]
-fn test_emptycommandsemicolon() {
-    let source_file = "samples/source/emptycommandsemicolon.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_emptycommandsemicolon_degenerate() {
-    let source_file = "samples/source/emptycommandsemicolon_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_hello() {
     let source_file = "samples/source/hello.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_hello_degenerate() {
-    let source_file = "samples/source/hello_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -57,20 +39,8 @@ fn test_inc() {
 }
 
 #[test]
-fn test_inc_degenerate() {
-    let source_file = "samples/source/inc_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_echo() {
     let source_file = "samples/source/echo.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_echo_degenerate() {
-    let source_file = "samples/source/echo_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -81,32 +51,14 @@ fn test_odd() {
 }
 
 #[test]
-fn test_odd_degenerate() {
-    let source_file = "samples/source/odd_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_sum_proc() {
     let source_file = "samples/source/sum_proc.t";
     let mut scanner = Scanner::new(source_file);
 }
 
 #[test]
-fn test_sum_proc_degenerate() {
-    let source_file = "samples/source/sum_proc_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_power() {
     let source_file = "samples/source/power.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_power_degenerate() {
-    let source_file = "samples/source/power_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -117,20 +69,8 @@ fn test_factorial() {
 }
 
 #[test]
-fn test_factorial_degenerate() {
-    let source_file = "samples/source/factorial_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_record() {
     let source_file = "samples/source/record.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_record_degenerate() {
-    let source_file = "samples/source/record_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -141,20 +81,8 @@ fn test_leapyear() {
 }
 
 #[test]
-fn test_leapyear_degenerate() {
-    let source_file = "samples/source/leapyear_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_date() {
     let source_file = "samples/source/date.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_date_degenerate() {
-    let source_file = "samples/source/date_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -165,20 +93,8 @@ fn test_print_array() {
 }
 
 #[test]
-fn test_print_array_degnerate() {
-    let source_file = "samples/source/print_array_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_string() {
     let source_file = "samples/source/string.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_string_degenerate() {
-    let source_file = "samples/source/string_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -189,20 +105,8 @@ fn test_reverse_line() {
 }
 
 #[test]
-fn test_reverse_line_degenerate() {
-    let source_file = "samples/source/reverse_line_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_iteratively() {
     let source_file = "samples/source/iteratively.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_iteratively_degenerate() {
-    let source_file = "samples/souce/iteratively_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -213,20 +117,8 @@ fn test_line() {
 }
 
 #[test]
-fn test_line_degenerate() {
-    let source_file = "samples/source/line_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_dates() {
     let source_file = "samples/source/dates.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_dates_degenerate() {
-    let source_file = "samples/source/dates_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -237,20 +129,8 @@ fn test_monthsofyear() {
 }
 
 #[test]
-fn test_monthsofyear_degenerate() {
-    let source_file = "samples/source/monthsofyear_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_capitalise() {
     let source_file = "samples/source/capitalise.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_capitalise_degenerate() {
-    let source_file = "samples/source/capitalise_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -261,20 +141,8 @@ fn test_freq() {
 }
 
 #[test]
-fn test_freq_degenerate() {
-    let source_file = "samples/source/freq_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_insertion_sort() {
     let source_file = "samples/source/insertion_sort.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_insertion_sort_degenerate() {
-    let source_file = "samples/source/insertion_sort_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -285,20 +153,8 @@ fn test_rationals() {
 }
 
 #[test]
-fn test_rationals_degenerate() {
-    let source_file = "samples/source/rationals_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_eqnoteq() {
     let source_file = "samples/source/eqnoteq.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_eqnoteq_degenerate() {
-    let source_file = "samples/source/eqnoteq_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
 
@@ -309,19 +165,7 @@ fn test_nestedarrays() {
 }
 
 #[test]
-fn test_nestedarrays_degenerate() {
-    let source_file = "samples/source/nestedarrays_degenerate.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
 fn test_nestedrecords() {
     let source_file = "samples/source/nestedrecords.t";
-    let mut parser = Parser::new(Scanner::new(source_file));
-}
-
-#[test]
-fn test_nestedrecords_degenerate() {
-    let source_file = "samples/source/nestedrecords_degenerate.t";
     let mut parser = Parser::new(Scanner::new(source_file));
 }
