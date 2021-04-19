@@ -237,6 +237,68 @@ fn test_rationals() {
 fn test_eqnoteq() {
     let source_file = "samples/source/eqnoteq.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(LetCommand(LetCommandState::new(
+        SequentialDeclaration(SequentialDeclarationState::new(
+            VarDeclaration(VarDeclarationState::new(
+                Identifier::new("x"),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+            )),
+            VarDeclaration(VarDeclarationState::new(
+                Identifier::new("y"),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+            )),
+        )),
+        SequentialCommand(SequentialCommandState::new(
+            SequentialCommand(SequentialCommandState::new(
+                CallCommand(CallCommandState::new(
+                    Identifier::new("getint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        VarActualParameter(VarActualParameterState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("x")),
+                        ))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("getint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        VarActualParameter(VarActualParameterState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("y")),
+                        ))),
+                    )),
+                )),
+            )),
+            IfCommand(IfCommandState::new(
+                BinaryExpression(BinaryExpressionState::new(
+                    VnameExpression(VnameExpressionState::new(SimpleVname(
+                        SimpleVnameState::new(Identifier::new("x")),
+                    ))),
+                    Operator::new("="),
+                    VnameExpression(VnameExpressionState::new(SimpleVname(
+                        SimpleVnameState::new(Identifier::new("y")),
+                    ))),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("putint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        ConstActualParameter(ConstActualParameterState::new(IntegerExpression(
+                            IntegerExpressionState::new(IntegerLiteral::new("1")),
+                        ))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("putint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        ConstActualParameter(ConstActualParameterState::new(IntegerExpression(
+                            IntegerExpressionState::new(IntegerLiteral::new("2")),
+                        ))),
+                    )),
+                )),
+            )),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]

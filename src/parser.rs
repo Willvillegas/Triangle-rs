@@ -105,9 +105,9 @@ impl Parser {
         op
     }
 
-    ///```
+    ///
     /// Command ::= single-Command | Command ; single-Command
-    /// ```
+    ///
     fn parse_command(&mut self) -> Command {
         let mut cmd_pos = SourcePosition::default();
         self.start(&mut cmd_pos);
@@ -126,7 +126,7 @@ impl Parser {
         cmd
     }
 
-    /// ```
+    ///
     /// single-Command:: EmptyCommand
     ///                  | AssignCommand
     ///                  | CallCommand
@@ -134,7 +134,7 @@ impl Parser {
     ///                  | IfCommand
     ///                  | LetCommand
     ///                  | WhileCommand
-    /// ```
+    ///
     fn parse_single_command(&mut self) -> Command {
         let cmd;
         let mut cmd_pos = SourcePosition::default();
@@ -182,7 +182,16 @@ impl Parser {
                 cmd = LetCommand(LetCommandState::new_with_position(decl, cmd1, cmd_pos));
             }
 
-            TokenType::If => todo!(),
+            TokenType::If => {
+                self.accept_it();
+                let expr = self.parse_secondary_expression();
+                self.accept(TokenType::Then);
+                let cmd1 = self.parse_single_command();
+                self.accept(TokenType::Else);
+                let cmd2 = self.parse_single_command();
+                self.finish(&mut cmd_pos);
+                cmd = IfCommand(IfCommandState::new_with_position(expr, cmd1, cmd2, cmd_pos));
+            }
             TokenType::While => todo!(),
             TokenType::Begin => {
                 self.accept_it();
@@ -213,10 +222,10 @@ impl Parser {
         cmd
     }
 
-    ///```
+    ///
     /// Declaration ::= single-Declaration
     ///             | Declaration ; single-Declaration
-    ///```
+    ///
     fn parse_declaration(&mut self) -> Declaration {
         let mut decl_pos = SourcePosition::default();
         self.start(&mut decl_pos);
@@ -234,13 +243,13 @@ impl Parser {
         decl
     }
 
-    ///```
+    ///
     /// single-Declaration ::= ConstDeclaration
     ///                 | VarDeclaration
     ///                 | ProcDeclaration
     ///                 | FuncDeclaration
     ///                 | TypeDeclaration
-    ///```
+    ///
     fn parse_single_declaration(&mut self) -> Declaration {
         let decl;
         let mut decl_pos = SourcePosition::default();
@@ -280,11 +289,11 @@ impl Parser {
         decl
     }
 
-    ///```
+    ///
     /// TypeDenoter ::= SimpleTypeDenoter
     ///               | ArrayTypeDenoter
     ///               | RecordTypeDenoter
-    ///```
+    ///
     fn parse_type_denoter(&mut self) -> TypeDenoter {
         let td;
         let mut td_pos = SourcePosition::default();
@@ -307,11 +316,11 @@ impl Parser {
         td
     }
 
-    ///```
+    ///
     /// FormalParameterSequence ::= EmptyFormalParameterSequence
     ///                         | SingleFormalParameterSequence
     ///                         | MultipleFormalParameterSequence
-    ///```
+    ///
     fn parse_formal_parameter_sequence(&mut self) -> FormalParameterSequence {
         let mut fps_pos = SourcePosition::default();
         self.start(&mut fps_pos);
@@ -339,12 +348,12 @@ impl Parser {
         }
     }
 
-    ///```
+    ///
     /// FormalParamater ::= ConstFormalParameter
     ///                  | VarFormalParameter
     ///                  | ProcFormalParameter
     ///                  | FuncFormalParameter
-    ///```
+    ///
     fn parse_formal_parameter(&mut self) -> FormalParameter {
         let fp;
         let mut fp_pos = SourcePosition::default();
@@ -382,11 +391,11 @@ impl Parser {
         fp
     }
 
-    ///```
+    ///
     /// ActualParameterSequence ::= EmptyActualParameterSequence
     ///                          | SingleActualParameterSequenceState
     ///                          | MultipleActualParameterSequence
-    ///```
+    ///
     fn parse_actual_parameter_sequence(&mut self) -> ActualParameterSequence {
         let mut aps_pos = SourcePosition::default();
 
@@ -414,12 +423,12 @@ impl Parser {
         }
     }
 
-    ///```
+    ///
     /// ActualParameter ::= ConstActualParameter
     ///                 | VarActualParameter
     ///                 | ProcActualParameter
     ///                 | FuncActualParameter
-    ///```
+    ///
     fn parse_actual_parameter(&mut self) -> ActualParameter {
         let ap;
         let mut ap_pos = SourcePosition::default();
@@ -459,11 +468,11 @@ impl Parser {
         todo!()
     }
 
-    ///```
+    ///
     /// Expression :: = secondary-Expression
     ///             | LetExpression
     ///             | IfExpression
-    ///```
+    ///
     fn parse_expression(&mut self) -> Expression {
         match self.current_token.kind {
             TokenType::If => todo!(),
@@ -472,10 +481,10 @@ impl Parser {
         }
     }
 
-    ///```
+    ///
     /// secondary-Expression ::= primary-Expression
     ///                     | primary-Expression Operator secondary-Expression
-    ///```
+    ///
     fn parse_secondary_expression(&mut self) -> Expression {
         let mut expr_pos = SourcePosition::default();
         self.start(&mut expr_pos);
@@ -493,7 +502,7 @@ impl Parser {
         expr
     }
 
-    ///```
+    ///
     /// primary-Expression ::= IntegerExpression
     ///                     | CharacterExpression
     ///                     | VnameExpression
@@ -503,7 +512,7 @@ impl Parser {
     ///                     | ArrayExpression
     ///                     | RecordExpression
     ///
-    ///```
+    ///
     fn parse_primary_expression(&mut self) -> Expression {
         let expr;
         let mut expr_pos = SourcePosition::default();
@@ -548,11 +557,11 @@ impl Parser {
         expr
     }
 
-    ///```
+    ///
     /// Vname ::= SimpleVname
     ///         | DotVname
     ///         | SubscriptVname
-    ///```
+    ///
     fn parse_vname(&mut self, id: Option<Identifier>) -> Vname {
         let vname;
         let mut vname_pos = SourcePosition::default();
@@ -575,9 +584,9 @@ impl Parser {
         vname
     }
 
-    ///```
+    ///
     /// Program ::= Command <Eot>
-    /// ```
+    ///
     pub fn parse_program(&mut self) -> Program {
         let mut pos = SourcePosition::default();
         self.start(&mut pos);
