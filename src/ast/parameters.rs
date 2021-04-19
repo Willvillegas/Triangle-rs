@@ -51,12 +51,16 @@ pub struct EmptyFormalParameterSequenceState {
 }
 
 impl EmptyFormalParameterSequenceState {
-    pub fn new_with_position(position: SourcePosition) -> Self {
-        let mut fps = EmptyFormalParameterSequenceState {
+    pub fn new() -> Self {
+        EmptyFormalParameterSequenceState {
             common_state: CommonState::default(),
-        };
-        fps.common_state.position = position;
-        fps
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut efps = EmptyFormalParameterSequenceState::new();
+        efps.common_state.position = position;
+        efps
     }
 }
 
@@ -392,12 +396,16 @@ pub struct EmptyActualParameterSequenceState {
 }
 
 impl EmptyActualParameterSequenceState {
-    pub fn new_with_position(position: SourcePosition) -> Self {
-        let mut aps = EmptyActualParameterSequenceState {
+    pub fn new() -> Self {
+        EmptyActualParameterSequenceState {
             common_state: CommonState::default(),
-        };
-        aps.common_state.position = position;
-        aps
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut eaps = EmptyActualParameterSequenceState::new();
+        eaps.common_state.position = position;
+        eaps
     }
 }
 

@@ -192,7 +192,16 @@ impl Parser {
                 self.finish(&mut cmd_pos);
                 cmd = IfCommand(IfCommandState::new_with_position(expr, cmd1, cmd2, cmd_pos));
             }
-            TokenType::While => todo!(),
+
+            TokenType::While => {
+                self.accept_it();
+                let expr = self.parse_secondary_expression();
+                self.accept(TokenType::Do);
+                let cmd1 = self.parse_single_command();
+                self.finish(&mut cmd_pos);
+                cmd = WhileCommand(WhileCommandState::new_with_position(expr, cmd1, cmd_pos));
+            }
+
             TokenType::Begin => {
                 self.accept_it();
                 cmd = self.parse_command();
@@ -456,18 +465,6 @@ impl Parser {
         ap
     }
 
-    fn parse_var_actual_parameter(&mut self) -> ActualParameter {
-        todo!()
-    }
-
-    fn parse_proc_actual_parameter(&mut self) -> ActualParameter {
-        todo!()
-    }
-
-    fn parse_func_actual_parameter(&mut self) -> ActualParameter {
-        todo!()
-    }
-
     ///
     /// Expression :: = secondary-Expression
     ///             | LetExpression
@@ -531,18 +528,38 @@ impl Parser {
                 expr =
                     CharacterExpression(CharacterExpressionState::new_with_position(cl, expr_pos));
             }
+
             TokenType::Identifier => {
                 let id = self.parse_identifier();
-                let vname = self.parse_vname(Some(id));
-                self.finish(&mut expr_pos);
-                expr = VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos));
+                if self.current_token.kind == TokenType::LeftParen {
+                    self.accept_it();
+                    let aps = self.parse_actual_parameter_sequence();
+                    self.accept(TokenType::RightParen);
+                    self.finish(&mut expr_pos);
+                    expr =
+                        CallExpression(CallExpressionState::new_with_position(id, aps, expr_pos));
+                } else {
+                    let vname = self.parse_vname(Some(id));
+                    self.finish(&mut expr_pos);
+                    expr =
+                        VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos));
+                }
             }
-            TokenType::Operator => todo!(),
+
+            TokenType::Operator => {
+                let op = self.parse_operator();
+                let expr1 = self.parse_secondary_expression();
+                self.finish(&mut expr_pos);
+                expr =
+                    UnaryExpression(UnaryExpressionState::new_with_position(op, expr1, expr_pos));
+            }
+
             TokenType::LeftParen => {
                 self.accept_it();
                 expr = self.parse_expression();
                 self.accept(TokenType::RightParen);
             }
+
             TokenType::LeftSquareBracket => todo!(),
             TokenType::LeftCurlyBracket => todo!(),
             _ => error::report_error_and_exit(GenError::from(ParserError::new(

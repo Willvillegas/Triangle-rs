@@ -123,6 +123,54 @@ fn test_inc() {
 fn test_echo() {
     let source_file = "samples/source/echo.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(LetCommand(LetCommandState::new(
+        SequentialDeclaration(SequentialDeclarationState::new(
+            VarDeclaration(VarDeclarationState::new(
+                Identifier::new("ch"),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Char"))),
+            )),
+            ProcDeclaration(ProcDeclarationState::new(
+                Identifier::new("echo"),
+                EmptyFormalParameterSequence(EmptyFormalParameterSequenceState::new()),
+                WhileCommand(WhileCommandState::new(
+                    UnaryExpression(UnaryExpressionState::new(
+                        Operator::new("\\"),
+                        CallExpression(CallExpressionState::new(
+                            Identifier::new("eol"),
+                            EmptyActualParameterSequence(EmptyActualParameterSequenceState::new()),
+                        )),
+                    )),
+                    SequentialCommand(SequentialCommandState::new(
+                        CallCommand(CallCommandState::new(
+                            Identifier::new("get"),
+                            SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                                VarActualParameter(VarActualParameterState::new(SimpleVname(
+                                    SimpleVnameState::new(Identifier::new("ch")),
+                                ))),
+                            )),
+                        )),
+                        CallCommand(CallCommandState::new(
+                            Identifier::new("put"),
+                            SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                                ConstActualParameter(ConstActualParameterState::new(
+                                    VnameExpression(VnameExpressionState::new(SimpleVname(
+                                        SimpleVnameState::new(Identifier::new("ch")),
+                                    ))),
+                                )),
+                            )),
+                        )),
+                    )),
+                )),
+            )),
+        )),
+        CallCommand(CallCommandState::new(
+            Identifier::new("echo"),
+            EmptyActualParameterSequence(EmptyActualParameterSequenceState::new()),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]
