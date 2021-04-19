@@ -4,6 +4,7 @@ use super::aggregates::{ArrayAggregate, RecordAggregate};
 use super::declarations::Declaration;
 use super::parameters::ActualParameterSequence;
 use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
+use super::scanner::SourcePosition;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 
@@ -78,6 +79,12 @@ impl IntegerExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(il: IntegerLiteral, position: SourcePosition) -> Self {
+        let mut iexpr = IntegerExpressionState::new(il);
+        iexpr.common_state.position = position;
+        iexpr
+    }
 }
 
 impl PartialEq for IntegerExpressionState {
@@ -107,6 +114,12 @@ impl CharacterExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(cl: CharacterLiteral, position: SourcePosition) -> Self {
+        let mut cexpr = CharacterExpressionState::new(cl);
+        cexpr.common_state.position = position;
+        cexpr
+    }
 }
 
 impl PartialEq for CharacterExpressionState {
@@ -123,8 +136,32 @@ impl Ast for CharacterExpressionState {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct EmptyExpressionState;
+#[derive(Debug)]
+pub struct EmptyExpressionState {
+    pub common_state: CommonState,
+}
+
+impl EmptyExpressionState {
+    pub fn new() -> Self {
+        EmptyExpressionState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut expr = EmptyExpressionState::new();
+        expr.common_state.position = position;
+        expr
+    }
+}
+
+impl PartialEq for EmptyExpressionState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for EmptyExpressionState {}
 
 impl Ast for EmptyExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -144,6 +181,12 @@ impl VnameExpressionState {
             vname: vname,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(vname: Vname, position: SourcePosition) -> Self {
+        let mut vexpr = VnameExpressionState::new(vname);
+        vexpr.common_state.position = position;
+        vexpr
     }
 }
 
@@ -175,6 +218,16 @@ impl CallExpressionState {
             aps: aps,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        id: Identifier,
+        aps: ActualParameterSequence,
+        position: SourcePosition,
+    ) -> Self {
+        let mut callexpr = CallExpressionState::new(id, aps);
+        callexpr.common_state.position = position;
+        callexpr
     }
 }
 
@@ -209,6 +262,17 @@ impl IfExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        expr1: Expression,
+        expr2: Expression,
+        expr3: Expression,
+        position: SourcePosition,
+    ) -> Self {
+        let mut ifexpr = IfExpressionState::new(expr1, expr2, expr3);
+        ifexpr.common_state.position = position;
+        ifexpr
+    }
 }
 
 impl PartialEq for IfExpressionState {
@@ -240,6 +304,16 @@ impl LetExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        decl: Declaration,
+        expr: Expression,
+        position: SourcePosition,
+    ) -> Self {
+        let mut letexpr = LetExpressionState::new(decl, expr);
+        letexpr.common_state.position = position;
+        letexpr
+    }
 }
 
 impl PartialEq for LetExpressionState {
@@ -270,6 +344,12 @@ impl UnaryExpressionState {
             expr: Box::new(expr),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(op: Operator, expr: Expression, position: SourcePosition) -> Self {
+        let mut unexpr = UnaryExpressionState::new(op, expr);
+        unexpr.common_state.position = position;
+        unexpr
     }
 }
 
@@ -304,6 +384,17 @@ impl BinaryExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        expr1: Expression,
+        op: Operator,
+        expr2: Expression,
+        position: SourcePosition,
+    ) -> Self {
+        let mut binexpr = BinaryExpressionState::new(expr1, op, expr2);
+        binexpr.common_state.position = position;
+        binexpr
+    }
 }
 
 impl PartialEq for BinaryExpressionState {
@@ -335,6 +426,16 @@ impl ArrayExpressionState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        aa: ArrayAggregate,
+        elem_count: usize,
+        position: SourcePosition,
+    ) -> Self {
+        let mut arrexpr = ArrayExpressionState::new(aa, elem_count);
+        arrexpr.common_state.position = position;
+        arrexpr
+    }
 }
 
 impl PartialEq for ArrayExpressionState {
@@ -363,6 +464,12 @@ impl RecordExpressionState {
             ra: Box::new(ra),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(ra: RecordAggregate, position: SourcePosition) -> Self {
+        let mut recexpr = RecordExpressionState::new(ra);
+        recexpr.common_state.position = position;
+        recexpr
     }
 }
 

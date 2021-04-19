@@ -2,6 +2,13 @@ use triangle_rs::ast::commands::Command::*;
 use triangle_rs::ast::commands::*;
 use triangle_rs::ast::declarations::Declaration::*;
 use triangle_rs::ast::expressions::Expression::*;
+use triangle_rs::ast::expressions::*;
+use triangle_rs::ast::parameters::ActualParameter::*;
+use triangle_rs::ast::parameters::ActualParameterSequence::*;
+use triangle_rs::ast::parameters::FormalParameter;
+use triangle_rs::ast::parameters::FormalParameterSequence::*;
+use triangle_rs::ast::parameters::*;
+use triangle_rs::ast::primitives::*;
 use triangle_rs::ast::typedenoters::TypeDenoter::*;
 use triangle_rs::ast::vnames::Vname::*;
 use triangle_rs::ast::*;
@@ -12,7 +19,7 @@ use triangle_rs::scanner::*;
 fn test_emptycommandeot() {
     let source_file = "samples/source/emptycommandeot.t";
     let mut parser = Parser::new(Scanner::new(source_file));
-    let expected_program = Program::new(EmptyCommand(EmptyCommandState));
+    let expected_program = Program::new(EmptyCommand(EmptyCommandState::new()));
     let actual_program = parser.parse_program();
     assert_eq!(expected_program, actual_program);
 }
@@ -21,7 +28,7 @@ fn test_emptycommandeot() {
 fn test_emptycommandsemicolon() {
     let source_file = "samples/source/emptycommandsemicolon.t";
     let mut parser = Parser::new(Scanner::new(source_file));
-    let expected_program = Program::new(EmptyCommand(EmptyCommandState));
+    let expected_program = Program::new(EmptyCommand(EmptyCommandState::new()));
     let actual_program = parser.parse_program();
     assert_eq!(expected_program, actual_program);
 }
@@ -30,6 +37,17 @@ fn test_emptycommandsemicolon() {
 fn test_hello() {
     let source_file = "samples/source/hello.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(CallCommand(CallCommandState::new(
+        Identifier::new("putint"),
+        SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+            ConstActualParameter(ConstActualParameterState::new(IntegerExpression(
+                IntegerExpressionState::new(IntegerLiteral::new("42")),
+            ))),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]

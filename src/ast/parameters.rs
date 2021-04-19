@@ -2,6 +2,7 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
+use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
@@ -44,8 +45,28 @@ impl Ast for FormalParameterSequence {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct EmptyFormalParameterSequenceState;
+#[derive(Debug)]
+pub struct EmptyFormalParameterSequenceState {
+    pub common_state: CommonState,
+}
+
+impl EmptyFormalParameterSequenceState {
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut fps = EmptyFormalParameterSequenceState {
+            common_state: CommonState::default(),
+        };
+        fps.common_state.position = position;
+        fps
+    }
+}
+
+impl PartialEq for EmptyFormalParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for EmptyFormalParameterSequenceState {}
 
 impl Ast for EmptyFormalParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -65,6 +86,12 @@ impl SingleFormalParameterSequenceState {
             fp: Box::new(fp),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(fp: FormalParameter, position: SourcePosition) -> Self {
+        let mut sfps = SingleFormalParameterSequenceState::new(fp);
+        sfps.common_state.position = position;
+        sfps
     }
 }
 
@@ -96,6 +123,16 @@ impl MultipleFormalParameterSequenceState {
             fps: Box::new(fps),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        fp: FormalParameter,
+        fps: FormalParameterSequence,
+        position: SourcePosition,
+    ) -> Self {
+        let mut mfps = MultipleFormalParameterSequenceState::new(fp, fps);
+        mfps.common_state.position = position;
+        mfps
     }
 }
 
@@ -165,6 +202,12 @@ impl VarFormalParameterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+        let mut vfp = VarFormalParameterState::new(id, td);
+        vfp.common_state.position = position;
+        vfp
+    }
 }
 
 impl PartialEq for VarFormalParameterState {
@@ -196,6 +239,12 @@ impl ConstFormalParameterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+        let mut cfp = ConstFormalParameterState::new(id, td);
+        cfp.common_state.position = position;
+        cfp
+    }
 }
 
 impl PartialEq for ConstFormalParameterState {
@@ -226,6 +275,16 @@ impl ProcFormalParameterState {
             fps: Box::new(fps),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        id: Identifier,
+        fps: FormalParameterSequence,
+        position: SourcePosition,
+    ) -> Self {
+        let mut pfp = ProcFormalParameterState::new(id, fps);
+        pfp.common_state.position = position;
+        pfp
     }
 }
 
@@ -260,6 +319,17 @@ impl FuncFormalParameterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        id: Identifier,
+        fps: FormalParameterSequence,
+        td: TypeDenoter,
+        position: SourcePosition,
+    ) -> Self {
+        let mut ffp = FuncFormalParameterState::new(id, fps, td);
+        ffp.common_state.position = position;
+        ffp
+    }
 }
 
 impl PartialEq for FuncFormalParameterState {
@@ -279,7 +349,7 @@ impl Ast for FuncFormalParameterState {
 #[derive(Debug)]
 pub enum ActualParameterSequence {
     EmptyActualParameterSequence(EmptyActualParameterSequenceState),
-    SingleActualParamterSequence(SingleActualParameterSequenceState),
+    SingleActualParameterSequence(SingleActualParameterSequenceState),
     MultipleActualParameterSequence(MultipleActualParameterSequenceState),
 }
 
@@ -289,9 +359,10 @@ impl PartialEq for ActualParameterSequence {
 
         match (self, other) {
             (EmptyActualParameterSequence(_), EmptyActualParameterSequence(_)) => true,
-            (SingleActualParamterSequence(ref saps1), SingleActualParamterSequence(ref saps2)) => {
-                saps1 == saps2
-            }
+            (
+                SingleActualParameterSequence(ref saps1),
+                SingleActualParameterSequence(ref saps2),
+            ) => saps1 == saps2,
             (
                 MultipleActualParameterSequence(ref maps1),
                 MultipleActualParameterSequence(ref maps2),
@@ -309,14 +380,34 @@ impl Ast for ActualParameterSequence {
 
         match *self {
             EmptyActualParameterSequence(ref mut eaps) => eaps.accept(visitor, arg),
-            SingleActualParamterSequence(ref mut saps) => saps.accept(visitor, arg),
+            SingleActualParameterSequence(ref mut saps) => saps.accept(visitor, arg),
             MultipleActualParameterSequence(ref mut maps) => maps.accept(visitor, arg),
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct EmptyActualParameterSequenceState;
+#[derive(Debug)]
+pub struct EmptyActualParameterSequenceState {
+    pub common_state: CommonState,
+}
+
+impl EmptyActualParameterSequenceState {
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut aps = EmptyActualParameterSequenceState {
+            common_state: CommonState::default(),
+        };
+        aps.common_state.position = position;
+        aps
+    }
+}
+
+impl PartialEq for EmptyActualParameterSequenceState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for EmptyActualParameterSequenceState {}
 
 impl Ast for EmptyActualParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -336,6 +427,12 @@ impl SingleActualParameterSequenceState {
             ap: Box::new(ap),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(ap: ActualParameter, position: SourcePosition) -> Self {
+        let mut saps = SingleActualParameterSequenceState::new(ap);
+        saps.common_state.position = position;
+        saps
     }
 }
 
@@ -367,6 +464,16 @@ impl MultipleActualParameterSequenceState {
             aps: Box::new(aps),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        ap: ActualParameter,
+        aps: ActualParameterSequence,
+        position: SourcePosition,
+    ) -> Self {
+        let mut maps = MultipleActualParameterSequenceState::new(ap, aps);
+        maps.common_state.position = position;
+        maps
     }
 }
 
@@ -434,6 +541,12 @@ impl VarActualParameterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(vname: Vname, position: SourcePosition) -> Self {
+        let mut vap = VarActualParameterState::new(vname);
+        vap.common_state.position = position;
+        vap
+    }
 }
 
 impl PartialEq for VarActualParameterState {
@@ -462,6 +575,12 @@ impl ConstActualParameterState {
             expr: Box::new(expr),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(expr: Expression, position: SourcePosition) -> Self {
+        let mut cap = ConstActualParameterState::new(expr);
+        cap.common_state.position = position;
+        cap
     }
 }
 
@@ -492,6 +611,12 @@ impl ProcActualParameterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, position: SourcePosition) -> Self {
+        let mut pap = ProcActualParameterState::new(id);
+        pap.common_state.position = position;
+        pap
+    }
 }
 
 impl PartialEq for ProcActualParameterState {
@@ -520,6 +645,12 @@ impl FuncActualParameterState {
             id: id,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(id: Identifier, position: SourcePosition) -> Self {
+        let mut fap = FuncActualParameterState::new(id);
+        fap.common_state.position = position;
+        fap
     }
 }
 

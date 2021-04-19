@@ -69,6 +69,12 @@ impl AssignCommandState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(vname: Vname, expr: Expression, position: SourcePosition) -> Self {
+        let mut cmd = AssignCommandState::new(vname, expr);
+        cmd.common_state.position = position;
+        cmd
+    }
 }
 
 impl PartialEq for AssignCommandState {
@@ -100,6 +106,16 @@ impl CallCommandState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        id: Identifier,
+        aps: ActualParameterSequence,
+        position: SourcePosition,
+    ) -> Self {
+        let mut cmd = CallCommandState::new(id, aps);
+        cmd.common_state.position = position;
+        cmd
+    }
 }
 
 impl PartialEq for CallCommandState {
@@ -116,8 +132,32 @@ impl Ast for CallCommandState {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct EmptyCommandState;
+#[derive(Debug)]
+pub struct EmptyCommandState {
+    pub common_state: CommonState,
+}
+
+impl EmptyCommandState {
+    pub fn new() -> Self {
+        EmptyCommandState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut cmd = EmptyCommandState::new();
+        cmd.common_state.position = position;
+        cmd
+    }
+}
+
+impl PartialEq for EmptyCommandState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for EmptyCommandState {}
 
 impl Ast for EmptyCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -138,6 +178,12 @@ impl LetCommandState {
             cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(decl: Declaration, cmd: Command, position: SourcePosition) -> Self {
+        let mut cmd = LetCommandState::new(decl, cmd);
+        cmd.common_state.position = position;
+        cmd
     }
 }
 
@@ -171,6 +217,17 @@ impl IfCommandState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        expr: Expression,
+        cmd1: Command,
+        cmd2: Command,
+        position: SourcePosition,
+    ) -> Self {
+        let mut cmd = IfCommandState::new(expr, cmd1, cmd2);
+        cmd.common_state.position = position;
+        cmd
+    }
 }
 
 impl PartialEq for IfCommandState {
@@ -201,6 +258,12 @@ impl WhileCommandState {
             cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(expr: Expression, cmd: Command, position: SourcePosition) -> Self {
+        let mut cmd = WhileCommandState::new(expr, cmd);
+        cmd.common_state.position = position;
+        cmd
     }
 }
 

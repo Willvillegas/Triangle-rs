@@ -1,6 +1,7 @@
 //! primitive/terminal asts
 
 use super::declarations::Declaration;
+use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
 
@@ -16,6 +17,12 @@ impl IntegerLiteral {
             spelling: String::from(spelling),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(spelling: &str, position: SourcePosition) -> Self {
+        let mut il = IntegerLiteral::new(spelling);
+        il.common_state.position = position;
+        il
     }
 }
 
@@ -39,6 +46,12 @@ impl CharacterLiteral {
             spelling: String::from(spelling),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(spelling: &str, position: SourcePosition) -> Self {
+        let mut cl = CharacterLiteral::new(spelling);
+        cl.common_state.position = position;
+        cl
     }
 }
 
@@ -67,6 +80,12 @@ impl Identifier {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(spelling: &str, position: SourcePosition) -> Self {
+        let mut id = Identifier::new(spelling);
+        id.common_state.position = position;
+        id
+    }
 }
 
 impl PartialEq for Identifier {
@@ -91,6 +110,12 @@ impl Operator {
             decl: None,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(spelling: &str, position: SourcePosition) -> Self {
+        let mut op = Operator::new(spelling);
+        op.common_state.position = position;
+        op
     }
 }
 
