@@ -1,16 +1,19 @@
 use triangle_rs::ast::commands::Command::*;
 use triangle_rs::ast::commands::*;
 use triangle_rs::ast::declarations::Declaration::*;
+use triangle_rs::ast::declarations::*;
 use triangle_rs::ast::expressions::Expression::*;
 use triangle_rs::ast::expressions::*;
 use triangle_rs::ast::parameters::ActualParameter::*;
 use triangle_rs::ast::parameters::ActualParameterSequence::*;
-use triangle_rs::ast::parameters::FormalParameter;
+use triangle_rs::ast::parameters::FormalParameter::*;
 use triangle_rs::ast::parameters::FormalParameterSequence::*;
 use triangle_rs::ast::parameters::*;
 use triangle_rs::ast::primitives::*;
 use triangle_rs::ast::typedenoters::TypeDenoter::*;
+use triangle_rs::ast::typedenoters::*;
 use triangle_rs::ast::vnames::Vname::*;
+use triangle_rs::ast::vnames::*;
 use triangle_rs::ast::*;
 use triangle_rs::parser::*;
 use triangle_rs::scanner::*;
@@ -54,6 +57,66 @@ fn test_hello() {
 fn test_inc() {
     let source_file = "samples/source/inc.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(LetCommand(LetCommandState::new(
+        SequentialDeclaration(SequentialDeclarationState::new(
+            VarDeclaration(VarDeclarationState::new(
+                Identifier::new("x"),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+            )),
+            ProcDeclaration(ProcDeclarationState::new(
+                Identifier::new("inc"),
+                SingleFormalParameterSequence(SingleFormalParameterSequenceState::new(
+                    VarFormalParameter(VarFormalParameterState::new(
+                        Identifier::new("n"),
+                        SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+                    )),
+                )),
+                AssignCommand(AssignCommandState::new(
+                    SimpleVname(SimpleVnameState::new(Identifier::new("n"))),
+                    BinaryExpression(BinaryExpressionState::new(
+                        VnameExpression(VnameExpressionState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("n")),
+                        ))),
+                        Operator::new("+"),
+                        IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new("1"))),
+                    )),
+                )),
+            )),
+        )),
+        SequentialCommand(SequentialCommandState::new(
+            SequentialCommand(SequentialCommandState::new(
+                CallCommand(CallCommandState::new(
+                    Identifier::new("getint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        VarActualParameter(VarActualParameterState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("x")),
+                        ))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("inc"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        VarActualParameter(VarActualParameterState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("x")),
+                        ))),
+                    )),
+                )),
+            )),
+            CallCommand(CallCommandState::new(
+                Identifier::new("putint"),
+                SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                    ConstActualParameter(ConstActualParameterState::new(VnameExpression(
+                        VnameExpressionState::new(SimpleVname(SimpleVnameState::new(
+                            Identifier::new("x"),
+                        ))),
+                    ))),
+                )),
+            )),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]
