@@ -152,7 +152,7 @@ impl EmptyCommandState {
 }
 
 impl PartialEq for EmptyCommandState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -306,7 +306,7 @@ impl SequentialCommandState {
 
 impl PartialEq for SequentialCommandState {
     fn eq(&self, other: &Self) -> bool {
-        self.cmd1 == other.cmd1 && self.cmd1 == other.cmd2
+        self.cmd1 == other.cmd1 && self.cmd2 == other.cmd2
     }
 }
 

@@ -4,6 +4,7 @@ use super::commands::Command;
 use super::expressions::Expression;
 use super::parameters::FormalParameterSequence;
 use super::primitives::{Identifier, Operator};
+use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 
@@ -93,6 +94,18 @@ impl BinaryOperatorDeclarationState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        arg1type: TypeDenoter,
+        op: Operator,
+        arg2type: TypeDenoter,
+        restype: TypeDenoter,
+        position: SourcePosition,
+    ) -> Self {
+        let mut binopdecl = BinaryOperatorDeclarationState::new(arg1type, op, arg2type, restype);
+        binopdecl.common_state.position = position;
+        binopdecl
+    }
 }
 
 impl PartialEq for BinaryOperatorDeclarationState {
@@ -129,6 +142,17 @@ impl UnaryOperatorDeclarationState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        op: Operator,
+        argtype: TypeDenoter,
+        restype: TypeDenoter,
+        position: SourcePosition,
+    ) -> Self {
+        let mut unopdecl = UnaryOperatorDeclarationState::new(op, argtype, restype);
+        unopdecl.common_state.position = position;
+        unopdecl
+    }
 }
 
 impl PartialEq for UnaryOperatorDeclarationState {
@@ -160,6 +184,12 @@ impl ConstDeclarationState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, expr: Expression, position: SourcePosition) -> Self {
+        let mut constdecl = ConstDeclarationState::new(id, expr);
+        constdecl.common_state.position = position;
+        constdecl
+    }
 }
 
 impl PartialEq for ConstDeclarationState {
@@ -190,6 +220,12 @@ impl VarDeclarationState {
             td: Box::new(td),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+        let mut vardecl = VarDeclarationState::new(id, td);
+        vardecl.common_state.position = position;
+        vardecl
     }
 }
 
@@ -223,6 +259,17 @@ impl ProcDeclarationState {
             cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        id: Identifier,
+        fps: FormalParameterSequence,
+        cmd: Command,
+        position: SourcePosition,
+    ) -> Self {
+        let mut procdecl = ProcDeclarationState::new(id, fps, cmd);
+        procdecl.common_state.position = position;
+        procdecl
     }
 }
 
@@ -263,6 +310,18 @@ impl FuncDeclarationState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        id: Identifier,
+        fps: FormalParameterSequence,
+        td: TypeDenoter,
+        expr: Expression,
+        position: SourcePosition,
+    ) -> Self {
+        let mut funcdecl = FuncDeclarationState::new(id, fps, td, expr);
+        funcdecl.common_state.position = position;
+        funcdecl
+    }
 }
 
 impl PartialEq for FuncDeclarationState {
@@ -296,6 +355,12 @@ impl TypeDeclarationState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+        let mut typedecl = TypeDeclarationState::new(id, td);
+        typedecl.common_state.position = position;
+        typedecl
+    }
 }
 
 impl PartialEq for TypeDeclarationState {
@@ -325,6 +390,16 @@ impl SequentialDeclarationState {
             decl2: Box::new(decl2),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        decl1: Declaration,
+        decl2: Declaration,
+        position: SourcePosition,
+    ) -> Self {
+        let mut seqdecl = SequentialDeclarationState::new(decl1, decl2);
+        seqdecl.common_state.position = position;
+        seqdecl
     }
 }
 

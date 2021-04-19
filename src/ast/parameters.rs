@@ -61,7 +61,7 @@ impl EmptyFormalParameterSequenceState {
 }
 
 impl PartialEq for EmptyFormalParameterSequenceState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -402,7 +402,7 @@ impl EmptyActualParameterSequenceState {
 }
 
 impl PartialEq for EmptyActualParameterSequenceState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }

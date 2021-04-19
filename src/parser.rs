@@ -20,6 +20,7 @@ use crate::ast::parameters::FormalParameter::*;
 use crate::ast::parameters::FormalParameterSequence::*;
 use crate::ast::parameters::*;
 use crate::ast::primitives::*;
+use crate::ast::typedenoters::TypeDenoter::*;
 use crate::ast::typedenoters::*;
 use crate::ast::vnames::Vname::*;
 use crate::ast::vnames::*;
@@ -84,13 +85,24 @@ impl Parser {
             &self.current_token.spelling,
             self.current_token.position,
         );
-
         self.accept_it();
         il
     }
 
+    fn parse_character_literal(&mut self) -> CharacterLiteral {
+        let cl = CharacterLiteral::new_with_position(
+            &self.current_token.spelling,
+            self.current_token.position,
+        );
+        self.accept_it();
+        cl
+    }
+
     fn parse_operator(&mut self) -> Operator {
-        todo!()
+        let op =
+            Operator::new_with_position(&self.current_token.spelling, self.current_token.position);
+        self.accept_it();
+        op
     }
 
     ///```
@@ -161,10 +173,22 @@ impl Parser {
                 }
             }
 
-            TokenType::Let => todo!(),
+            TokenType::Let => {
+                self.accept_it();
+                let decl = self.parse_declaration();
+                self.accept(TokenType::In);
+                let cmd1 = self.parse_single_command();
+                self.finish(&mut cmd_pos);
+                cmd = LetCommand(LetCommandState::new_with_position(decl, cmd1, cmd_pos));
+            }
+
             TokenType::If => todo!(),
             TokenType::While => todo!(),
-            TokenType::LeftParen => todo!(),
+            TokenType::Begin => {
+                self.accept_it();
+                cmd = self.parse_command();
+                self.accept(TokenType::End);
+            }
 
             TokenType::Semicolon | TokenType::End | TokenType::Eot => {
                 self.accept_it();
@@ -187,6 +211,175 @@ impl Parser {
         }
 
         cmd
+    }
+
+    ///```
+    /// Declaration ::= single-Declaration
+    ///             | Declaration ; single-Declaration
+    ///```
+    fn parse_declaration(&mut self) -> Declaration {
+        let mut decl_pos = SourcePosition::default();
+        self.start(&mut decl_pos);
+
+        let mut decl = self.parse_single_declaration();
+        while self.current_token.kind == TokenType::Semicolon {
+            self.accept_it();
+            self.finish(&mut decl_pos);
+            let decl1 = self.parse_single_declaration();
+            decl = SequentialDeclaration(SequentialDeclarationState::new_with_position(
+                decl, decl1, decl_pos,
+            ));
+        }
+
+        decl
+    }
+
+    ///```
+    /// single-Declaration ::= ConstDeclaration
+    ///                 | VarDeclaration
+    ///                 | ProcDeclaration
+    ///                 | FuncDeclaration
+    ///                 | TypeDeclaration
+    ///```
+    fn parse_single_declaration(&mut self) -> Declaration {
+        let decl;
+        let mut decl_pos = SourcePosition::default();
+        self.start(&mut decl_pos);
+
+        match self.current_token.kind {
+            TokenType::Const => todo!(),
+            TokenType::Var => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::Colon);
+                let td = self.parse_type_denoter();
+                self.finish(&mut decl_pos);
+                decl = VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos));
+            }
+            TokenType::Procedure => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::LeftParen);
+                let fps = self.parse_formal_parameter_sequence();
+                self.accept(TokenType::RightParen);
+                self.accept(TokenType::Is);
+                let cmd = self.parse_single_command();
+                self.finish(&mut decl_pos);
+                decl = ProcDeclaration(ProcDeclarationState::new_with_position(
+                    id, fps, cmd, decl_pos,
+                ));
+            }
+            TokenType::Function => todo!(),
+            TokenType::Type => todo!(),
+            _ => error::report_error_and_exit(GenError::from(ParserError::new(
+                &format!("{:?} cannot start a declaration", self.current_token.kind),
+                self.current_token.position,
+            ))),
+        }
+
+        decl
+    }
+
+    ///```
+    /// TypeDenoter ::= SimpleTypeDenoter
+    ///               | ArrayTypeDenoter
+    ///               | RecordTypeDenoter
+    ///```
+    fn parse_type_denoter(&mut self) -> TypeDenoter {
+        let td;
+        let mut td_pos = SourcePosition::default();
+        self.start(&mut td_pos);
+
+        match self.current_token.kind {
+            TokenType::Identifier => {
+                let id = self.parse_identifier();
+                self.finish(&mut td_pos);
+                td = SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos));
+            }
+            TokenType::Array => todo!(),
+            TokenType::Record => todo!(),
+            _ => error::report_error_and_exit(GenError::from(ParserError::new(
+                &format!("{:?} cannot start a type denoter", self.current_token.kind),
+                self.current_token.position,
+            ))),
+        }
+
+        td
+    }
+
+    ///```
+    /// FormalParameterSequence ::= EmptyFormalParameterSequence
+    ///                         | SingleFormalParameterSequence
+    ///                         | MultipleFormalParameterSequence
+    ///```
+    fn parse_formal_parameter_sequence(&mut self) -> FormalParameterSequence {
+        let mut fps_pos = SourcePosition::default();
+        self.start(&mut fps_pos);
+
+        if self.current_token.kind == TokenType::RightParen {
+            self.finish(&mut fps_pos);
+            return EmptyFormalParameterSequence(
+                EmptyFormalParameterSequenceState::new_with_position(fps_pos),
+            );
+        } else {
+            let fp = self.parse_formal_parameter();
+            if self.current_token.kind == TokenType::Comma {
+                self.accept_it();
+                let fps = self.parse_formal_parameter_sequence();
+                self.finish(&mut fps_pos);
+                return MultipleFormalParameterSequence(
+                    MultipleFormalParameterSequenceState::new_with_position(fp, fps, fps_pos),
+                );
+            } else {
+                self.finish(&mut fps_pos);
+                return SingleFormalParameterSequence(
+                    SingleFormalParameterSequenceState::new_with_position(fp, fps_pos),
+                );
+            }
+        }
+    }
+
+    ///```
+    /// FormalParamater ::= ConstFormalParameter
+    ///                  | VarFormalParameter
+    ///                  | ProcFormalParameter
+    ///                  | FuncFormalParameter
+    ///```
+    fn parse_formal_parameter(&mut self) -> FormalParameter {
+        let fp;
+        let mut fp_pos = SourcePosition::default();
+        self.start(&mut fp_pos);
+
+        match self.current_token.kind {
+            TokenType::Identifier => {
+                let id = self.parse_identifier();
+                let td = self.parse_type_denoter();
+                self.finish(&mut fp_pos);
+                fp = ConstFormalParameter(ConstFormalParameterState::new_with_position(
+                    id, td, fp_pos,
+                ));
+            }
+
+            TokenType::Var => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::Colon);
+                let td = self.parse_type_denoter();
+                self.finish(&mut fp_pos);
+                fp = VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos));
+            }
+            TokenType::Procedure => todo!(),
+            TokenType::Function => todo!(),
+            _ => error::report_error_and_exit(GenError::from(ParserError::new(
+                &format!(
+                    "{:?} cannot start a formal parameter",
+                    self.current_token.kind
+                ),
+                self.current_token.position,
+            ))),
+        }
+
+        fp
     }
 
     ///```
@@ -233,7 +426,13 @@ impl Parser {
         self.start(&mut ap_pos);
 
         match self.current_token.kind {
-            TokenType::Var => todo!(),
+            TokenType::Var => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                let vname = self.parse_vname(Some(id));
+                self.finish(&mut ap_pos);
+                ap = VarActualParameter(VarActualParameterState::new_with_position(vname, ap_pos));
+            }
             TokenType::Procedure => todo!(),
             TokenType::Function => todo!(),
             _ => {
@@ -317,10 +516,24 @@ impl Parser {
                 expr = IntegerExpression(IntegerExpressionState::new_with_position(il, expr_pos));
             }
 
-            TokenType::CharacterLiteral => todo!(),
-            TokenType::Identifier => todo!(),
+            TokenType::CharacterLiteral => {
+                let cl = self.parse_character_literal();
+                self.finish(&mut expr_pos);
+                expr =
+                    CharacterExpression(CharacterExpressionState::new_with_position(cl, expr_pos));
+            }
+            TokenType::Identifier => {
+                let id = self.parse_identifier();
+                let vname = self.parse_vname(Some(id));
+                self.finish(&mut expr_pos);
+                expr = VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos));
+            }
             TokenType::Operator => todo!(),
-            TokenType::LeftParen => todo!(),
+            TokenType::LeftParen => {
+                self.accept_it();
+                expr = self.parse_expression();
+                self.accept(TokenType::RightParen);
+            }
             TokenType::LeftSquareBracket => todo!(),
             TokenType::LeftCurlyBracket => todo!(),
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -335,8 +548,31 @@ impl Parser {
         expr
     }
 
+    ///```
+    /// Vname ::= SimpleVname
+    ///         | DotVname
+    ///         | SubscriptVname
+    ///```
     fn parse_vname(&mut self, id: Option<Identifier>) -> Vname {
-        todo!()
+        let vname;
+        let mut vname_pos = SourcePosition::default();
+        self.start(&mut vname_pos);
+
+        if let Some(id_val) = id {
+            self.finish(&mut vname_pos);
+            vname = SimpleVname(SimpleVnameState::new_with_position(id_val, vname_pos));
+        } else if self.current_token.kind == TokenType::Dot {
+            todo!()
+        } else if self.current_token.kind == TokenType::LeftSquareBracket {
+            todo!()
+        } else {
+            error::report_error_and_exit(GenError::from(ParserError::new(
+                &format!("{:?} cannot start a vname", self.current_token.kind),
+                self.current_token.position,
+            )));
+        }
+
+        vname
     }
 
     ///```

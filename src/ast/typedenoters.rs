@@ -1,6 +1,7 @@
 //! type-denoter asts
 
 use super::primitives::{Identifier, IntegerLiteral};
+use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 
 #[derive(Debug)]
@@ -127,6 +128,12 @@ impl SimpleTypeDenoterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, position: SourcePosition) -> Self {
+        let mut std = SimpleTypeDenoterState::new(id);
+        std.common_state.position = position;
+        std
+    }
 }
 
 impl PartialEq for SimpleTypeDenoterState {
@@ -157,6 +164,16 @@ impl ArrayTypeDenoterState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(
+        il: IntegerLiteral,
+        td: TypeDenoter,
+        position: SourcePosition,
+    ) -> Self {
+        let mut atd = ArrayTypeDenoterState::new(il, td);
+        atd.common_state.position = position;
+        atd
+    }
 }
 
 impl PartialEq for ArrayTypeDenoterState {
@@ -185,6 +202,12 @@ impl RecordTypeDenoterState {
             ftd: Box::new(ftd),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(ftd: FieldTypeDenoter, position: SourcePosition) -> Self {
+        let mut rtd = RecordTypeDenoterState::new(ftd);
+        rtd.common_state.position = position;
+        rtd
     }
 }
 
@@ -216,6 +239,12 @@ impl SingleFieldTypeDenoterState {
             td: Box::new(td),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+        let mut sftd = SingleFieldTypeDenoterState::new(id, td);
+        sftd.common_state.position = position;
+        sftd
     }
 }
 
@@ -249,6 +278,17 @@ impl MultipleFieldTypeDenoterState {
             ftd: Box::new(ftd),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        id: Identifier,
+        td: TypeDenoter,
+        ftd: FieldTypeDenoter,
+        position: SourcePosition,
+    ) -> Self {
+        let mut mftd = MultipleFieldTypeDenoterState::new(id, td, ftd);
+        mftd.common_state.position = position;
+        mftd
     }
 }
 

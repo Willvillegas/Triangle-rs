@@ -2,6 +2,7 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
+use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 
 #[derive(Debug)]
@@ -51,6 +52,12 @@ impl SimpleVnameState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, position: SourcePosition) -> Self {
+        let mut svn = SimpleVnameState::new(id);
+        svn.common_state.position = position;
+        svn
+    }
 }
 
 impl PartialEq for SimpleVnameState {
@@ -81,6 +88,12 @@ impl SubscriptVnameState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(vname: Vname, expr: Expression, position: SourcePosition) -> Self {
+        let mut svn = SubscriptVnameState::new(vname, expr);
+        svn.common_state.position = position;
+        svn
+    }
 }
 
 impl PartialEq for SubscriptVnameState {
@@ -110,6 +123,12 @@ impl DotVnameState {
             id: id,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(vname: Vname, id: Identifier, position: SourcePosition) -> Self {
+        let mut dvn = DotVnameState::new(vname, id);
+        dvn.common_state.position = position;
+        dvn
     }
 }
 

@@ -208,7 +208,7 @@ Assume the Standard Environment and the following declarations:
       else current
 ```
 
-## Value-or-Variable names (Vname)
+## Value-or-Variable names (Vnames)
 
 A value-or-variable-name identifies a value or a variable.
 
@@ -453,7 +453,7 @@ Assuming the Standard Environment:
   iteratively(proc putint, var v)
 ```
 
-## Type Denoters
+## Type-Denoters
 
 A type-denoter denotes a data type. Every value, constant, variable, and function has a specified type.
 
