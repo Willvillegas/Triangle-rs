@@ -177,6 +177,76 @@ fn test_echo() {
 fn test_odd() {
     let source_file = "samples/source/odd.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(LetCommand(LetCommandState::new(
+        SequentialDeclaration(SequentialDeclarationState::new(
+            VarDeclaration(VarDeclarationState::new(
+                Identifier::new("n"),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+            )),
+            FuncDeclaration(FuncDeclarationState::new(
+                Identifier::new("odd"),
+                SingleFormalParameterSequence(SingleFormalParameterSequenceState::new(
+                    ConstFormalParameter(ConstFormalParameterState::new(
+                        Identifier::new("n"),
+                        SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+                    )),
+                )),
+                SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Boolean"))),
+                BinaryExpression(BinaryExpressionState::new(
+                    BinaryExpression(BinaryExpressionState::new(
+                        VnameExpression(VnameExpressionState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("n")),
+                        ))),
+                        Operator::new("//"),
+                        IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new("2"))),
+                    )),
+                    Operator::new("\\="),
+                    IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new("0"))),
+                )),
+            )),
+        )),
+        SequentialCommand(SequentialCommandState::new(
+            CallCommand(CallCommandState::new(
+                Identifier::new("getint"),
+                SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                    VarActualParameter(VarActualParameterState::new(SimpleVname(
+                        SimpleVnameState::new(Identifier::new("n")),
+                    ))),
+                )),
+            )),
+            IfCommand(IfCommandState::new(
+                CallExpression(CallExpressionState::new(
+                    Identifier::new("odd"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        ConstActualParameter(ConstActualParameterState::new(VnameExpression(
+                            VnameExpressionState::new(SimpleVname(SimpleVnameState::new(
+                                Identifier::new("n"),
+                            ))),
+                        ))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("putint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        ConstActualParameter(ConstActualParameterState::new(IntegerExpression(
+                            IntegerExpressionState::new(IntegerLiteral::new("1")),
+                        ))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("putint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        ConstActualParameter(ConstActualParameterState::new(IntegerExpression(
+                            IntegerExpressionState::new(IntegerLiteral::new("2")),
+                        ))),
+                    )),
+                )),
+            )),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]

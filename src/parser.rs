@@ -1,5 +1,3 @@
-#![allow(unused_imports)]
-
 //! The Parser module.
 //!
 //! This module consumes the stream of tokens produced by the Scanner, and constructs an AST for
@@ -274,6 +272,7 @@ impl Parser {
                 self.finish(&mut decl_pos);
                 decl = VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos));
             }
+
             TokenType::Procedure => {
                 self.accept_it();
                 let id = self.parse_identifier();
@@ -287,7 +286,23 @@ impl Parser {
                     id, fps, cmd, decl_pos,
                 ));
             }
-            TokenType::Function => todo!(),
+
+            TokenType::Function => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::LeftParen);
+                let fps = self.parse_formal_parameter_sequence();
+                self.accept(TokenType::RightParen);
+                self.accept(TokenType::Colon);
+                let td = self.parse_type_denoter();
+                self.accept(TokenType::Is);
+                let expr = self.parse_secondary_expression();
+                self.finish(&mut decl_pos);
+                decl = FuncDeclaration(FuncDeclarationState::new_with_position(
+                    id, fps, td, expr, decl_pos,
+                ));
+            }
+
             TokenType::Type => todo!(),
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
                 &format!("{:?} cannot start a declaration", self.current_token.kind),
@@ -371,6 +386,7 @@ impl Parser {
         match self.current_token.kind {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
+                self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
                 fp = ConstFormalParameter(ConstFormalParameterState::new_with_position(
