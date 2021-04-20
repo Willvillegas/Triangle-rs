@@ -296,7 +296,7 @@ impl Parser {
                 self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.accept(TokenType::Is);
-                let expr = self.parse_secondary_expression();
+                let expr = self.parse_expression();
                 self.finish(&mut decl_pos);
                 decl = FuncDeclaration(FuncDeclarationState::new_with_position(
                     id, fps, td, expr, decl_pos,
@@ -487,11 +487,30 @@ impl Parser {
     ///             | IfExpression
     ///
     fn parse_expression(&mut self) -> Expression {
+        let expr;
+        let mut expr_pos = SourcePosition::default();
+
         match self.current_token.kind {
-            TokenType::If => todo!(),
+            TokenType::If => {
+                let mut expr_pos = SourcePosition::default();
+                self.start(&mut expr_pos);
+                self.accept_it();
+                let expr1 = self.parse_expression();
+                self.accept(TokenType::Then);
+                let expr2 = self.parse_expression();
+                self.accept(TokenType::Else);
+                let expr3 = self.parse_expression();
+                expr = IfExpression(IfExpressionState::new_with_position(
+                    expr1, expr2, expr3, expr_pos,
+                ));
+            }
+
             TokenType::Let => todo!(),
-            _ => self.parse_secondary_expression(),
+
+            _ => expr = self.parse_secondary_expression(),
         }
+
+        expr
     }
 
     ///
