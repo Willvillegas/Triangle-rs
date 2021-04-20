@@ -2,6 +2,7 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
+use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use std::fmt;
@@ -67,6 +68,12 @@ impl SingleArrayAggregateState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(expr: Expression, position: SourcePosition) -> Self {
+        let mut saa = SingleArrayAggregateState::new(expr);
+        saa.common_state.position = position;
+        saa
+    }
 }
 
 impl PartialEq for SingleArrayAggregateState {
@@ -113,6 +120,16 @@ impl MultipleArrayAggregateState {
             elem_count: 0,
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        expr: Expression,
+        aa: ArrayAggregate,
+        position: SourcePosition,
+    ) -> Self {
+        let mut maa = MultipleArrayAggregateState::new(expr, aa);
+        maa.common_state.position = position;
+        maa
     }
 }
 
@@ -202,6 +219,12 @@ impl SingleRecordAggregateState {
             common_state: CommonState::default(),
         }
     }
+
+    pub fn new_with_position(id: Identifier, expr: Expression, position: SourcePosition) -> Self {
+        let mut sra = SingleRecordAggregateState::new(id, expr);
+        sra.common_state.position = position;
+        sra
+    }
 }
 
 impl PartialEq for SingleRecordAggregateState {
@@ -244,6 +267,17 @@ impl MultipleRecordAggregateState {
             ra: Box::new(ra),
             common_state: CommonState::default(),
         }
+    }
+
+    pub fn new_with_position(
+        id: Identifier,
+        expr: Expression,
+        ra: RecordAggregate,
+        position: SourcePosition,
+    ) -> Self {
+        let mut mra = MultipleRecordAggregateState::new(id, expr, ra);
+        mra.common_state.position = position;
+        mra
     }
 }
 

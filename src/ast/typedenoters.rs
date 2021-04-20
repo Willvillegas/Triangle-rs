@@ -71,41 +71,6 @@ impl Ast for TypeDenoter {
 }
 
 #[derive(Debug)]
-pub enum FieldTypeDenoter {
-    SingleFieldTypeDenoter(SingleFieldTypeDenoterState),
-    MultipleFieldTypeDenoter(MultipleFieldTypeDenoterState),
-}
-
-impl PartialEq for FieldTypeDenoter {
-    fn eq(&self, other: &Self) -> bool {
-        use FieldTypeDenoter::*;
-
-        match (self, other) {
-            (SingleFieldTypeDenoter(ref sftd1), SingleFieldTypeDenoter(ref sftd2)) => {
-                sftd1 == sftd2
-            }
-            (MultipleFieldTypeDenoter(ref mftd1), MultipleFieldTypeDenoter(ref mftd2)) => {
-                mftd1 == mftd2
-            }
-            (_, __) => false,
-        }
-    }
-}
-
-impl Eq for FieldTypeDenoter {}
-
-impl fmt::Display for FieldTypeDenoter {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use FieldTypeDenoter::*;
-
-        match *self {
-            SingleFieldTypeDenoter(ref ftd) => write!(f, "SingleFieldTypeDenoter({})", ftd),
-            MultipleFieldTypeDenoter(ref ftd) => write!(f, "MultipleFieldTypeDenoter({})", ftd),
-        }
-    }
-}
-
-#[derive(Debug)]
 pub struct BoolTypeDenoterState {
     common_state: CommonState,
 }
@@ -125,7 +90,7 @@ impl BoolTypeDenoterState {
 }
 
 impl PartialEq for BoolTypeDenoterState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -163,7 +128,7 @@ impl CharTypeDenoterState {
 }
 
 impl PartialEq for CharTypeDenoterState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -202,7 +167,7 @@ impl IntTypeDenoterState {
 }
 
 impl PartialEq for IntTypeDenoterState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -240,7 +205,7 @@ impl AnyTypeDenoterState {
 }
 
 impl PartialEq for AnyTypeDenoterState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -278,7 +243,7 @@ impl ErrorTypeDenoterState {
 }
 
 impl PartialEq for ErrorTypeDenoterState {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
@@ -421,6 +386,41 @@ impl fmt::Display for RecordTypeDenoterState {
 impl Ast for RecordTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_record_type_denoter(self, arg)
+    }
+}
+
+#[derive(Debug)]
+pub enum FieldTypeDenoter {
+    SingleFieldTypeDenoter(SingleFieldTypeDenoterState),
+    MultipleFieldTypeDenoter(MultipleFieldTypeDenoterState),
+}
+
+impl PartialEq for FieldTypeDenoter {
+    fn eq(&self, other: &Self) -> bool {
+        use FieldTypeDenoter::*;
+
+        match (self, other) {
+            (SingleFieldTypeDenoter(ref sftd1), SingleFieldTypeDenoter(ref sftd2)) => {
+                sftd1 == sftd2
+            }
+            (MultipleFieldTypeDenoter(ref mftd1), MultipleFieldTypeDenoter(ref mftd2)) => {
+                mftd1 == mftd2
+            }
+            (_, __) => false,
+        }
+    }
+}
+
+impl Eq for FieldTypeDenoter {}
+
+impl fmt::Display for FieldTypeDenoter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use FieldTypeDenoter::*;
+
+        match *self {
+            SingleFieldTypeDenoter(ref ftd) => write!(f, "SingleFieldTypeDenoter({})", ftd),
+            MultipleFieldTypeDenoter(ref ftd) => write!(f, "MultipleFieldTypeDenoter({})", ftd),
+        }
     }
 }
 

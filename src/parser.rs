@@ -3,7 +3,6 @@
 //! This module consumes the stream of tokens produced by the Scanner, and constructs an AST for
 //! Triangle, which is then used by all subsequent phases of the compiler.
 
-use crate::ast::aggregates::ArrayAggregate::*;
 use crate::ast::aggregates::RecordAggregate::*;
 use crate::ast::aggregates::*;
 use crate::ast::commands::Command::*;
@@ -18,6 +17,7 @@ use crate::ast::parameters::FormalParameter::*;
 use crate::ast::parameters::FormalParameterSequence::*;
 use crate::ast::parameters::*;
 use crate::ast::primitives::*;
+use crate::ast::typedenoters::FieldTypeDenoter::*;
 use crate::ast::typedenoters::TypeDenoter::*;
 use crate::ast::typedenoters::*;
 use crate::ast::vnames::Vname::*;
@@ -145,7 +145,7 @@ impl Parser {
                 match self.current_token.kind {
                     TokenType::Becomes => {
                         self.accept_it();
-                        let vname = self.parse_vname(Some(id));
+                        let vname = self.parse_vname(id);
                         let expr = self.parse_expression();
                         self.finish(&mut cmd_pos);
                         cmd = AssignCommand(AssignCommandState::new_with_position(
@@ -182,7 +182,7 @@ impl Parser {
 
             TokenType::If => {
                 self.accept_it();
-                let expr = self.parse_secondary_expression();
+                let expr = self.parse_expression();
                 self.accept(TokenType::Then);
                 let cmd1 = self.parse_single_command();
                 self.accept(TokenType::Else);
@@ -193,7 +193,7 @@ impl Parser {
 
             TokenType::While => {
                 self.accept_it();
-                let expr = self.parse_secondary_expression();
+                let expr = self.parse_expression();
                 self.accept(TokenType::Do);
                 let cmd1 = self.parse_single_command();
                 self.finish(&mut cmd_pos);
@@ -303,7 +303,15 @@ impl Parser {
                 ));
             }
 
-            TokenType::Type => todo!(),
+            TokenType::Type => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::Is);
+                let td = self.parse_type_denoter();
+                self.finish(&mut decl_pos);
+                decl = TypeDeclaration(TypeDeclarationState::new_with_position(id, td, decl_pos));
+            }
+
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
                 &format!("{:?} cannot start a declaration", self.current_token.kind),
                 self.current_token.position,
@@ -329,8 +337,17 @@ impl Parser {
                 self.finish(&mut td_pos);
                 td = SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos));
             }
+
             TokenType::Array => todo!(),
-            TokenType::Record => todo!(),
+
+            TokenType::Record => {
+                self.accept(TokenType::Record);
+                let ftd = self.parse_field_type_denoter();
+                self.accept(TokenType::End);
+                self.finish(&mut td_pos);
+                td = RecordTypeDenoter(RecordTypeDenoterState::new_with_position(ftd, td_pos));
+            }
+
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
                 &format!("{:?} cannot start a type denoter", self.current_token.kind),
                 self.current_token.position,
@@ -338,6 +355,36 @@ impl Parser {
         }
 
         td
+    }
+
+    ///
+    /// FieldTypeDenoter ::= SingleFieldTypeDenoter
+    ///                    | MultipleFieldTypeDenoter
+    ///
+    /// SingleFieldTypeDenoter ::= Identifier : Type-Denoter
+    /// MultipleFieldTypeDenoter ::= Identifier : Type-Denoter , FieldTypeDenoter
+    ///
+    fn parse_field_type_denoter(&mut self) -> FieldTypeDenoter {
+        let mut ftd_pos = SourcePosition::default();
+        self.start(&mut ftd_pos);
+
+        let id = self.parse_identifier();
+        self.accept(TokenType::Colon);
+        let td = self.parse_type_denoter();
+
+        if self.current_token.kind == TokenType::Comma {
+            self.accept_it();
+            let ftd = self.parse_field_type_denoter();
+            self.finish(&mut ftd_pos);
+            MultipleFieldTypeDenoter(MultipleFieldTypeDenoterState::new_with_position(
+                id, td, ftd, ftd_pos,
+            ))
+        } else {
+            self.finish(&mut ftd_pos);
+            SingleFieldTypeDenoter(SingleFieldTypeDenoterState::new_with_position(
+                id, td, ftd_pos,
+            ))
+        }
     }
 
     ///
@@ -351,23 +398,23 @@ impl Parser {
 
         if self.current_token.kind == TokenType::RightParen {
             self.finish(&mut fps_pos);
-            return EmptyFormalParameterSequence(
-                EmptyFormalParameterSequenceState::new_with_position(fps_pos),
-            );
+            EmptyFormalParameterSequence(EmptyFormalParameterSequenceState::new_with_position(
+                fps_pos,
+            ))
         } else {
             let fp = self.parse_formal_parameter();
             if self.current_token.kind == TokenType::Comma {
                 self.accept_it();
                 let fps = self.parse_formal_parameter_sequence();
                 self.finish(&mut fps_pos);
-                return MultipleFormalParameterSequence(
+                MultipleFormalParameterSequence(
                     MultipleFormalParameterSequenceState::new_with_position(fp, fps, fps_pos),
-                );
+                )
             } else {
                 self.finish(&mut fps_pos);
-                return SingleFormalParameterSequence(
+                SingleFormalParameterSequence(
                     SingleFormalParameterSequenceState::new_with_position(fp, fps_pos),
-                );
+                )
             }
         }
     }
@@ -427,23 +474,23 @@ impl Parser {
         self.start(&mut aps_pos);
         if self.current_token.kind == TokenType::RightParen {
             self.finish(&mut aps_pos);
-            return EmptyActualParameterSequence(
-                EmptyActualParameterSequenceState::new_with_position(aps_pos),
-            );
+            EmptyActualParameterSequence(EmptyActualParameterSequenceState::new_with_position(
+                aps_pos,
+            ))
         } else {
             let ap = self.parse_actual_parameter();
             if self.current_token.kind == TokenType::Comma {
                 self.accept_it();
                 let aps = self.parse_actual_parameter_sequence();
                 self.finish(&mut aps_pos);
-                return MultipleActualParameterSequence(
+                MultipleActualParameterSequence(
                     MultipleActualParameterSequenceState::new_with_position(ap, aps, aps_pos),
-                );
+                )
             } else {
                 self.finish(&mut aps_pos);
-                return SingleActualParameterSequence(
+                SingleActualParameterSequence(
                     SingleActualParameterSequenceState::new_with_position(ap, aps_pos),
-                );
+                )
             }
         }
     }
@@ -463,12 +510,19 @@ impl Parser {
             TokenType::Var => {
                 self.accept_it();
                 let id = self.parse_identifier();
-                let vname = self.parse_vname(Some(id));
+                let vname = self.parse_vname(id);
                 self.finish(&mut ap_pos);
                 ap = VarActualParameter(VarActualParameterState::new_with_position(vname, ap_pos));
             }
-            TokenType::Procedure => todo!(),
-            TokenType::Function => todo!(),
+
+            TokenType::Procedure => {
+                todo!()
+            }
+
+            TokenType::Function => {
+                todo!()
+            }
+
             _ => {
                 let expr = self.parse_expression();
                 self.finish(&mut ap_pos);
@@ -504,7 +558,9 @@ impl Parser {
                 ));
             }
 
-            TokenType::Let => todo!(),
+            TokenType::Let => {
+                todo!()
+            }
 
             _ => expr = self.parse_secondary_expression(),
         }
@@ -573,7 +629,7 @@ impl Parser {
                     expr =
                         CallExpression(CallExpressionState::new_with_position(id, aps, expr_pos));
                 } else {
-                    let vname = self.parse_vname(Some(id));
+                    let vname = self.parse_vname(id);
                     self.finish(&mut expr_pos);
                     expr =
                         VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos));
@@ -594,8 +650,18 @@ impl Parser {
                 self.accept(TokenType::RightParen);
             }
 
-            TokenType::LeftSquareBracket => todo!(),
-            TokenType::LeftCurlyBracket => todo!(),
+            TokenType::LeftSquareBracket => {
+                todo!()
+            }
+
+            TokenType::LeftCurlyBracket => {
+                self.accept_it();
+                let ra = self.parse_record_aggregate();
+                self.accept(TokenType::RightCurlyBracket);
+                self.finish(&mut expr_pos);
+                expr = RecordExpression(RecordExpressionState::new_with_position(ra, expr_pos));
+            }
+
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
                 &format!(
                     "{:?} cannot start a primary expression",
@@ -609,27 +675,79 @@ impl Parser {
     }
 
     ///
+    /// RecordAggregate ::= SingleRecordAggregate
+    ///                   | MultipleRecordAggregate
+    ///
+    /// SingleRecordAggregate ::= Identifier ~ Expression
+    /// MultipleRecordAggregate ::= Identifier ~ Expression , RecordAggregate
+    ///
+    fn parse_record_aggregate(&mut self) -> RecordAggregate {
+        let mut ra_pos = SourcePosition::default();
+        self.start(&mut ra_pos);
+
+        let id = self.parse_identifier();
+        self.accept(TokenType::Is);
+        let expr = self.parse_expression();
+
+        if self.current_token.kind == TokenType::Comma {
+            self.accept_it();
+            let ra = self.parse_record_aggregate();
+            self.finish(&mut ra_pos);
+            MultipleRecordAggregate(MultipleRecordAggregateState::new_with_position(
+                id, expr, ra, ra_pos,
+            ))
+        } else {
+            self.finish(&mut ra_pos);
+            SingleRecordAggregate(SingleRecordAggregateState::new_with_position(
+                id, expr, ra_pos,
+            ))
+        }
+    }
+
+    ///
     /// Vname ::= SimpleVname
     ///         | DotVname
     ///         | SubscriptVname
     ///
-    fn parse_vname(&mut self, id: Option<Identifier>) -> Vname {
-        let vname;
+    /// SimpleVname ::= Identifier
+    /// DotVname ::= Vname . Identifier
+    /// SubscriptVname ::= Vname [ Expression ]
+    ///
+    fn parse_vname(&mut self, id: Identifier) -> Vname {
         let mut vname_pos = SourcePosition::default();
         self.start(&mut vname_pos);
 
-        if let Some(id_val) = id {
-            self.finish(&mut vname_pos);
-            vname = SimpleVname(SimpleVnameState::new_with_position(id_val, vname_pos));
-        } else if self.current_token.kind == TokenType::Dot {
-            todo!()
-        } else if self.current_token.kind == TokenType::LeftSquareBracket {
-            todo!()
-        } else {
-            error::report_error_and_exit(GenError::from(ParserError::new(
-                &format!("{:?} cannot start a vname", self.current_token.kind),
-                self.current_token.position,
-            )));
+        self.finish(&mut vname_pos);
+        let mut vname = SimpleVname(SimpleVnameState::new_with_position(id, vname_pos));
+
+        while self.current_token.kind == TokenType::LeftSquareBracket
+            || self.current_token.kind == TokenType::Dot
+        {
+            match self.current_token.kind {
+                TokenType::LeftSquareBracket => {
+                    self.accept_it();
+                    let expr = self.parse_expression();
+                    self.accept(TokenType::RightSquareBracket);
+                    self.finish(&mut vname_pos);
+                    vname = SubscriptVname(SubscriptVnameState::new_with_position(
+                        vname, expr, vname_pos,
+                    ));
+                }
+
+                TokenType::Dot => {
+                    self.accept_it();
+                    let id1 = self.parse_identifier();
+                    vname = DotVname(DotVnameState::new_with_position(vname, id1, vname_pos));
+                }
+
+                _ => error::report_error_and_exit(GenError::from(ParserError::new(
+                    &format!(
+                        "{:?} cannot start or continue a vname",
+                        self.current_token.kind
+                    ),
+                    self.current_token.position,
+                ))),
+            };
         }
 
         vname
