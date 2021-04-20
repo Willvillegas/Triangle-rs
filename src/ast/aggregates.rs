@@ -86,13 +86,7 @@ impl Eq for SingleArrayAggregateState {}
 
 impl fmt::Display for SingleArrayAggregateState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "SingleArrayAggregateState::new({}, {}, {})",
-            self.expr,
-            self.td.as_ref().unwrap(),
-            self.elem_count
-        )
+        write!(f, "SingleArrayAggregateState::new({})", self.expr)
     }
 }
 
@@ -145,11 +139,8 @@ impl fmt::Display for MultipleArrayAggregateState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "MultipleArrayAggregateState::new({}, {}, {}, {})",
-            self.expr,
-            self.aa,
-            self.td.as_ref().unwrap(),
-            self.elem_count
+            "MultipleArrayAggregateState::new({}, {})",
+            self.expr, self.aa
         )
     }
 }

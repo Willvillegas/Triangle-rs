@@ -3,6 +3,7 @@
 //! This module consumes the stream of tokens produced by the Scanner, and constructs an AST for
 //! Triangle, which is then used by all subsequent phases of the compiler.
 
+use crate::ast::aggregates::ArrayAggregate::*;
 use crate::ast::aggregates::RecordAggregate::*;
 use crate::ast::aggregates::*;
 use crate::ast::commands::Command::*;
@@ -672,7 +673,11 @@ impl Parser {
             }
 
             TokenType::LeftSquareBracket => {
-                todo!()
+                self.accept_it();
+                let aa = self.parse_array_aggregate();
+                self.accept(TokenType::RightSquareBracket);
+                self.finish(&mut expr_pos);
+                ArrayExpression(ArrayExpressionState::new_with_position(aa, expr_pos))
             }
 
             TokenType::LeftCurlyBracket => {
@@ -690,6 +695,32 @@ impl Parser {
                 ),
                 self.current_token.position,
             ))),
+        }
+    }
+
+    ///
+    /// ArrayAggregate ::= SingleArrayAggregate
+    ///                  | MultipleArrayAggregate
+    ///
+    /// SingleArrayAggregate ::= Expression
+    /// MultipleArrayAggregate ::= Expression , ArrayAggregate
+    ///
+    fn parse_array_aggregate(&mut self) -> ArrayAggregate {
+        let mut aa_pos = SourcePosition::default();
+        self.start(&mut aa_pos);
+
+        let expr = self.parse_expression();
+
+        if self.current_token.kind == TokenType::Comma {
+            self.accept_it();
+            let aa = self.parse_array_aggregate();
+            self.finish(&mut aa_pos);
+            MultipleArrayAggregate(MultipleArrayAggregateState::new_with_position(
+                expr, aa, aa_pos,
+            ))
+        } else {
+            self.finish(&mut aa_pos);
+            SingleArrayAggregate(SingleArrayAggregateState::new_with_position(expr, aa_pos))
         }
     }
 

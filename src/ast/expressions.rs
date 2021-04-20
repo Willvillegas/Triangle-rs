@@ -502,20 +502,16 @@ pub struct ArrayExpressionState {
 }
 
 impl ArrayExpressionState {
-    pub fn new(aa: ArrayAggregate, elem_count: usize) -> Self {
+    pub fn new(aa: ArrayAggregate) -> Self {
         ArrayExpressionState {
             aa: Box::new(aa),
-            elem_count: elem_count,
+            elem_count: 0,
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        aa: ArrayAggregate,
-        elem_count: usize,
-        position: SourcePosition,
-    ) -> Self {
-        let mut arrexpr = ArrayExpressionState::new(aa, elem_count);
+    pub fn new_with_position(aa: ArrayAggregate, position: SourcePosition) -> Self {
+        let mut arrexpr = ArrayExpressionState::new(aa);
         arrexpr.common_state.position = position;
         arrexpr
     }
@@ -531,11 +527,7 @@ impl Eq for ArrayExpressionState {}
 
 impl fmt::Display for ArrayExpressionState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "ArrayExpressionState::new({}, {})",
-            self.aa, self.elem_count
-        )
+        write!(f, "ArrayExpressionState::new({})", self.aa)
     }
 }
 
