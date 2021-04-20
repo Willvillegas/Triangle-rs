@@ -395,12 +395,134 @@ fn test_power() {
 fn test_factorial() {
     let source_file = "samples/source/factorial.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let expected_program = Program::new(LetCommand(LetCommandState::new(
+        SequentialDeclaration(SequentialDeclarationState::new(
+            SequentialDeclaration(SequentialDeclarationState::new(
+                VarDeclaration(VarDeclarationState::new(
+                    Identifier::new("n"),
+                    SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+                )),
+                FuncDeclaration(FuncDeclarationState::new(
+                    Identifier::new("factorial"),
+                    SingleFormalParameterSequence(SingleFormalParameterSequenceState::new(
+                        ConstFormalParameter(ConstFormalParameterState::new(
+                            Identifier::new("n"),
+                            SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new(
+                                "Integer",
+                            ))),
+                        )),
+                    )),
+                    SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+                    IfExpression(IfExpressionState::new(
+                        BinaryExpression(BinaryExpressionState::new(
+                            VnameExpression(VnameExpressionState::new(SimpleVname(
+                                SimpleVnameState::new(Identifier::new("n")),
+                            ))),
+                            Operator::new("<="),
+                            IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new(
+                                "0",
+                            ))),
+                        )),
+                        IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new("1"))),
+                        BinaryExpression(BinaryExpressionState::new(
+                            VnameExpression(VnameExpressionState::new(SimpleVname(
+                                SimpleVnameState::new(Identifier::new("n")),
+                            ))),
+                            Operator::new("*"),
+                            CallExpression(CallExpressionState::new(
+                                Identifier::new("factorial"),
+                                SingleActualParameterSequence(
+                                    SingleActualParameterSequenceState::new(ConstActualParameter(
+                                        ConstActualParameterState::new(BinaryExpression(
+                                            BinaryExpressionState::new(
+                                                VnameExpression(VnameExpressionState::new(
+                                                    SimpleVname(SimpleVnameState::new(
+                                                        Identifier::new("n"),
+                                                    )),
+                                                )),
+                                                Operator::new("-"),
+                                                IntegerExpression(IntegerExpressionState::new(
+                                                    IntegerLiteral::new("1"),
+                                                )),
+                                            ),
+                                        )),
+                                    )),
+                                ),
+                            )),
+                        )),
+                    )),
+                )),
+            )),
+            ProcDeclaration(ProcDeclarationState::new(
+                Identifier::new("readnumber"),
+                SingleFormalParameterSequence(SingleFormalParameterSequenceState::new(
+                    VarFormalParameter(VarFormalParameterState::new(
+                        Identifier::new("n"),
+                        SimpleTypeDenoter(SimpleTypeDenoterState::new(Identifier::new("Integer"))),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("getint"),
+                    SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                        VarActualParameter(VarActualParameterState::new(SimpleVname(
+                            SimpleVnameState::new(Identifier::new("n")),
+                        ))),
+                    )),
+                )),
+            )),
+        )),
+        SequentialCommand(SequentialCommandState::new(
+            SequentialCommand(SequentialCommandState::new(
+                SequentialCommand(SequentialCommandState::new(
+                    CallCommand(CallCommandState::new(
+                        Identifier::new("readnumber"),
+                        SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                            VarActualParameter(VarActualParameterState::new(SimpleVname(
+                                SimpleVnameState::new(Identifier::new("n")),
+                            ))),
+                        )),
+                    )),
+                    CallCommand(CallCommandState::new(
+                        Identifier::new("puteol"),
+                        EmptyActualParameterSequence(EmptyActualParameterSequenceState::new()),
+                    )),
+                )),
+                CallCommand(CallCommandState::new(
+                    Identifier::new("puteol"),
+                    EmptyActualParameterSequence(EmptyActualParameterSequenceState::new()),
+                )),
+            )),
+            CallCommand(CallCommandState::new(
+                Identifier::new("putint"),
+                SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                    ConstActualParameter(ConstActualParameterState::new(CallExpression(
+                        CallExpressionState::new(
+                            Identifier::new("factorial"),
+                            SingleActualParameterSequence(SingleActualParameterSequenceState::new(
+                                ConstActualParameter(ConstActualParameterState::new(
+                                    VnameExpression(VnameExpressionState::new(SimpleVname(
+                                        SimpleVnameState::new(Identifier::new("n")),
+                                    ))),
+                                )),
+                            )),
+                        ),
+                    ))),
+                )),
+            )),
+        )),
+    )));
+
+    let actual_program = parser.parse_program();
+    assert_eq!(expected_program, actual_program);
 }
 
 #[test]
 fn test_record() {
     let source_file = "samples/source/record.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let actual_program = parser.parse_program();
+    println!("{}", actual_program);
+    // assert_eq!(expected_program, actual_program);
 }
 
 #[test]

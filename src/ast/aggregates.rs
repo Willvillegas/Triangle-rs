@@ -4,6 +4,7 @@ use super::expressions::Expression;
 use super::primitives::Identifier;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum ArrayAggregate {
@@ -26,6 +27,17 @@ impl PartialEq for ArrayAggregate {
 }
 
 impl Eq for ArrayAggregate {}
+
+impl fmt::Display for ArrayAggregate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use ArrayAggregate::*;
+
+        match *self {
+            SingleArrayAggregate(ref aa) => write!(f, "SingleArrayAggregate({})", aa),
+            MultipleArrayAggregate(ref aa) => write!(f, "MultipleArrayAggregate({})", aa),
+        }
+    }
+}
 
 impl Ast for ArrayAggregate {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -65,6 +77,18 @@ impl PartialEq for SingleArrayAggregateState {
 
 impl Eq for SingleArrayAggregateState {}
 
+impl fmt::Display for SingleArrayAggregateState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SingleArrayAggregateState::new({}, {}, {})",
+            self.expr,
+            self.td.as_ref().unwrap(),
+            self.elem_count
+        )
+    }
+}
+
 impl Ast for SingleArrayAggregateState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_array_aggregate(self, arg)
@@ -100,6 +124,19 @@ impl PartialEq for MultipleArrayAggregateState {
 
 impl Eq for MultipleArrayAggregateState {}
 
+impl fmt::Display for MultipleArrayAggregateState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "MultipleArrayAggregateState::new({}, {}, {}, {})",
+            self.expr,
+            self.aa,
+            self.td.as_ref().unwrap(),
+            self.elem_count
+        )
+    }
+}
+
 impl Ast for MultipleArrayAggregateState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_array_aggregate(self, arg)
@@ -127,6 +164,17 @@ impl PartialEq for RecordAggregate {
 }
 
 impl Eq for RecordAggregate {}
+
+impl fmt::Display for RecordAggregate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use RecordAggregate::*;
+
+        match *self {
+            SingleRecordAggregate(ref ra) => write!(f, "SingleRecordAggregate({})", ra),
+            MultipleRecordAggregate(ref ra) => write!(f, "MultipleRecordAggregate({})", ra),
+        }
+    }
+}
 
 impl Ast for RecordAggregate {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -164,6 +212,16 @@ impl PartialEq for SingleRecordAggregateState {
 
 impl Eq for SingleRecordAggregateState {}
 
+impl fmt::Display for SingleRecordAggregateState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SingleRecordAggregateState::new({}, {})",
+            self.id, self.expr
+        )
+    }
+}
+
 impl Ast for SingleRecordAggregateState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_record_aggregate(self, arg)
@@ -196,6 +254,16 @@ impl PartialEq for MultipleRecordAggregateState {
 }
 
 impl Eq for MultipleRecordAggregateState {}
+
+impl fmt::Display for MultipleRecordAggregateState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "MultipleRecordAggregateState::new({}, {}, {})",
+            self.id, self.expr, self.ra
+        )
+    }
+}
 
 impl Ast for MultipleRecordAggregateState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

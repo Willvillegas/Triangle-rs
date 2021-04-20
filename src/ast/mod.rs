@@ -7,6 +7,7 @@
 
 use crate::scanner;
 use std::default;
+use std::fmt;
 
 pub mod aggregates;
 pub mod commands;
@@ -376,6 +377,12 @@ impl PartialEq for Program {
 }
 
 impl Eq for Program {}
+
+impl fmt::Display for Program {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Program::new({})", self.cmd)
+    }
+}
 
 impl Ast for Program {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

@@ -492,7 +492,6 @@ impl Parser {
 
         match self.current_token.kind {
             TokenType::If => {
-                let mut expr_pos = SourcePosition::default();
                 self.start(&mut expr_pos);
                 self.accept_it();
                 let expr1 = self.parse_expression();

@@ -3,31 +3,32 @@
 use super::primitives::{Identifier, IntegerLiteral};
 use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum TypeDenoter {
-    BoolTypeDenoter(BoolTypeDenoterState),
-    IntTypeDenoter(IntTypeDenoterState),
-    CharTypeDenoter(CharTypeDenoterState),
     AnyTypeDenoter(AnyTypeDenoterState),
-    ErrorTypeDenoter(ErrorTypeDenoterState),
-    SimpleTypeDenoter(SimpleTypeDenoterState),
     ArrayTypeDenoter(ArrayTypeDenoterState),
+    BoolTypeDenoter(BoolTypeDenoterState),
+    CharTypeDenoter(CharTypeDenoterState),
+    ErrorTypeDenoter(ErrorTypeDenoterState),
+    IntTypeDenoter(IntTypeDenoterState),
     RecordTypeDenoter(RecordTypeDenoterState),
+    SimpleTypeDenoter(SimpleTypeDenoterState),
 }
 
 impl PartialEq for TypeDenoter {
     fn eq(&self, other: &Self) -> bool {
         use TypeDenoter::*;
         match (self, other) {
-            (BoolTypeDenoter(_), BoolTypeDenoter(_)) => true,
-            (IntTypeDenoter(_), IntTypeDenoter(_)) => true,
-            (CharTypeDenoter(_), CharTypeDenoter(_)) => true,
             (AnyTypeDenoter(_), AnyTypeDenoter(_)) => true,
-            (ErrorTypeDenoter(_), ErrorTypeDenoter(_)) => true,
-            (SimpleTypeDenoter(ref std1), SimpleTypeDenoter(std2)) => std1 == std2,
             (ArrayTypeDenoter(ref atd1), ArrayTypeDenoter(ref atd2)) => atd1 == atd2,
+            (BoolTypeDenoter(_), BoolTypeDenoter(_)) => true,
+            (CharTypeDenoter(_), CharTypeDenoter(_)) => true,
+            (ErrorTypeDenoter(_), ErrorTypeDenoter(_)) => true,
+            (IntTypeDenoter(_), IntTypeDenoter(_)) => true,
             (RecordTypeDenoter(ref rtd1), RecordTypeDenoter(ref rtd2)) => rtd1 == rtd2,
+            (SimpleTypeDenoter(ref std1), SimpleTypeDenoter(std2)) => std1 == std2,
             (_, _) => false,
         }
     }
@@ -35,19 +36,36 @@ impl PartialEq for TypeDenoter {
 
 impl Eq for TypeDenoter {}
 
+impl fmt::Display for TypeDenoter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use TypeDenoter::*;
+
+        match *self {
+            AnyTypeDenoter(ref td) => write!(f, "AnyTypeDenoter({})", td),
+            ArrayTypeDenoter(ref td) => write!(f, "ArrayTypeDenoter({})", td),
+            BoolTypeDenoter(ref td) => write!(f, "BoolTypeDenoter({})", td),
+            CharTypeDenoter(ref td) => write!(f, "CharTypeDenoter({})", td),
+            ErrorTypeDenoter(ref td) => write!(f, "ErrorTypeDenoter({})", td),
+            IntTypeDenoter(ref td) => write!(f, "IntTypeDenoter({})", td),
+            RecordTypeDenoter(ref td) => write!(f, "RecordTypeDenoter({})", td),
+            SimpleTypeDenoter(ref td) => write!(f, "SimpleTypeDenoter({})", td),
+        }
+    }
+}
+
 impl Ast for TypeDenoter {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         use TypeDenoter::*;
 
         match *self {
+            AnyTypeDenoter(ref mut anytd) => anytd.accept(visitor, arg),
+            ArrayTypeDenoter(ref mut atd) => atd.accept(visitor, arg),
             BoolTypeDenoter(ref mut btd) => btd.accept(visitor, arg),
             CharTypeDenoter(ref mut ctd) => ctd.accept(visitor, arg),
-            IntTypeDenoter(ref mut itd) => itd.accept(visitor, arg),
-            AnyTypeDenoter(ref mut anytd) => anytd.accept(visitor, arg),
             ErrorTypeDenoter(ref mut etd) => etd.accept(visitor, arg),
-            SimpleTypeDenoter(ref mut std) => std.accept(visitor, arg),
-            ArrayTypeDenoter(ref mut atd) => atd.accept(visitor, arg),
+            IntTypeDenoter(ref mut itd) => itd.accept(visitor, arg),
             RecordTypeDenoter(ref mut rtd) => rtd.accept(visitor, arg),
+            SimpleTypeDenoter(ref mut std) => std.accept(visitor, arg),
         }
     }
 }
@@ -74,16 +92,89 @@ impl PartialEq for FieldTypeDenoter {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct BoolTypeDenoterState;
+impl Eq for FieldTypeDenoter {}
+
+impl fmt::Display for FieldTypeDenoter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use FieldTypeDenoter::*;
+
+        match *self {
+            SingleFieldTypeDenoter(ref ftd) => write!(f, "SingleFieldTypeDenoter({})", ftd),
+            MultipleFieldTypeDenoter(ref ftd) => write!(f, "MultipleFieldTypeDenoter({})", ftd),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct BoolTypeDenoterState {
+    common_state: CommonState,
+}
+
+impl BoolTypeDenoterState {
+    pub fn new() -> Self {
+        BoolTypeDenoterState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut btd = BoolTypeDenoterState::new();
+        btd.common_state.position = position;
+        btd
+    }
+}
+
+impl PartialEq for BoolTypeDenoterState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for BoolTypeDenoterState {}
+
+impl fmt::Display for BoolTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BoolTypeDenoterState::new()",)
+    }
+}
 
 impl Ast for BoolTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_bool_type_denoter(self, arg)
     }
 }
-#[derive(Debug, PartialEq, Eq)]
-pub struct CharTypeDenoterState;
+#[derive(Debug)]
+pub struct CharTypeDenoterState {
+    common_state: CommonState,
+}
+
+impl CharTypeDenoterState {
+    pub fn new() -> Self {
+        CharTypeDenoterState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut btd = CharTypeDenoterState::new();
+        btd.common_state.position = position;
+        btd
+    }
+}
+
+impl PartialEq for CharTypeDenoterState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for CharTypeDenoterState {}
+
+impl fmt::Display for CharTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "CharTypeDenoterState::new()",)
+    }
+}
 
 impl Ast for CharTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -91,24 +182,114 @@ impl Ast for CharTypeDenoterState {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct IntTypeDenoterState;
+#[derive(Debug)]
+pub struct IntTypeDenoterState {
+    common_state: CommonState,
+}
+
+impl IntTypeDenoterState {
+    pub fn new() -> Self {
+        IntTypeDenoterState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut btd = IntTypeDenoterState::new();
+        btd.common_state.position = position;
+        btd
+    }
+}
+
+impl PartialEq for IntTypeDenoterState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for IntTypeDenoterState {}
+
+impl fmt::Display for IntTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "IntTypeDenoterState::new()")
+    }
+}
 
 impl Ast for IntTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_int_type_denoter(self, arg)
     }
 }
-#[derive(Debug, PartialEq, Eq)]
-pub struct AnyTypeDenoterState;
+#[derive(Debug)]
+pub struct AnyTypeDenoterState {
+    common_state: CommonState,
+}
+
+impl AnyTypeDenoterState {
+    pub fn new() -> Self {
+        AnyTypeDenoterState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut btd = AnyTypeDenoterState::new();
+        btd.common_state.position = position;
+        btd
+    }
+}
+
+impl PartialEq for AnyTypeDenoterState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for AnyTypeDenoterState {}
+
+impl fmt::Display for AnyTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "AnyTypeDenoterState::new()")
+    }
+}
 
 impl Ast for AnyTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_any_type_denoter(self, arg)
     }
 }
-#[derive(Debug, PartialEq, Eq)]
-pub struct ErrorTypeDenoterState;
+#[derive(Debug)]
+pub struct ErrorTypeDenoterState {
+    common_state: CommonState,
+}
+
+impl ErrorTypeDenoterState {
+    pub fn new() -> Self {
+        ErrorTypeDenoterState {
+            common_state: CommonState::default(),
+        }
+    }
+
+    pub fn new_with_position(position: SourcePosition) -> Self {
+        let mut btd = ErrorTypeDenoterState::new();
+        btd.common_state.position = position;
+        btd
+    }
+}
+
+impl PartialEq for ErrorTypeDenoterState {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for ErrorTypeDenoterState {}
+
+impl fmt::Display for ErrorTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ErrorTypeDenoterState::new()")
+    }
+}
 
 impl Ast for ErrorTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -143,6 +324,12 @@ impl PartialEq for SimpleTypeDenoterState {
 }
 
 impl Eq for SimpleTypeDenoterState {}
+
+impl fmt::Display for SimpleTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SimpleTypeDenoterState::new({})", self.id,)
+    }
+}
 
 impl Ast for SimpleTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -184,6 +371,12 @@ impl PartialEq for ArrayTypeDenoterState {
 
 impl Eq for ArrayTypeDenoterState {}
 
+impl fmt::Display for ArrayTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ArrayTypeDenoterState::new({}, {})", self.il, self.td)
+    }
+}
+
 impl Ast for ArrayTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_array_type_denoter(self, arg)
@@ -218,6 +411,12 @@ impl PartialEq for RecordTypeDenoterState {
 }
 
 impl Eq for RecordTypeDenoterState {}
+
+impl fmt::Display for RecordTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "RecordTypeDenoterState::new({})", self.ftd)
+    }
+}
 
 impl Ast for RecordTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -255,6 +454,16 @@ impl PartialEq for SingleFieldTypeDenoterState {
 }
 
 impl Eq for SingleFieldTypeDenoterState {}
+
+impl fmt::Display for SingleFieldTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SingleFieldTypeDenoterState::new({}, {})",
+            self.id, self.td
+        )
+    }
+}
 
 impl Ast for SingleFieldTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -299,6 +508,16 @@ impl PartialEq for MultipleFieldTypeDenoterState {
 }
 
 impl Eq for MultipleFieldTypeDenoterState {}
+
+impl fmt::Display for MultipleFieldTypeDenoterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "MultipleFieldTypeDenoterState::new({}, {}, {})",
+            self.id, self.td, self.ftd
+        )
+    }
+}
 
 impl Ast for MultipleFieldTypeDenoterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

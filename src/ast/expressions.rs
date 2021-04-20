@@ -7,6 +7,7 @@ use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
 use super::scanner::SourcePosition;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Expression {
@@ -45,6 +46,26 @@ impl PartialEq for Expression {
 }
 
 impl Eq for Expression {}
+
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Expression::*;
+
+        match *self {
+            ArrayExpression(ref expr) => write!(f, "ArrayExpression({})", expr),
+            BinaryExpression(ref expr) => write!(f, "BinaryExpression({})", expr),
+            CallExpression(ref expr) => write!(f, "CallExpression({})", expr),
+            CharacterExpression(ref expr) => write!(f, "CharacterExpression({})", expr),
+            EmptyExpression(ref expr) => write!(f, "EmptyExpression({})", expr),
+            IfExpression(ref expr) => write!(f, "IfExpression({})", expr),
+            IntegerExpression(ref expr) => write!(f, "IntegerExpression({})", expr),
+            LetExpression(ref expr) => write!(f, "LetExpression({})", expr),
+            RecordExpression(ref expr) => write!(f, "RecordExpression({})", expr),
+            UnaryExpression(ref expr) => write!(f, "UnaryExpression({})", expr),
+            VnameExpression(ref expr) => write!(f, "VnameExpression({})", expr),
+        }
+    }
+}
 
 impl Ast for Expression {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -95,6 +116,12 @@ impl PartialEq for IntegerExpressionState {
 
 impl Eq for IntegerExpressionState {}
 
+impl fmt::Display for IntegerExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "IntegerExpressionState::new({})", self.il)
+    }
+}
+
 impl Ast for IntegerExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_integer_expression(self, arg)
@@ -130,6 +157,12 @@ impl PartialEq for CharacterExpressionState {
 
 impl Eq for CharacterExpressionState {}
 
+impl fmt::Display for CharacterExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "CharacterExpressionState::new({})", self.cl)
+    }
+}
+
 impl Ast for CharacterExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_character_expression(self, arg)
@@ -162,6 +195,12 @@ impl PartialEq for EmptyExpressionState {
 }
 
 impl Eq for EmptyExpressionState {}
+
+impl fmt::Display for EmptyExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EmptyExpressionState::new()")
+    }
+}
 
 impl Ast for EmptyExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -197,6 +236,12 @@ impl PartialEq for VnameExpressionState {
 }
 
 impl Eq for VnameExpressionState {}
+
+impl fmt::Display for VnameExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VnameExpressionState::new({})", self.vname)
+    }
+}
 
 impl Ast for VnameExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -238,6 +283,12 @@ impl PartialEq for CallExpressionState {
 }
 
 impl Eq for CallExpressionState {}
+
+impl fmt::Display for CallExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "CallExpressionState::new({}, {})", self.id, self.aps)
+    }
+}
 
 impl Ast for CallExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -283,6 +334,16 @@ impl PartialEq for IfExpressionState {
 
 impl Eq for IfExpressionState {}
 
+impl fmt::Display for IfExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IfExpressionState::new({}, {}, {})",
+            self.expr1, self.expr2, self.expr3
+        )
+    }
+}
+
 impl Ast for IfExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_if_expression(self, arg)
@@ -324,6 +385,12 @@ impl PartialEq for LetExpressionState {
 
 impl Eq for LetExpressionState {}
 
+impl fmt::Display for LetExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LetExpressionState::new({}, {})", self.decl, self.expr)
+    }
+}
+
 impl Ast for LetExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_let_expression(self, arg)
@@ -360,6 +427,12 @@ impl PartialEq for UnaryExpressionState {
 }
 
 impl Eq for UnaryExpressionState {}
+
+impl fmt::Display for UnaryExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "UnaryExpressionState::new({}, {})", self.op, self.expr)
+    }
+}
 
 impl Ast for UnaryExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -405,6 +478,16 @@ impl PartialEq for BinaryExpressionState {
 
 impl Eq for BinaryExpressionState {}
 
+impl fmt::Display for BinaryExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "BinaryExpressionState::new({}, {}, {})",
+            self.expr1, self.op, self.expr2
+        )
+    }
+}
+
 impl Ast for BinaryExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_binary_expression(self, arg)
@@ -446,6 +529,16 @@ impl PartialEq for ArrayExpressionState {
 
 impl Eq for ArrayExpressionState {}
 
+impl fmt::Display for ArrayExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "ArrayExpressionState::new({}, {})",
+            self.aa, self.elem_count
+        )
+    }
+}
+
 impl Ast for ArrayExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_array_expression(self, arg)
@@ -480,6 +573,12 @@ impl PartialEq for RecordExpressionState {
 }
 
 impl Eq for RecordExpressionState {}
+
+impl fmt::Display for RecordExpressionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "RecordExpressionState::new({})", self.ra)
+    }
+}
 
 impl Ast for RecordExpressionState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

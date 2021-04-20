@@ -7,6 +7,7 @@ use super::primitives::Identifier;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Command {
@@ -37,6 +38,22 @@ impl PartialEq for Command {
 }
 
 impl Eq for Command {}
+
+impl fmt::Display for Command {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Command::*;
+
+        match *self {
+            EmptyCommand(ref cmd) => write!(f, "EmptyCommand({})", cmd),
+            AssignCommand(ref cmd) => write!(f, "AssignCommand({})", cmd),
+            CallCommand(ref cmd) => write!(f, "CallCommand({})", cmd),
+            IfCommand(ref cmd) => write!(f, "IfCommand({})", cmd),
+            LetCommand(ref cmd) => write!(f, "LetCommand({})", cmd),
+            SequentialCommand(ref cmd) => write!(f, "SequentialCommand({})", cmd),
+            WhileCommand(ref cmd) => write!(f, "WhileCommand({})", cmd),
+        }
+    }
+}
 
 impl Ast for Command {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -85,6 +102,12 @@ impl PartialEq for AssignCommandState {
 
 impl Eq for AssignCommandState {}
 
+impl fmt::Display for AssignCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "AssignCommandState::new({}, {})", self.vname, self.expr)
+    }
+}
+
 impl Ast for AssignCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_assign_command(self, arg)
@@ -126,6 +149,12 @@ impl PartialEq for CallCommandState {
 
 impl Eq for CallCommandState {}
 
+impl fmt::Display for CallCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "CallCommandState::new({}, {})", self.id, self.aps)
+    }
+}
+
 impl Ast for CallCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_call_command(self, arg)
@@ -158,6 +187,12 @@ impl PartialEq for EmptyCommandState {
 }
 
 impl Eq for EmptyCommandState {}
+
+impl fmt::Display for EmptyCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EmptyCommandState::new()")
+    }
+}
 
 impl Ast for EmptyCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -194,6 +229,12 @@ impl PartialEq for LetCommandState {
 }
 
 impl Eq for LetCommandState {}
+
+impl fmt::Display for LetCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "LetCommandState::new({}, {})", self.decl, self.cmd)
+    }
+}
 
 impl Ast for LetCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -238,6 +279,16 @@ impl PartialEq for IfCommandState {
 
 impl Eq for IfCommandState {}
 
+impl fmt::Display for IfCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IfCommandState::new({}, {}, {})",
+            self.expr, self.cmd1, self.cmd2
+        )
+    }
+}
+
 impl Ast for IfCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_if_command(self, arg)
@@ -275,6 +326,12 @@ impl PartialEq for WhileCommandState {
 
 impl Eq for WhileCommandState {}
 
+impl fmt::Display for WhileCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "WhileCommandState::new({}, {})", self.expr, self.cmd)
+    }
+}
+
 impl Ast for WhileCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_while_command(self, arg)
@@ -311,6 +368,16 @@ impl PartialEq for SequentialCommandState {
 }
 
 impl Eq for SequentialCommandState {}
+
+impl fmt::Display for SequentialCommandState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SequentialCommandState::new({}, {})",
+            self.cmd1, self.cmd2
+        )
+    }
+}
 
 impl Ast for SequentialCommandState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

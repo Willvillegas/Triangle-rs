@@ -7,6 +7,7 @@ use super::primitives::{Identifier, Operator};
 use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Declaration {
@@ -52,6 +53,23 @@ impl PartialEq for Declaration {
 }
 
 impl Eq for Declaration {}
+
+impl fmt::Display for Declaration {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Declaration::*;
+
+        match *self {
+            BinaryOperatorDeclaration(ref decl) => write!(f, "BinaryOperatorDeclaration({})", decl),
+            ConstDeclaration(ref decl) => write!(f, "ConstDeclaration({})", decl),
+            FuncDeclaration(ref decl) => write!(f, "FuncDeclaration({})", decl),
+            ProcDeclaration(ref decl) => write!(f, "ProcDeclaration({})", decl),
+            SequentialDeclaration(ref decl) => write!(f, "SequentialDeclaration({})", decl),
+            TypeDeclaration(ref decl) => write!(f, "TypeDeclaration({})", decl),
+            UnaryOperatorDeclaration(ref decl) => write!(f, "UnaryOperatorDeclaration({})", decl),
+            VarDeclaration(ref decl) => write!(f, "VarDeclaration({})", decl),
+        }
+    }
+}
 
 impl Ast for Declaration {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -119,6 +137,16 @@ impl PartialEq for BinaryOperatorDeclarationState {
 
 impl Eq for BinaryOperatorDeclarationState {}
 
+impl fmt::Display for BinaryOperatorDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "BinaryOperatorDeclarationState::new({}, {}, {}, {})",
+            self.arg1type, self.op, self.arg2type, self.restype
+        )
+    }
+}
+
 impl Ast for BinaryOperatorDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_binary_operator_declaration(self, arg)
@@ -163,6 +191,16 @@ impl PartialEq for UnaryOperatorDeclarationState {
 
 impl Eq for UnaryOperatorDeclarationState {}
 
+impl fmt::Display for UnaryOperatorDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "UnaryOperatorDeclarationState::new({}, {}, {})",
+            self.op, self.argtype, self.restype
+        )
+    }
+}
+
 impl Ast for UnaryOperatorDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_unary_operator_declaration(self, arg)
@@ -200,6 +238,12 @@ impl PartialEq for ConstDeclarationState {
 
 impl Eq for ConstDeclarationState {}
 
+impl fmt::Display for ConstDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ConstDeclarationState::new({}, {})", self.id, self.expr)
+    }
+}
+
 impl Ast for ConstDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_const_declaration(self, arg)
@@ -236,6 +280,12 @@ impl PartialEq for VarDeclarationState {
 }
 
 impl Eq for VarDeclarationState {}
+
+impl fmt::Display for VarDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VarDeclarationState::new({}, {})", self.id, self.td)
+    }
+}
 
 impl Ast for VarDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -280,6 +330,16 @@ impl PartialEq for ProcDeclarationState {
 }
 
 impl Eq for ProcDeclarationState {}
+
+impl fmt::Display for ProcDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "ProcDeclarationState::new({}, {}, {})",
+            self.id, self.fps, self.cmd
+        )
+    }
+}
 
 impl Ast for ProcDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -335,6 +395,16 @@ impl PartialEq for FuncDeclarationState {
 
 impl Eq for FuncDeclarationState {}
 
+impl fmt::Display for FuncDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "FuncDeclarationState::new({}, {}, {}, {})",
+            self.id, self.fps, self.td, self.expr
+        )
+    }
+}
+
 impl Ast for FuncDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_func_declaration(self, arg)
@@ -370,6 +440,12 @@ impl PartialEq for TypeDeclarationState {
 }
 
 impl Eq for TypeDeclarationState {}
+
+impl fmt::Display for TypeDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "TypeDeclarationState::new({}, {})", self.id, self.td)
+    }
+}
 
 impl Ast for TypeDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -410,6 +486,16 @@ impl PartialEq for SequentialDeclarationState {
 }
 
 impl Eq for SequentialDeclarationState {}
+
+impl fmt::Display for SequentialDeclarationState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "SequentialDeclarationState::new({}, {})",
+            self.decl1, self.decl2
+        )
+    }
+}
 
 impl Ast for SequentialDeclarationState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

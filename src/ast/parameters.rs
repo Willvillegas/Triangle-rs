@@ -6,6 +6,7 @@ use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum FormalParameterSequence {
@@ -32,6 +33,24 @@ impl PartialEq for FormalParameterSequence {
 }
 
 impl Eq for FormalParameterSequence {}
+
+impl fmt::Display for FormalParameterSequence {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use FormalParameterSequence::*;
+
+        match *self {
+            EmptyFormalParameterSequence(ref fps) => {
+                write!(f, "EmptyFormalParameterSequence({})", fps)
+            }
+            SingleFormalParameterSequence(ref fps) => {
+                write!(f, "SingleFormalParameterSequence({})", fps)
+            }
+            MultipleFormalParameterSequence(ref fps) => {
+                write!(f, "MultipleFormalParameterSequence({})", fps)
+            }
+        }
+    }
+}
 
 impl Ast for FormalParameterSequence {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -72,6 +91,12 @@ impl PartialEq for EmptyFormalParameterSequenceState {
 
 impl Eq for EmptyFormalParameterSequenceState {}
 
+impl fmt::Display for EmptyFormalParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EmptyFormalParameterSequenceState::new()")
+    }
+}
+
 impl Ast for EmptyFormalParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_formal_parameter_sequence(self, arg)
@@ -106,6 +131,12 @@ impl PartialEq for SingleFormalParameterSequenceState {
 }
 
 impl Eq for SingleFormalParameterSequenceState {}
+
+impl fmt::Display for SingleFormalParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SingleFormalParameterSequenceState::new({})", self.fp)
+    }
+}
 
 impl Ast for SingleFormalParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -148,6 +179,16 @@ impl PartialEq for MultipleFormalParameterSequenceState {
 
 impl Eq for MultipleFormalParameterSequenceState {}
 
+impl fmt::Display for MultipleFormalParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "MultipleFormalParameterSequenceState::new({}, {})",
+            self.fp, self.fps
+        )
+    }
+}
+
 impl Ast for MultipleFormalParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_formal_parameter_sequence(self, arg)
@@ -156,10 +197,10 @@ impl Ast for MultipleFormalParameterSequenceState {
 
 #[derive(Debug)]
 pub enum FormalParameter {
-    VarFormalParameter(VarFormalParameterState),
     ConstFormalParameter(ConstFormalParameterState),
-    ProcFormalParameter(ProcFormalParameterState),
     FuncFormalParameter(FuncFormalParameterState),
+    ProcFormalParameter(ProcFormalParameterState),
+    VarFormalParameter(VarFormalParameterState),
 }
 
 impl Ast for FormalParameter {
@@ -167,10 +208,10 @@ impl Ast for FormalParameter {
         use FormalParameter::*;
 
         match *self {
-            VarFormalParameter(ref mut vfp) => vfp.accept(visitor, arg),
             ConstFormalParameter(ref mut cfp) => cfp.accept(visitor, arg),
-            ProcFormalParameter(ref mut pfp) => pfp.accept(visitor, arg),
             FuncFormalParameter(ref mut ffp) => ffp.accept(visitor, arg),
+            ProcFormalParameter(ref mut pfp) => pfp.accept(visitor, arg),
+            VarFormalParameter(ref mut vfp) => vfp.accept(visitor, arg),
         }
     }
 }
@@ -180,16 +221,29 @@ impl PartialEq for FormalParameter {
         use FormalParameter::*;
 
         match (self, other) {
-            (VarFormalParameter(ref vfp1), VarFormalParameter(ref vfp2)) => vfp1 == vfp2,
             (ConstFormalParameter(ref cfp1), ConstFormalParameter(ref cfp2)) => cfp1 == cfp2,
-            (ProcFormalParameter(ref pfp1), ProcFormalParameter(ref pfp2)) => pfp1 == pfp2,
             (FuncFormalParameter(ref ffp1), FuncFormalParameter(ref ffp2)) => ffp1 == ffp2,
+            (ProcFormalParameter(ref pfp1), ProcFormalParameter(ref pfp2)) => pfp1 == pfp2,
+            (VarFormalParameter(ref vfp1), VarFormalParameter(ref vfp2)) => vfp1 == vfp2,
             (_, _) => false,
         }
     }
 }
 
 impl Eq for FormalParameter {}
+
+impl fmt::Display for FormalParameter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use FormalParameter::*;
+
+        match *self {
+            ConstFormalParameter(ref fp) => write!(f, "ConstFormalParameter({})", fp),
+            FuncFormalParameter(ref fp) => write!(f, "FuncFormalParameter({})", fp),
+            ProcFormalParameter(ref fp) => write!(f, "ProcFormalParameter({})", fp),
+            VarFormalParameter(ref fp) => write!(f, "VarFormalParameter({})", fp),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct VarFormalParameterState {
@@ -221,6 +275,12 @@ impl PartialEq for VarFormalParameterState {
 }
 
 impl Eq for VarFormalParameterState {}
+
+impl fmt::Display for VarFormalParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VarFormalParameterState::new({}, {})", self.id, self.td)
+    }
+}
 
 impl Ast for VarFormalParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -258,6 +318,16 @@ impl PartialEq for ConstFormalParameterState {
 }
 
 impl Eq for ConstFormalParameterState {}
+
+impl fmt::Display for ConstFormalParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "ConstFormalParameterState::new({}, {})",
+            self.id, self.td
+        )
+    }
+}
 
 impl Ast for ConstFormalParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -299,6 +369,16 @@ impl PartialEq for ProcFormalParameterState {
 }
 
 impl Eq for ProcFormalParameterState {}
+
+impl fmt::Display for ProcFormalParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "ProcFormalParameterState::new({}, {})",
+            self.id, self.fps
+        )
+    }
+}
 
 impl Ast for ProcFormalParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -344,6 +424,16 @@ impl PartialEq for FuncFormalParameterState {
 
 impl Eq for FuncFormalParameterState {}
 
+impl fmt::Display for FuncFormalParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "FuncFormalParameterState::new({}, {}, {})",
+            self.id, self.fps, self.td
+        )
+    }
+}
+
 impl Ast for FuncFormalParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_func_formal_parameter(self, arg)
@@ -377,6 +467,24 @@ impl PartialEq for ActualParameterSequence {
 }
 
 impl Eq for ActualParameterSequence {}
+
+impl fmt::Display for ActualParameterSequence {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use ActualParameterSequence::*;
+
+        match *self {
+            EmptyActualParameterSequence(ref aps) => {
+                write!(f, "EmptyActualParameterSequence({})", aps)
+            }
+            SingleActualParameterSequence(ref aps) => {
+                write!(f, "SingleActualParameterSequence({})", aps)
+            }
+            MultipleActualParameterSequence(ref aps) => {
+                write!(f, "EmptyActualParameterSequence({})", aps)
+            }
+        }
+    }
+}
 
 impl Ast for ActualParameterSequence {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -417,6 +525,12 @@ impl PartialEq for EmptyActualParameterSequenceState {
 
 impl Eq for EmptyActualParameterSequenceState {}
 
+impl fmt::Display for EmptyActualParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EmptyActualParameterSequenceState::new()")
+    }
+}
+
 impl Ast for EmptyActualParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_actual_parameter_sequence(self, arg)
@@ -451,6 +565,12 @@ impl PartialEq for SingleActualParameterSequenceState {
 }
 
 impl Eq for SingleActualParameterSequenceState {}
+
+impl fmt::Display for SingleActualParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SingleActualParameterSequenceState::new({})", self.ap)
+    }
+}
 
 impl Ast for SingleActualParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -493,6 +613,16 @@ impl PartialEq for MultipleActualParameterSequenceState {
 
 impl Eq for MultipleActualParameterSequenceState {}
 
+impl fmt::Display for MultipleActualParameterSequenceState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "MultipleActualParameterSequenceState::new({}, {})",
+            self.ap, self.aps
+        )
+    }
+}
+
 impl Ast for MultipleActualParameterSequenceState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_actual_parameter_sequence(self, arg)
@@ -501,10 +631,10 @@ impl Ast for MultipleActualParameterSequenceState {
 
 #[derive(Debug)]
 pub enum ActualParameter {
-    VarActualParameter(VarActualParameterState),
     ConstActualParameter(ConstActualParameterState),
-    ProcActualParameter(ProcActualParameterState),
     FuncActualParameter(FuncActualParameterState),
+    ProcActualParameter(ProcActualParameterState),
+    VarActualParameter(VarActualParameterState),
 }
 
 impl PartialEq for ActualParameter {
@@ -512,16 +642,29 @@ impl PartialEq for ActualParameter {
         use ActualParameter::*;
 
         match (self, other) {
-            (VarActualParameter(ref vap1), VarActualParameter(ref vap2)) => vap1 == vap2,
             (ConstActualParameter(ref cap1), ConstActualParameter(ref cap2)) => cap1 == cap2,
-            (ProcActualParameter(ref pap1), ProcActualParameter(ref pap2)) => pap1 == pap2,
             (FuncActualParameter(ref fap1), FuncActualParameter(ref fap2)) => fap1 == fap2,
+            (ProcActualParameter(ref pap1), ProcActualParameter(ref pap2)) => pap1 == pap2,
+            (VarActualParameter(ref vap1), VarActualParameter(ref vap2)) => vap1 == vap2,
             (_, _) => false,
         }
     }
 }
 
 impl Eq for ActualParameter {}
+
+impl fmt::Display for ActualParameter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use ActualParameter::*;
+
+        match *self {
+            ConstActualParameter(ref ap) => write!(f, "ConstActualParameter({})", ap),
+            VarActualParameter(ref ap) => write!(f, "VarActualParameter({})", ap),
+            ProcActualParameter(ref ap) => write!(f, "ProcActualParameter({})", ap),
+            FuncActualParameter(ref ap) => write!(f, "FuncActualParameter({})", ap),
+        }
+    }
+}
 
 impl Ast for ActualParameter {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -565,6 +708,12 @@ impl PartialEq for VarActualParameterState {
 
 impl Eq for VarActualParameterState {}
 
+impl fmt::Display for VarActualParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VarActualParameterState::new({})", self.vname)
+    }
+}
+
 impl Ast for VarActualParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_var_actual_parameter(self, arg)
@@ -599,6 +748,12 @@ impl PartialEq for ConstActualParameterState {
 }
 
 impl Eq for ConstActualParameterState {}
+
+impl fmt::Display for ConstActualParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ConstActualParameterState::new({})", self.expr)
+    }
+}
 
 impl Ast for ConstActualParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -635,6 +790,12 @@ impl PartialEq for ProcActualParameterState {
 
 impl Eq for ProcActualParameterState {}
 
+impl fmt::Display for ProcActualParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ProcActualParameterState::new({})", self.id)
+    }
+}
+
 impl Ast for ProcActualParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_proc_actual_parameter(self, arg)
@@ -669,6 +830,12 @@ impl PartialEq for FuncActualParameterState {
 }
 
 impl Eq for FuncActualParameterState {}
+
+impl fmt::Display for FuncActualParameterState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FuncActualParameterState::new({})", self.id)
+    }
+}
 
 impl Ast for FuncActualParameterState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {

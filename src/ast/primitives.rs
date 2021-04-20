@@ -4,6 +4,7 @@ use super::declarations::Declaration;
 use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct IntegerLiteral {
@@ -34,6 +35,12 @@ impl PartialEq for IntegerLiteral {
 
 impl Eq for IntegerLiteral {}
 
+impl fmt::Display for IntegerLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "IntegerLiteral::new({:?})", self.spelling)
+    }
+}
+
 #[derive(Debug)]
 pub struct CharacterLiteral {
     pub spelling: String,
@@ -62,6 +69,12 @@ impl PartialEq for CharacterLiteral {
 }
 
 impl Eq for CharacterLiteral {}
+
+impl fmt::Display for CharacterLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "CharacterLiteral::new({:?})", self.spelling)
+    }
+}
 
 #[derive(Debug)]
 pub struct Identifier {
@@ -96,6 +109,12 @@ impl PartialEq for Identifier {
 
 impl Eq for Identifier {}
 
+impl fmt::Display for Identifier {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Identifier::new({:?})", self.spelling)
+    }
+}
+
 #[derive(Debug)]
 pub struct Operator {
     pub spelling: String,
@@ -126,3 +145,9 @@ impl PartialEq for Operator {
 }
 
 impl Eq for Operator {}
+
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Operator::new({:?})", self.spelling)
+    }
+}

@@ -4,6 +4,7 @@ use super::expressions::Expression;
 use super::primitives::Identifier;
 use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use std::fmt;
 
 #[derive(Debug)]
 pub enum Vname {
@@ -26,6 +27,18 @@ impl PartialEq for Vname {
 }
 
 impl Eq for Vname {}
+
+impl fmt::Display for Vname {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Vname::*;
+
+        match *self {
+            DotVname(ref vname) => write!(f, "DotVname({})", vname),
+            SimpleVname(ref vname) => write!(f, "SimpleVname({})", vname),
+            SubscriptVname(ref vname) => write!(f, "SubscriptVname({})", vname),
+        }
+    }
+}
 
 impl Ast for Vname {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
@@ -68,6 +81,12 @@ impl PartialEq for SimpleVnameState {
 
 impl Eq for SimpleVnameState {}
 
+impl fmt::Display for SimpleVnameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SimpleVnameState::new({})", self.id)
+    }
+}
+
 impl Ast for SimpleVnameState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_simple_vname(self, arg)
@@ -104,6 +123,12 @@ impl PartialEq for SubscriptVnameState {
 
 impl Eq for SubscriptVnameState {}
 
+impl fmt::Display for SubscriptVnameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "SubscriptVnameState::new({}, {})", self.vname, self.expr)
+    }
+}
+
 impl Ast for SubscriptVnameState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_subscript_vname(self, arg)
@@ -139,6 +164,12 @@ impl PartialEq for DotVnameState {
 }
 
 impl Eq for DotVnameState {}
+
+impl fmt::Display for DotVnameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "DotVnameState::new({}, {})", self.vname, self.id)
+    }
+}
 
 impl Ast for DotVnameState {
     fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
