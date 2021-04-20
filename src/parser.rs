@@ -262,7 +262,15 @@ impl Parser {
         self.start(&mut decl_pos);
 
         match self.current_token.kind {
-            TokenType::Const => todo!(),
+            TokenType::Const => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::Is);
+                let expr = self.parse_expression();
+                self.finish(&mut decl_pos);
+                ConstDeclaration(ConstDeclarationState::new_with_position(id, expr, decl_pos))
+            }
+
             TokenType::Var => {
                 self.accept_it();
                 let id = self.parse_identifier();
