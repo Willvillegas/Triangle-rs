@@ -112,7 +112,7 @@ impl Parser {
         let mut cmd = self.parse_single_command();
         self.finish(&mut cmd_pos);
 
-        while self.current_token.spelling == ";" {
+        while self.current_token.kind == TokenType::Semicolon {
             self.accept_it();
             let cmd1 = self.parse_single_command();
             self.finish(&mut cmd_pos);
@@ -134,7 +134,6 @@ impl Parser {
     ///                  | WhileCommand
     ///
     fn parse_single_command(&mut self) -> Command {
-        let cmd;
         let mut cmd_pos = SourcePosition::default();
         self.start(&mut cmd_pos);
 
@@ -147,7 +146,7 @@ impl Parser {
                     let aps = self.parse_actual_parameter_sequence();
                     self.accept(TokenType::RightParen);
                     self.finish(&mut cmd_pos);
-                    cmd = CallCommand(CallCommandState::new_with_position(id, aps, cmd_pos));
+                    CallCommand(CallCommandState::new_with_position(id, aps, cmd_pos))
                 } else {
                     let vname = self.parse_vname(id);
 
@@ -155,9 +154,7 @@ impl Parser {
                         self.accept_it();
                         let expr = self.parse_expression();
                         self.finish(&mut cmd_pos);
-                        cmd = AssignCommand(AssignCommandState::new_with_position(
-                            vname, expr, cmd_pos,
-                        ));
+                        AssignCommand(AssignCommandState::new_with_position(vname, expr, cmd_pos))
                     } else {
                         error::report_error_and_exit(GenError::from(ParserError::new(
                             &format!(
@@ -176,7 +173,7 @@ impl Parser {
                 self.accept(TokenType::In);
                 let cmd1 = self.parse_single_command();
                 self.finish(&mut cmd_pos);
-                cmd = LetCommand(LetCommandState::new_with_position(decl, cmd1, cmd_pos));
+                LetCommand(LetCommandState::new_with_position(decl, cmd1, cmd_pos))
             }
 
             TokenType::If => {
@@ -187,7 +184,7 @@ impl Parser {
                 self.accept(TokenType::Else);
                 let cmd2 = self.parse_single_command();
                 self.finish(&mut cmd_pos);
-                cmd = IfCommand(IfCommandState::new_with_position(expr, cmd1, cmd2, cmd_pos));
+                IfCommand(IfCommandState::new_with_position(expr, cmd1, cmd2, cmd_pos))
             }
 
             TokenType::While => {
@@ -196,19 +193,25 @@ impl Parser {
                 self.accept(TokenType::Do);
                 let cmd1 = self.parse_single_command();
                 self.finish(&mut cmd_pos);
-                cmd = WhileCommand(WhileCommandState::new_with_position(expr, cmd1, cmd_pos));
+                WhileCommand(WhileCommandState::new_with_position(expr, cmd1, cmd_pos))
             }
 
             TokenType::Begin => {
                 self.accept_it();
-                cmd = self.parse_command();
+                let cmd = self.parse_command();
                 self.accept(TokenType::End);
+                cmd
             }
 
-            TokenType::Semicolon | TokenType::End | TokenType::Eot => {
+            TokenType::End => {
+                self.finish(&mut cmd_pos);
+                EmptyCommand(EmptyCommandState::new_with_position(cmd_pos))
+            }
+
+            TokenType::Semicolon | TokenType::Eot => {
                 self.accept_it();
                 self.finish(&mut cmd_pos);
-                cmd = EmptyCommand(EmptyCommandState::new_with_position(cmd_pos));
+                EmptyCommand(EmptyCommandState::new_with_position(cmd_pos))
             }
             _ => {
                 println!(
@@ -224,8 +227,6 @@ impl Parser {
                 )));
             }
         }
-
-        cmd
     }
 
     ///
@@ -257,7 +258,6 @@ impl Parser {
     ///                 | TypeDeclaration
     ///
     fn parse_single_declaration(&mut self) -> Declaration {
-        let decl;
         let mut decl_pos = SourcePosition::default();
         self.start(&mut decl_pos);
 
@@ -269,7 +269,7 @@ impl Parser {
                 self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.finish(&mut decl_pos);
-                decl = VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos));
+                VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos))
             }
 
             TokenType::Procedure => {
@@ -281,9 +281,9 @@ impl Parser {
                 self.accept(TokenType::Is);
                 let cmd = self.parse_single_command();
                 self.finish(&mut decl_pos);
-                decl = ProcDeclaration(ProcDeclarationState::new_with_position(
+                ProcDeclaration(ProcDeclarationState::new_with_position(
                     id, fps, cmd, decl_pos,
-                ));
+                ))
             }
 
             TokenType::Function => {
@@ -297,9 +297,9 @@ impl Parser {
                 self.accept(TokenType::Is);
                 let expr = self.parse_expression();
                 self.finish(&mut decl_pos);
-                decl = FuncDeclaration(FuncDeclarationState::new_with_position(
+                FuncDeclaration(FuncDeclarationState::new_with_position(
                     id, fps, td, expr, decl_pos,
-                ));
+                ))
             }
 
             TokenType::Type => {
@@ -308,7 +308,7 @@ impl Parser {
                 self.accept(TokenType::Is);
                 let td = self.parse_type_denoter();
                 self.finish(&mut decl_pos);
-                decl = TypeDeclaration(TypeDeclarationState::new_with_position(id, td, decl_pos));
+                TypeDeclaration(TypeDeclarationState::new_with_position(id, td, decl_pos))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -316,8 +316,6 @@ impl Parser {
                 self.current_token.position,
             ))),
         }
-
-        decl
     }
 
     ///
@@ -326,7 +324,6 @@ impl Parser {
     ///               | RecordTypeDenoter
     ///
     fn parse_type_denoter(&mut self) -> TypeDenoter {
-        let td;
         let mut td_pos = SourcePosition::default();
         self.start(&mut td_pos);
 
@@ -334,7 +331,7 @@ impl Parser {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
                 self.finish(&mut td_pos);
-                td = SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos));
+                SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos))
             }
 
             TokenType::Array => {
@@ -343,7 +340,7 @@ impl Parser {
                 self.accept(TokenType::Of);
                 let td1 = self.parse_type_denoter();
                 self.finish(&mut td_pos);
-                td = ArrayTypeDenoter(ArrayTypeDenoterState::new_with_position(il, td1, td_pos));
+                ArrayTypeDenoter(ArrayTypeDenoterState::new_with_position(il, td1, td_pos))
             }
 
             TokenType::Record => {
@@ -351,7 +348,7 @@ impl Parser {
                 let ftd = self.parse_field_type_denoter();
                 self.accept(TokenType::End);
                 self.finish(&mut td_pos);
-                td = RecordTypeDenoter(RecordTypeDenoterState::new_with_position(ftd, td_pos));
+                RecordTypeDenoter(RecordTypeDenoterState::new_with_position(ftd, td_pos))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -359,8 +356,6 @@ impl Parser {
                 self.current_token.position,
             ))),
         }
-
-        td
     }
 
     ///
@@ -432,7 +427,6 @@ impl Parser {
     ///                  | FuncFormalParameter
     ///
     fn parse_formal_parameter(&mut self) -> FormalParameter {
-        let fp;
         let mut fp_pos = SourcePosition::default();
         self.start(&mut fp_pos);
 
@@ -442,9 +436,7 @@ impl Parser {
                 self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
-                fp = ConstFormalParameter(ConstFormalParameterState::new_with_position(
-                    id, td, fp_pos,
-                ));
+                ConstFormalParameter(ConstFormalParameterState::new_with_position(id, td, fp_pos))
             }
 
             TokenType::Var => {
@@ -453,7 +445,7 @@ impl Parser {
                 self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
-                fp = VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos));
+                VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos))
             }
 
             TokenType::Procedure => {
@@ -463,9 +455,7 @@ impl Parser {
                 let fps = self.parse_formal_parameter_sequence();
                 self.accept(TokenType::RightParen);
                 self.finish(&mut fp_pos);
-                fp = ProcFormalParameter(ProcFormalParameterState::new_with_position(
-                    id, fps, fp_pos,
-                ));
+                ProcFormalParameter(ProcFormalParameterState::new_with_position(id, fps, fp_pos))
             }
 
             TokenType::Function => {
@@ -477,9 +467,9 @@ impl Parser {
                 self.accept(TokenType::Colon);
                 let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
-                fp = FuncFormalParameter(FuncFormalParameterState::new_with_position(
+                FuncFormalParameter(FuncFormalParameterState::new_with_position(
                     id, fps, td, fp_pos,
-                ));
+                ))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -490,8 +480,6 @@ impl Parser {
                 self.current_token.position,
             ))),
         }
-
-        fp
     }
 
     ///
@@ -533,7 +521,6 @@ impl Parser {
     ///                 | FuncActualParameter
     ///
     fn parse_actual_parameter(&mut self) -> ActualParameter {
-        let ap;
         let mut ap_pos = SourcePosition::default();
         self.start(&mut ap_pos);
 
@@ -543,33 +530,29 @@ impl Parser {
                 let id = self.parse_identifier();
                 let vname = self.parse_vname(id);
                 self.finish(&mut ap_pos);
-                ap = VarActualParameter(VarActualParameterState::new_with_position(vname, ap_pos));
+                VarActualParameter(VarActualParameterState::new_with_position(vname, ap_pos))
             }
 
             TokenType::Procedure => {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.finish(&mut ap_pos);
-                ap = ProcActualParameter(ProcActualParameterState::new_with_position(id, ap_pos));
+                ProcActualParameter(ProcActualParameterState::new_with_position(id, ap_pos))
             }
 
             TokenType::Function => {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.finish(&mut ap_pos);
-                ap = FuncActualParameter(FuncActualParameterState::new_with_position(id, ap_pos));
+                FuncActualParameter(FuncActualParameterState::new_with_position(id, ap_pos))
             }
 
             _ => {
                 let expr = self.parse_expression();
                 self.finish(&mut ap_pos);
-                ap = ConstActualParameter(ConstActualParameterState::new_with_position(
-                    expr, ap_pos,
-                ));
+                ConstActualParameter(ConstActualParameterState::new_with_position(expr, ap_pos))
             }
         }
-
-        ap
     }
 
     ///
@@ -578,7 +561,6 @@ impl Parser {
     ///             | IfExpression
     ///
     fn parse_expression(&mut self) -> Expression {
-        let expr;
         let mut expr_pos = SourcePosition::default();
 
         match self.current_token.kind {
@@ -590,19 +572,17 @@ impl Parser {
                 let expr2 = self.parse_expression();
                 self.accept(TokenType::Else);
                 let expr3 = self.parse_expression();
-                expr = IfExpression(IfExpressionState::new_with_position(
+                IfExpression(IfExpressionState::new_with_position(
                     expr1, expr2, expr3, expr_pos,
-                ));
+                ))
             }
 
             TokenType::Let => {
                 todo!()
             }
 
-            _ => expr = self.parse_secondary_expression(),
+            _ => self.parse_secondary_expression(),
         }
-
-        expr
     }
 
     ///
@@ -638,7 +618,6 @@ impl Parser {
     ///
     ///
     fn parse_primary_expression(&mut self) -> Expression {
-        let expr;
         let mut expr_pos = SourcePosition::default();
         self.start(&mut expr_pos);
 
@@ -646,14 +625,13 @@ impl Parser {
             TokenType::IntegerLiteral => {
                 let il = self.parse_integer_literal();
                 self.finish(&mut expr_pos);
-                expr = IntegerExpression(IntegerExpressionState::new_with_position(il, expr_pos));
+                IntegerExpression(IntegerExpressionState::new_with_position(il, expr_pos))
             }
 
             TokenType::CharacterLiteral => {
                 let cl = self.parse_character_literal();
                 self.finish(&mut expr_pos);
-                expr =
-                    CharacterExpression(CharacterExpressionState::new_with_position(cl, expr_pos));
+                CharacterExpression(CharacterExpressionState::new_with_position(cl, expr_pos))
             }
 
             TokenType::Identifier => {
@@ -663,13 +641,11 @@ impl Parser {
                     let aps = self.parse_actual_parameter_sequence();
                     self.accept(TokenType::RightParen);
                     self.finish(&mut expr_pos);
-                    expr =
-                        CallExpression(CallExpressionState::new_with_position(id, aps, expr_pos));
+                    CallExpression(CallExpressionState::new_with_position(id, aps, expr_pos))
                 } else {
                     let vname = self.parse_vname(id);
                     self.finish(&mut expr_pos);
-                    expr =
-                        VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos));
+                    VnameExpression(VnameExpressionState::new_with_position(vname, expr_pos))
                 }
             }
 
@@ -677,14 +653,14 @@ impl Parser {
                 let op = self.parse_operator();
                 let expr1 = self.parse_secondary_expression();
                 self.finish(&mut expr_pos);
-                expr =
-                    UnaryExpression(UnaryExpressionState::new_with_position(op, expr1, expr_pos));
+                UnaryExpression(UnaryExpressionState::new_with_position(op, expr1, expr_pos))
             }
 
             TokenType::LeftParen => {
                 self.accept_it();
-                expr = self.parse_expression();
+                let expr = self.parse_expression();
                 self.accept(TokenType::RightParen);
+                expr
             }
 
             TokenType::LeftSquareBracket => {
@@ -696,7 +672,7 @@ impl Parser {
                 let ra = self.parse_record_aggregate();
                 self.accept(TokenType::RightCurlyBracket);
                 self.finish(&mut expr_pos);
-                expr = RecordExpression(RecordExpressionState::new_with_position(ra, expr_pos));
+                RecordExpression(RecordExpressionState::new_with_position(ra, expr_pos))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -707,8 +683,6 @@ impl Parser {
                 self.current_token.position,
             ))),
         }
-
-        expr
     }
 
     ///
