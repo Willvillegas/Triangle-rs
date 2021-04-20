@@ -142,32 +142,31 @@ impl Parser {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
 
-                match self.current_token.kind {
-                    TokenType::Becomes => {
+                if self.current_token.kind == TokenType::LeftParen {
+                    self.accept_it();
+                    let aps = self.parse_actual_parameter_sequence();
+                    self.accept(TokenType::RightParen);
+                    self.finish(&mut cmd_pos);
+                    cmd = CallCommand(CallCommandState::new_with_position(id, aps, cmd_pos));
+                } else {
+                    let vname = self.parse_vname(id);
+
+                    if self.current_token.kind == TokenType::Becomes {
                         self.accept_it();
-                        let vname = self.parse_vname(id);
                         let expr = self.parse_expression();
                         self.finish(&mut cmd_pos);
                         cmd = AssignCommand(AssignCommandState::new_with_position(
                             vname, expr, cmd_pos,
                         ));
+                    } else {
+                        error::report_error_and_exit(GenError::from(ParserError::new(
+                            &format!(
+                                "expected to find `:=`, found `{:?}` instead",
+                                self.current_token.spelling
+                            ),
+                            self.current_token.position,
+                        )));
                     }
-
-                    TokenType::LeftParen => {
-                        self.accept_it();
-                        let aps = self.parse_actual_parameter_sequence();
-                        self.accept(TokenType::RightParen);
-                        self.finish(&mut cmd_pos);
-                        cmd = CallCommand(CallCommandState::new_with_position(id, aps, cmd_pos));
-                    }
-
-                    _ => error::report_error_and_exit(GenError::from(ParserError::new(
-                        &format!(
-                            "expected either `:=` or `(`, but found {:?}",
-                            self.current_token.spelling
-                        ),
-                        self.current_token.position,
-                    ))),
                 }
             }
 
@@ -338,7 +337,14 @@ impl Parser {
                 td = SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos));
             }
 
-            TokenType::Array => todo!(),
+            TokenType::Array => {
+                self.accept_it();
+                let il = self.parse_integer_literal();
+                self.accept(TokenType::Of);
+                let td1 = self.parse_type_denoter();
+                self.finish(&mut td_pos);
+                td = ArrayTypeDenoter(ArrayTypeDenoterState::new_with_position(il, td1, td_pos));
+            }
 
             TokenType::Record => {
                 self.accept(TokenType::Record);
@@ -449,8 +455,33 @@ impl Parser {
                 self.finish(&mut fp_pos);
                 fp = VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos));
             }
-            TokenType::Procedure => todo!(),
-            TokenType::Function => todo!(),
+
+            TokenType::Procedure => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::LeftParen);
+                let fps = self.parse_formal_parameter_sequence();
+                self.accept(TokenType::RightParen);
+                self.finish(&mut fp_pos);
+                fp = ProcFormalParameter(ProcFormalParameterState::new_with_position(
+                    id, fps, fp_pos,
+                ));
+            }
+
+            TokenType::Function => {
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.accept(TokenType::LeftParen);
+                let fps = self.parse_formal_parameter_sequence();
+                self.accept(TokenType::RightParen);
+                self.accept(TokenType::Colon);
+                let td = self.parse_type_denoter();
+                self.finish(&mut fp_pos);
+                fp = FuncFormalParameter(FuncFormalParameterState::new_with_position(
+                    id, fps, td, fp_pos,
+                ));
+            }
+
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
                 &format!(
                     "{:?} cannot start a formal parameter",
@@ -516,11 +547,17 @@ impl Parser {
             }
 
             TokenType::Procedure => {
-                todo!()
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.finish(&mut ap_pos);
+                ap = ProcActualParameter(ProcActualParameterState::new_with_position(id, ap_pos));
             }
 
             TokenType::Function => {
-                todo!()
+                self.accept_it();
+                let id = self.parse_identifier();
+                self.finish(&mut ap_pos);
+                ap = FuncActualParameter(FuncActualParameterState::new_with_position(id, ap_pos));
             }
 
             _ => {

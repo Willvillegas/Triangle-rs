@@ -480,7 +480,7 @@ impl fmt::Display for ActualParameterSequence {
                 write!(f, "SingleActualParameterSequence({})", aps)
             }
             MultipleActualParameterSequence(ref aps) => {
-                write!(f, "EmptyActualParameterSequence({})", aps)
+                write!(f, "MultipleActualParameterSequence({})", aps)
             }
         }
     }
