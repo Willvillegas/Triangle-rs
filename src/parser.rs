@@ -587,7 +587,12 @@ impl Parser {
             }
 
             TokenType::Let => {
-                todo!()
+                self.accept_it();
+                let decl = self.parse_declaration();
+                self.accept(TokenType::In);
+                let expr = self.parse_expression();
+                self.finish(&mut expr_pos);
+                LetExpression(LetExpressionState::new_with_position(decl, expr, expr_pos))
             }
 
             _ => self.parse_secondary_expression(),
