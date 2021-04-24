@@ -2,13 +2,13 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
-use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FormalParameterSequence {
     EmptyFormalParameterSequence(EmptyFormalParameterSequenceState),
     SingleFormalParameterSequence(SingleFormalParameterSequenceState),
@@ -64,7 +64,7 @@ impl Ast for FormalParameterSequence {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EmptyFormalParameterSequenceState {
     pub common_state: CommonState,
 }
@@ -103,7 +103,7 @@ impl Ast for EmptyFormalParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleFormalParameterSequenceState {
     pub fp: Box<FormalParameter>,
     pub common_state: CommonState,
@@ -144,7 +144,7 @@ impl Ast for SingleFormalParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultipleFormalParameterSequenceState {
     pub fp: Box<FormalParameter>,
     pub fps: Box<FormalParameterSequence>,
@@ -195,7 +195,7 @@ impl Ast for MultipleFormalParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FormalParameter {
     ConstFormalParameter(ConstFormalParameterState),
     FuncFormalParameter(FuncFormalParameterState),
@@ -245,7 +245,7 @@ impl fmt::Display for FormalParameter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarFormalParameterState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,
@@ -288,7 +288,7 @@ impl Ast for VarFormalParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstFormalParameterState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,
@@ -335,7 +335,7 @@ impl Ast for ConstFormalParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcFormalParameterState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
@@ -386,7 +386,7 @@ impl Ast for ProcFormalParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FuncFormalParameterState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
@@ -440,7 +440,7 @@ impl Ast for FuncFormalParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ActualParameterSequence {
     EmptyActualParameterSequence(EmptyActualParameterSequenceState),
     SingleActualParameterSequence(SingleActualParameterSequenceState),
@@ -498,7 +498,7 @@ impl Ast for ActualParameterSequence {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EmptyActualParameterSequenceState {
     pub common_state: CommonState,
 }
@@ -537,7 +537,7 @@ impl Ast for EmptyActualParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleActualParameterSequenceState {
     pub ap: Box<ActualParameter>,
     pub common_state: CommonState,
@@ -578,7 +578,7 @@ impl Ast for SingleActualParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultipleActualParameterSequenceState {
     pub ap: Box<ActualParameter>,
     pub aps: Box<ActualParameterSequence>,
@@ -629,7 +629,7 @@ impl Ast for MultipleActualParameterSequenceState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ActualParameter {
     ConstActualParameter(ConstActualParameterState),
     FuncActualParameter(FuncActualParameterState),
@@ -679,7 +679,7 @@ impl Ast for ActualParameter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarActualParameterState {
     pub vname: Box<Vname>,
     pub common_state: CommonState,
@@ -720,7 +720,7 @@ impl Ast for VarActualParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstActualParameterState {
     pub expr: Box<Expression>,
     pub common_state: CommonState,
@@ -761,7 +761,7 @@ impl Ast for ConstActualParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcActualParameterState {
     pub id: Identifier,
     pub common_state: CommonState,
@@ -802,7 +802,7 @@ impl Ast for ProcActualParameterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FuncActualParameterState {
     pub id: Identifier,
     pub common_state: CommonState,

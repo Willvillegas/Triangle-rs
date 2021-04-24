@@ -2,7 +2,7 @@
 //! These entities are used by the encoder to
 //! generate the correct bytecode for the TAM (Triangle Abstract Machine).
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum RuntimeEntity {
     None,
     KnownAddress(KnownAddressState),
@@ -17,7 +17,7 @@ pub enum RuntimeEntity {
 }
 
 /// represents the declared address of a runtime entity
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityAddress {
     pub level: usize,
     pub displacement: isize,
@@ -32,7 +32,7 @@ impl EntityAddress {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KnownAddressState {
     pub size: usize,
     pub address: EntityAddress,
@@ -47,7 +47,7 @@ impl KnownAddressState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnknownAddressState {
     size: usize,
     address: EntityAddress,
@@ -62,7 +62,7 @@ impl UnknownAddressState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KnownValueState {
     size: usize,
     value: i32,
@@ -74,7 +74,7 @@ impl KnownValueState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnknownValueState {
     size: usize,
     address: EntityAddress,
@@ -89,7 +89,7 @@ impl UnknownValueState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct KnownRoutineState {
     size: usize,
     address: EntityAddress,
@@ -104,7 +104,7 @@ impl KnownRoutineState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnknownRoutineState {
     size: usize,
     address: EntityAddress,
@@ -119,7 +119,7 @@ impl UnknownRoutineState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PrimitiveRoutineState {
     size: usize,
     displacement: isize,
@@ -131,7 +131,7 @@ impl PrimitiveRoutineState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EqualityRoutineState {
     size: usize,
     displacement: isize,
@@ -143,7 +143,7 @@ impl EqualityRoutineState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FieldState {
     size: usize,
     offset: isize,
@@ -155,7 +155,7 @@ impl FieldState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TypeRepresentationState {
     size: usize,
 }

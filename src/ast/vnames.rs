@@ -2,11 +2,11 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
-use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Vname {
     DotVname(DotVnameState),
     SimpleVname(SimpleVnameState),
@@ -52,7 +52,7 @@ impl Ast for Vname {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SimpleVnameState {
     pub id: Identifier,
     pub common_state: CommonState,
@@ -92,7 +92,7 @@ impl Ast for SimpleVnameState {
         visitor.visit_simple_vname(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubscriptVnameState {
     pub vname: Box<Vname>,
     pub expr: Box<Expression>,
@@ -134,7 +134,8 @@ impl Ast for SubscriptVnameState {
         visitor.visit_subscript_vname(self, arg)
     }
 }
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct DotVnameState {
     pub vname: Box<Vname>,
     pub id: Identifier,

@@ -5,7 +5,8 @@
 //! Checker, and ultimately used by the Encoder to generate binary code for the TAM (Triangle
 //! Abstract Machine).
 
-use crate::scanner;
+use crate::scanner::SourcePosition;
+
 use std::default;
 use std::fmt;
 
@@ -25,6 +26,7 @@ use declarations::*;
 use expressions::*;
 use parameters::*;
 use primitives::*;
+use runtime_entities::RuntimeEntity;
 use typedenoters::*;
 use vnames::*;
 
@@ -249,14 +251,14 @@ pub struct Frame {
 /// of the Triangle language.
 
 /// Common state that is shared by every Ast
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommonState {
-    pub position: scanner::SourcePosition,
-    pub entity: runtime_entities::RuntimeEntity,
+    pub position: SourcePosition,
+    pub entity: RuntimeEntity,
 }
 
 impl CommonState {
-    pub fn new(position: scanner::SourcePosition, entity: runtime_entities::RuntimeEntity) -> Self {
+    pub fn new(position: SourcePosition, entity: runtime_entities::RuntimeEntity) -> Self {
         CommonState { position, entity }
     }
 }
@@ -264,7 +266,7 @@ impl CommonState {
 impl default::Default for CommonState {
     fn default() -> Self {
         CommonState {
-            position: scanner::SourcePosition::default(),
+            position: SourcePosition::default(),
             entity: runtime_entities::RuntimeEntity::None,
         }
     }
@@ -284,7 +286,7 @@ impl Program {
         }
     }
 
-    pub fn new_with_position(cmd: Command, position: scanner::SourcePosition) -> Self {
+    pub fn new_with_position(cmd: Command, position: SourcePosition) -> Self {
         let mut program = Program::new(cmd);
         program.common_state.position = position;
         program

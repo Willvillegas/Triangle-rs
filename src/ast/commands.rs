@@ -9,7 +9,7 @@ use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Command {
     AssignCommand(AssignCommandState),
     CallCommand(CallCommandState),
@@ -71,7 +71,7 @@ impl Ast for Command {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AssignCommandState {
     pub vname: Box<Vname>,
     pub expr: Box<Expression>,
@@ -114,7 +114,7 @@ impl Ast for AssignCommandState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CallCommandState {
     pub id: Identifier,
     pub aps: Box<ActualParameterSequence>,
@@ -161,7 +161,7 @@ impl Ast for CallCommandState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EmptyCommandState {
     pub common_state: CommonState,
 }
@@ -199,7 +199,7 @@ impl Ast for EmptyCommandState {
         visitor.visit_empty_command(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LetCommandState {
     pub decl: Box<Declaration>,
     pub cmd: Box<Command>,
@@ -241,7 +241,7 @@ impl Ast for LetCommandState {
         visitor.visit_let_command(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfCommandState {
     pub expr: Box<Expression>,
     pub cmd1: Box<Command>,
@@ -295,7 +295,7 @@ impl Ast for IfCommandState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WhileCommandState {
     pub expr: Box<Expression>,
     pub cmd: Box<Command>,
@@ -338,7 +338,7 @@ impl Ast for WhileCommandState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SequentialCommandState {
     pub cmd1: Box<Command>,
     pub cmd2: Box<Command>,

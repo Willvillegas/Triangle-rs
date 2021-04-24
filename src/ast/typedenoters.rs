@@ -1,11 +1,12 @@
 //! type-denoter asts
 
 use super::primitives::{Identifier, IntegerLiteral};
-use super::scanner::SourcePosition;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
+use std::default::Default;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TypeDenoter {
     AnyTypeDenoter(AnyTypeDenoterState),
     ArrayTypeDenoter(ArrayTypeDenoterState),
@@ -70,7 +71,13 @@ impl Ast for TypeDenoter {
     }
 }
 
-#[derive(Debug)]
+impl Default for TypeDenoter {
+    fn default() -> Self {
+        TypeDenoter::ErrorTypeDenoter(ErrorTypeDenoterState::new())
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct BoolTypeDenoterState {
     common_state: CommonState,
 }
@@ -108,7 +115,7 @@ impl Ast for BoolTypeDenoterState {
         visitor.visit_bool_type_denoter(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CharTypeDenoterState {
     common_state: CommonState,
 }
@@ -147,7 +154,7 @@ impl Ast for CharTypeDenoterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntTypeDenoterState {
     common_state: CommonState,
 }
@@ -185,7 +192,7 @@ impl Ast for IntTypeDenoterState {
         visitor.visit_int_type_denoter(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AnyTypeDenoterState {
     common_state: CommonState,
 }
@@ -223,7 +230,8 @@ impl Ast for AnyTypeDenoterState {
         visitor.visit_any_type_denoter(self, arg)
     }
 }
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct ErrorTypeDenoterState {
     common_state: CommonState,
 }
@@ -261,7 +269,7 @@ impl Ast for ErrorTypeDenoterState {
         visitor.visit_error_type_denoter(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SimpleTypeDenoterState {
     pub id: Identifier,
     pub common_state: CommonState,
@@ -301,7 +309,7 @@ impl Ast for SimpleTypeDenoterState {
         visitor.visit_simple_type_denoter(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArrayTypeDenoterState {
     pub il: IntegerLiteral,
     pub td: Box<TypeDenoter>,
@@ -348,7 +356,7 @@ impl Ast for ArrayTypeDenoterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RecordTypeDenoterState {
     pub ftd: Box<FieldTypeDenoter>,
     pub common_state: CommonState,
@@ -389,7 +397,7 @@ impl Ast for RecordTypeDenoterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FieldTypeDenoter {
     SingleFieldTypeDenoter(SingleFieldTypeDenoterState),
     MultipleFieldTypeDenoter(MultipleFieldTypeDenoterState),
@@ -424,7 +432,7 @@ impl fmt::Display for FieldTypeDenoter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleFieldTypeDenoterState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,
@@ -471,7 +479,7 @@ impl Ast for SingleFieldTypeDenoterState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultipleFieldTypeDenoterState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,

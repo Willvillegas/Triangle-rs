@@ -4,12 +4,12 @@ use super::aggregates::{ArrayAggregate, RecordAggregate};
 use super::declarations::Declaration;
 use super::parameters::ActualParameterSequence;
 use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
-use super::scanner::SourcePosition;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     ArrayExpression(ArrayExpressionState),
     BinaryExpression(BinaryExpressionState),
@@ -87,7 +87,7 @@ impl Ast for Expression {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerExpressionState {
     pub il: IntegerLiteral,
     pub common_state: CommonState,
@@ -128,7 +128,7 @@ impl Ast for IntegerExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CharacterExpressionState {
     pub cl: CharacterLiteral,
     pub common_state: CommonState,
@@ -169,7 +169,7 @@ impl Ast for CharacterExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EmptyExpressionState {
     pub common_state: CommonState,
 }
@@ -208,16 +208,16 @@ impl Ast for EmptyExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VnameExpressionState {
-    pub vname: Vname,
+    pub vname: Box<Vname>,
     pub common_state: CommonState,
 }
 
 impl VnameExpressionState {
     pub fn new(vname: Vname) -> Self {
         VnameExpressionState {
-            vname: vname,
+            vname: Box::new(vname),
             common_state: CommonState::default(),
         }
     }
@@ -249,10 +249,10 @@ impl Ast for VnameExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CallExpressionState {
     pub id: Identifier,
-    pub aps: ActualParameterSequence,
+    pub aps: Box<ActualParameterSequence>,
     pub common_state: CommonState,
 }
 
@@ -260,7 +260,7 @@ impl CallExpressionState {
     pub fn new(id: Identifier, aps: ActualParameterSequence) -> Self {
         CallExpressionState {
             id: id,
-            aps: aps,
+            aps: Box::new(aps),
             common_state: CommonState::default(),
         }
     }
@@ -296,7 +296,7 @@ impl Ast for CallExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IfExpressionState {
     pub expr1: Box<Expression>,
     pub expr2: Box<Expression>,
@@ -350,7 +350,7 @@ impl Ast for IfExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LetExpressionState {
     pub decl: Box<Declaration>,
     pub expr: Box<Expression>,
@@ -397,7 +397,7 @@ impl Ast for LetExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnaryExpressionState {
     pub op: Operator,
     pub expr: Box<Expression>,
@@ -440,7 +440,7 @@ impl Ast for UnaryExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinaryExpressionState {
     pub expr1: Box<Expression>,
     pub op: Operator,
@@ -494,7 +494,7 @@ impl Ast for BinaryExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArrayExpressionState {
     pub aa: Box<ArrayAggregate>,
     pub elem_count: usize,
@@ -537,7 +537,7 @@ impl Ast for ArrayExpressionState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RecordExpressionState {
     pub ra: Box<RecordAggregate>,
     pub common_state: CommonState,

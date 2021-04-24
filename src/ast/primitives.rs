@@ -1,12 +1,12 @@
 //! primitive/terminal asts
 
 use super::declarations::Declaration;
-use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerLiteral {
     pub spelling: String,
     pub common_state: CommonState,
@@ -41,7 +41,7 @@ impl fmt::Display for IntegerLiteral {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CharacterLiteral {
     pub spelling: String,
     pub common_state: CommonState,
@@ -76,7 +76,7 @@ impl fmt::Display for CharacterLiteral {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub spelling: String,
     pub td: Option<Box<TypeDenoter>>,
@@ -115,7 +115,7 @@ impl fmt::Display for Identifier {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Operator {
     pub spelling: String,
     pub decl: Option<Box<Declaration>>,

@@ -13,12 +13,26 @@ use crate::ast::typedenoters::*;
 use crate::ast::vnames::*;
 use crate::ast::*;
 
-pub struct Checker {}
+mod id_table;
+mod std_env;
+
+use id_table::IdentificationTable;
+use std_env::StdEnvironment;
+
+pub struct Checker {
+    id_table: IdentificationTable,
+}
 
 impl Checker {
     pub fn new() -> Self {
-        Checker {}
+        let mut checker = Checker {
+            id_table: IdentificationTable::new(),
+        };
+        checker.establish_standard_environment();
+        checker
     }
+
+    fn establish_standard_environment(&mut self) {}
 
     pub fn check(&self, program: &mut Program) {}
 }

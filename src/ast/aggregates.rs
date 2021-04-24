@@ -2,12 +2,12 @@
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
-use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ArrayAggregate {
     SingleArrayAggregate(SingleArrayAggregateState),
     MultipleArrayAggregate(MultipleArrayAggregateState),
@@ -51,7 +51,7 @@ impl Ast for ArrayAggregate {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleArrayAggregateState {
     pub expr: Box<Expression>,
     pub td: Option<Box<TypeDenoter>>,
@@ -96,11 +96,11 @@ impl Ast for SingleArrayAggregateState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultipleArrayAggregateState {
     pub expr: Box<Expression>,
     pub aa: Box<ArrayAggregate>,
-    pub td: Option<Box<TypeDenoter>>,
+    pub td: Option<TypeDenoter>,
     pub elem_count: usize,
     pub common_state: CommonState,
 }
@@ -151,7 +151,7 @@ impl Ast for MultipleArrayAggregateState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum RecordAggregate {
     SingleRecordAggregate(SingleRecordAggregateState),
     MultipleRecordAggregate(MultipleRecordAggregateState),
@@ -195,7 +195,7 @@ impl Ast for RecordAggregate {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SingleRecordAggregateState {
     pub id: Identifier,
     pub expr: Box<Expression>,
@@ -242,7 +242,7 @@ impl Ast for SingleRecordAggregateState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultipleRecordAggregateState {
     pub id: Identifier,
     pub expr: Box<Expression>,

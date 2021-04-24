@@ -4,12 +4,12 @@ use super::commands::Command;
 use super::expressions::Expression;
 use super::parameters::FormalParameterSequence;
 use super::primitives::{Identifier, Operator};
-use super::scanner::SourcePosition;
 use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
+use crate::scanner::SourcePosition;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Declaration {
     BinaryOperatorDeclaration(BinaryOperatorDeclarationState),
     ConstDeclaration(ConstDeclarationState),
@@ -88,7 +88,7 @@ impl Ast for Declaration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BinaryOperatorDeclarationState {
     pub arg1type: Box<TypeDenoter>,
     pub op: Operator,
@@ -153,7 +153,7 @@ impl Ast for BinaryOperatorDeclarationState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnaryOperatorDeclarationState {
     pub op: Operator,
     pub argtype: Box<TypeDenoter>,
@@ -207,7 +207,7 @@ impl Ast for UnaryOperatorDeclarationState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstDeclarationState {
     pub id: Identifier,
     pub expr: Box<Expression>,
@@ -250,7 +250,7 @@ impl Ast for ConstDeclarationState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarDeclarationState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,
@@ -293,7 +293,7 @@ impl Ast for VarDeclarationState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcDeclarationState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
@@ -346,7 +346,7 @@ impl Ast for ProcDeclarationState {
         visitor.visit_proc_declaration(self, arg)
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FuncDeclarationState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
@@ -410,7 +410,8 @@ impl Ast for FuncDeclarationState {
         visitor.visit_func_declaration(self, arg)
     }
 }
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct TypeDeclarationState {
     pub id: Identifier,
     pub td: Box<TypeDenoter>,
@@ -452,7 +453,8 @@ impl Ast for TypeDeclarationState {
         visitor.visit_type_declaration(self, arg)
     }
 }
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct SequentialDeclarationState {
     pub decl1: Box<Declaration>,
     pub decl2: Box<Declaration>,
