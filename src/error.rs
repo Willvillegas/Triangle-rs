@@ -1,81 +1,45 @@
 //! Error-handling module.
 
-use crate::scanner::SourcePosition;
 use std::error::Error;
-use std::fmt;
 use std::io::{stderr, Write};
 
-pub(crate) type GenError = Box<dyn Error>;
-pub(crate) type GenResult<T> = Result<T, GenError>;
+pub type GenError = Box<dyn Error>;
+pub type GenResult<T> = Result<T, GenError>;
+
+macro_rules! impl_errors {
+    ( $( $error_type:ident )* ) => {
+        $(
+            #[derive(Debug)]
+            pub struct $error_type {
+                message: String,
+                position: $crate::scanner::SourcePosition,
+            }
+
+            impl $error_type {
+                pub fn new(message: &str, position: $crate::scanner::SourcePosition) -> Self {
+                    $error_type {
+                        message: String::from(message),
+                        position: position,
+                    }
+                }
+            }
+
+            impl std::error::Error for $error_type {}
+
+            impl std::fmt::Display for $error_type {
+                fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    write!(f, "{}",
+                        &format!(concat!(stringify!($error_type), " error at line {} and column {}: {}"),
+                            self.position.start.line, self.position.start.column, self.message))
+                }
+            }
+          )*
+    };
+}
+
+impl_errors!(ScannerError ParserError CheckerError EncoderError CompilerError);
 
 pub fn report_error_and_exit(error: GenError) -> ! {
     let _ = writeln!(stderr(), "{}", error);
     std::process::exit(1);
 }
-
-#[derive(Debug)]
-pub(crate) struct ScannerError {
-    message: String,
-    position: SourcePosition,
-}
-
-impl ScannerError {
-    pub fn new(message: &str, position: SourcePosition) -> Self {
-        ScannerError {
-            message: String::from(message),
-            position: position,
-        }
-    }
-}
-
-impl fmt::Display for ScannerError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Scanner error at line {}, column {}: {}",
-            self.position.start.line, self.position.start.column, &self.message
-        )
-    }
-}
-
-impl Error for ScannerError {}
-
-#[derive(Debug)]
-pub(crate) struct ParserError {
-    message: String,
-    position: SourcePosition,
-}
-
-impl ParserError {
-    pub fn new(message: &str, position: SourcePosition) -> Self {
-        ParserError {
-            message: String::from(message),
-            position: position,
-        }
-    }
-}
-
-impl fmt::Display for ParserError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Parser error from line {}, column {} to line {}, column {}: {}",
-            self.position.start.line,
-            self.position.start.column,
-            self.position.finish.line,
-            self.position.finish.column,
-            &self.message
-        )
-    }
-}
-
-impl Error for ParserError {}
-
-#[derive(Debug)]
-pub(crate) struct CheckerError {}
-
-#[derive(Debug)]
-pub(crate) struct EncoderError {}
-
-#[derive(Debug)]
-pub(crate) struct CompilerError {}

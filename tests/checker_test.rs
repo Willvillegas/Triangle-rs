@@ -61,6 +61,7 @@ fn test_hello() {
 fn test_inc() {
     let source_file = "samples/source/inc.t";
     let mut parser = Parser::new(Scanner::new(source_file));
+    let mut program = parser.parse_program();
 }
 
 #[test]
