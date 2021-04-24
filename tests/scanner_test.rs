@@ -1738,7 +1738,7 @@ fn test_print_array() {
 }
 
 #[test]
-fn test_print_array_degnerate() {
+fn test_print_array_degenerate() {
     let source_file = "samples/source/print_array_degenerate.t";
     let mut scanner = Scanner::new(source_file);
     let test_cases = vec![
