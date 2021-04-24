@@ -1,6 +1,7 @@
-use crate::ast::declarations::Declaration;
+use crate::ast::commands::*;
 use crate::ast::declarations::*;
 use crate::ast::expressions::*;
+use crate::ast::parameters::*;
 use crate::ast::primitives::*;
 use crate::ast::typedenoters::*;
 use std::default::Default;
@@ -13,6 +14,9 @@ lazy_static! {
         Mutex::new(StdEnvironment::default());
 }
 
+/// The Standard Environment provides pre-defined functionality in the form of constants, types,
+/// operators, procedures, and function declarations. It is what is known as the "Prelude" in some
+/// other languages
 pub struct StdEnvironment {
     pub any_type: TypeDenoter,
     pub error_type: TypeDenoter,
@@ -73,11 +77,73 @@ impl StdEnvironment {
         arg_type: TypeDenoter,
         res_type: TypeDenoter,
     ) -> Declaration {
-        Declaration::UnaryOperatorDeclaration(UnaryOperatorDeclarationState::new(
+        let mut decl = Declaration::UnaryOperatorDeclaration(UnaryOperatorDeclarationState::new(
             Operator::new(id),
             arg_type,
             res_type,
-        ))
+        ));
+
+        let decl_clone = decl.clone();
+
+        if let Declaration::UnaryOperatorDeclaration(ref mut state) = decl {
+            state.op.decl = Some(Box::new(decl_clone));
+        }
+
+        decl
+    }
+
+    fn declare_std_binary_operator(
+        id: &str,
+        arg1_type: TypeDenoter,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
+    ) -> Declaration {
+        let mut decl = Declaration::BinaryOperatorDeclaration(BinaryOperatorDeclarationState::new(
+            arg1_type,
+            Operator::new(id),
+            arg2_type,
+            res_type,
+        ));
+
+        let decl_clone = decl.clone();
+        if let Declaration::BinaryOperatorDeclaration(ref mut state) = decl {
+            state.op.decl = Some(Box::new(decl_clone));
+        }
+
+        decl
+    }
+
+    fn declare_std_procedure(id: &str, fps: FormalParameterSequence, cmd: Command) -> Declaration {
+        let mut decl =
+            Declaration::ProcDeclaration(ProcDeclarationState::new(Identifier::new(id), fps, cmd));
+
+        let decl_clone = decl.clone();
+        if let Declaration::ProcDeclaration(ref mut proc) = decl {
+            proc.id.decl = Some(Box::new(decl_clone));
+        }
+
+        decl
+    }
+
+    fn declare_std_function(
+        id: &str,
+        fps: FormalParameterSequence,
+        td: TypeDenoter,
+        expr: Expression,
+    ) -> Declaration {
+        let mut decl = Declaration::FuncDeclaration(FuncDeclarationState::new(
+            Identifier::new(id),
+            fps,
+            td,
+            expr,
+        ));
+
+        let decl_clone = decl.clone();
+        if let Declaration::FuncDeclaration(ref mut func) = decl {
+            func.id.decl = Some(Box::new(decl_clone));
+        }
+
+        decl
     }
 }
 
@@ -97,32 +163,102 @@ impl Default for StdEnvironment {
         let true_decl = StdEnvironment::declare_std_const("true", "1");
         let not_decl =
             StdEnvironment::declare_std_unary_operator("\\", bool_type.clone(), bool_type.clone());
-        let id_decl = todo!();
 
-        let and_decl = todo!();
-        let or_decl = todo!();
+        let and_decl = StdEnvironment::declare_std_binary_operator(
+            "/\\",
+            bool_type.clone(),
+            bool_type.clone(),
+            bool_type.clone(),
+        );
+
+        let or_decl = StdEnvironment::declare_std_binary_operator(
+            "\\/",
+            bool_type.clone(),
+            bool_type.clone(),
+            bool_type.clone(),
+        );
+
+        let neg_decl =
+            StdEnvironment::declare_std_unary_operator("-", int_type.clone(), int_type.clone());
+        let add_decl = StdEnvironment::declare_std_binary_operator(
+            "+",
+            int_type.clone(),
+            int_type.clone(),
+            int_type.clone(),
+        );
+        let sub_decl = StdEnvironment::declare_std_binary_operator(
+            "-",
+            int_type.clone(),
+            int_type.clone(),
+            int_type.clone(),
+        );
+        let mult_decl = StdEnvironment::declare_std_binary_operator(
+            "*",
+            int_type.clone(),
+            int_type.clone(),
+            int_type.clone(),
+        );
+        let div_decl = StdEnvironment::declare_std_binary_operator(
+            "/",
+            int_type.clone(),
+            int_type.clone(),
+            int_type.clone(),
+        );
+        let mod_decl = StdEnvironment::declare_std_binary_operator(
+            "//",
+            int_type.clone(),
+            int_type.clone(),
+            int_type.clone(),
+        );
+        let lt_decl = StdEnvironment::declare_std_binary_operator(
+            "<",
+            int_type.clone(),
+            int_type.clone(),
+            bool_type.clone(),
+        );
+        let le_decl = StdEnvironment::declare_std_binary_operator(
+            "<=",
+            int_type.clone(),
+            int_type.clone(),
+            bool_type.clone(),
+        );
+        let gt_decl = StdEnvironment::declare_std_binary_operator(
+            ">",
+            int_type.clone(),
+            int_type.clone(),
+            bool_type.clone(),
+        );
+        let ge_decl = StdEnvironment::declare_std_binary_operator(
+            ">=",
+            int_type.clone(),
+            int_type.clone(),
+            bool_type.clone(),
+        );
+        let eq_decl = StdEnvironment::declare_std_binary_operator(
+            "=",
+            any_type.clone(),
+            any_type.clone(),
+            bool_type.clone(),
+        );
+        let ne_decl = StdEnvironment::declare_std_binary_operator(
+            "/=",
+            any_type.clone(),
+            any_type.clone(),
+            bool_type.clone(),
+        );
+
+        let put_decl = todo!();
+        let get_decl = todo!();
+        let geteol_decl = todo!();
+        let getint_decl = todo!();
+        let puteol_decl = todo!();
+        let putint_decl = todo!();
+
+        let id_decl = todo!();
         let succ_decl = todo!();
         let pred_decl = todo!();
-        let neg_decl = todo!();
-        let add_decl = todo!();
-        let sub_decl = todo!();
-        let mult_decl = todo!();
-        let div_decl = todo!();
-        let mod_decl = todo!();
-        let lt_decl = todo!();
-        let le_decl = todo!();
-        let ge_decl = todo!();
-        let gt_decl = todo!();
-        let eq_decl = todo!();
-        let ne_decl = todo!();
         let eol_decl = todo!();
         let eof_decl = todo!();
-        let get_decl = todo!();
-        let put_decl = todo!();
-        let geteol_decl = todo!();
-        let puteol_decl = todo!();
-        let getint_decl = todo!();
-        let putint_decl = todo!();
         let new_decl = todo!();
         let dispose_decl = todo!();
 

@@ -90,37 +90,37 @@ impl Ast for Declaration {
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorDeclarationState {
-    pub arg1type: Box<TypeDenoter>,
+    pub arg1_type: Box<TypeDenoter>,
     pub op: Operator,
-    pub arg2type: Box<TypeDenoter>,
-    pub restype: Box<TypeDenoter>,
+    pub arg2_type: Box<TypeDenoter>,
+    pub res_type: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl BinaryOperatorDeclarationState {
     pub fn new(
-        arg1type: TypeDenoter,
+        arg1_type: TypeDenoter,
         op: Operator,
-        arg2type: TypeDenoter,
-        restype: TypeDenoter,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
     ) -> Self {
         BinaryOperatorDeclarationState {
-            arg1type: Box::new(arg1type),
+            arg1_type: Box::new(arg1_type),
             op: op,
-            arg2type: Box::new(arg2type),
-            restype: Box::new(restype),
+            arg2_type: Box::new(arg2_type),
+            res_type: Box::new(res_type),
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
-        arg1type: TypeDenoter,
+        arg1_type: TypeDenoter,
         op: Operator,
-        arg2type: TypeDenoter,
-        restype: TypeDenoter,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
         position: SourcePosition,
     ) -> Self {
-        let mut binopdecl = BinaryOperatorDeclarationState::new(arg1type, op, arg2type, restype);
+        let mut binopdecl = BinaryOperatorDeclarationState::new(arg1_type, op, arg2_type, res_type);
         binopdecl.common_state.position = position;
         binopdecl
     }
@@ -128,10 +128,10 @@ impl BinaryOperatorDeclarationState {
 
 impl PartialEq for BinaryOperatorDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.arg1type == other.arg1type
+        self.arg1_type == other.arg1_type
             && self.op == other.op
-            && self.arg2type == other.arg2type
-            && self.restype == other.restype
+            && self.arg2_type == other.arg2_type
+            && self.res_type == other.res_type
     }
 }
 
@@ -142,7 +142,7 @@ impl fmt::Display for BinaryOperatorDeclarationState {
         write!(
             f,
             "BinaryOperatorDeclarationState::new({}, {}, {}, {})",
-            self.arg1type, self.op, self.arg2type, self.restype
+            self.arg1_type, self.op, self.arg2_type, self.res_type
         )
     }
 }
@@ -157,16 +157,16 @@ impl Ast for BinaryOperatorDeclarationState {
 pub struct UnaryOperatorDeclarationState {
     pub op: Operator,
     pub argtype: Box<TypeDenoter>,
-    pub restype: Box<TypeDenoter>,
+    pub res_type: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl UnaryOperatorDeclarationState {
-    pub fn new(op: Operator, argtype: TypeDenoter, restype: TypeDenoter) -> Self {
+    pub fn new(op: Operator, argtype: TypeDenoter, res_type: TypeDenoter) -> Self {
         UnaryOperatorDeclarationState {
             op: op,
             argtype: Box::new(argtype),
-            restype: Box::new(restype),
+            res_type: Box::new(res_type),
             common_state: CommonState::default(),
         }
     }
@@ -174,10 +174,10 @@ impl UnaryOperatorDeclarationState {
     pub fn new_with_position(
         op: Operator,
         argtype: TypeDenoter,
-        restype: TypeDenoter,
+        res_type: TypeDenoter,
         position: SourcePosition,
     ) -> Self {
-        let mut unopdecl = UnaryOperatorDeclarationState::new(op, argtype, restype);
+        let mut unopdecl = UnaryOperatorDeclarationState::new(op, argtype, res_type);
         unopdecl.common_state.position = position;
         unopdecl
     }
@@ -185,7 +185,7 @@ impl UnaryOperatorDeclarationState {
 
 impl PartialEq for UnaryOperatorDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.op == other.op && self.argtype == other.argtype && self.restype == other.restype
+        self.op == other.op && self.argtype == other.argtype && self.res_type == other.res_type
     }
 }
 
@@ -196,7 +196,7 @@ impl fmt::Display for UnaryOperatorDeclarationState {
         write!(
             f,
             "UnaryOperatorDeclarationState::new({}, {}, {})",
-            self.op, self.argtype, self.restype
+            self.op, self.argtype, self.res_type
         )
     }
 }
