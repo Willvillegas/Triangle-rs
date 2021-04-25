@@ -4,6 +4,7 @@ use super::declarations::Declaration;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
 use crate::scanner::SourcePosition;
+use std::default::Default;
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
@@ -113,6 +114,17 @@ impl Eq for Identifier {}
 impl fmt::Display for Identifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Identifier::new({:?})", self.spelling)
+    }
+}
+
+impl Default for Identifier {
+    fn default() -> Self {
+        Identifier {
+            spelling: String::from("default"),
+            td: None,
+            decl: None,
+            common_state: CommonState::default(),
+        }
     }
 }
 

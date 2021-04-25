@@ -348,7 +348,7 @@ impl Parser {
                 self.accept_it();
                 let il = self.parse_integer_literal();
                 self.accept(TokenType::Of);
-                let td1 = self.parse_type_denoter();
+                let td1 = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut td_pos);
                 ArrayTypeDenoter(ArrayTypeDenoterState::new_with_position(il, td1, td_pos))
             }
@@ -381,7 +381,7 @@ impl Parser {
 
         let id = self.parse_identifier();
         self.accept(TokenType::Colon);
-        let td = self.parse_type_denoter();
+        let td = Arc::new(Mutex::new(self.parse_type_denoter()));
 
         if self.current_token.kind == TokenType::Comma {
             self.accept_it();
@@ -444,7 +444,7 @@ impl Parser {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut fp_pos);
                 ConstFormalParameter(ConstFormalParameterState::new_with_position(id, td, fp_pos))
             }
@@ -453,7 +453,7 @@ impl Parser {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut fp_pos);
                 VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos))
             }
@@ -475,7 +475,7 @@ impl Parser {
                 let fps = self.parse_formal_parameter_sequence();
                 self.accept(TokenType::RightParen);
                 self.accept(TokenType::Colon);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut fp_pos);
                 FuncFormalParameter(FuncFormalParameterState::new_with_position(
                     id, fps, td, fp_pos,

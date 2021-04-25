@@ -56,6 +56,8 @@ pub struct StdEnvironment {
     pub puteol_decl: Arc<Mutex<Declaration>>,
     pub getint_decl: Arc<Mutex<Declaration>>,
     pub putint_decl: Arc<Mutex<Declaration>>,
+    pub chr_decl: Arc<Mutex<Declaration>>,
+    pub ord_decl: Arc<Mutex<Declaration>>,
     pub new_decl: Arc<Mutex<Declaration>>,
     pub dispose_decl: Arc<Mutex<Declaration>>,
 }
@@ -151,6 +153,8 @@ impl StdEnvironment {
 
 impl Default for StdEnvironment {
     fn default() -> Self {
+        // primitive types
+
         let any_type = Arc::new(Mutex::new(TypeDenoter::AnyTypeDenoter(
             AnyTypeDenoterState::new(),
         )));
@@ -171,12 +175,19 @@ impl Default for StdEnvironment {
             BoolTypeDenoterState::new(),
         )));
 
+        // declarations for the primitive types
+
         let char_decl = StdEnvironment::declare_std_type("Char", char_type.clone());
         let bool_decl = StdEnvironment::declare_std_type("Boolean", bool_type.clone());
         let int_decl = StdEnvironment::declare_std_type("Integer", int_type.clone());
 
+        // constants
+
         let false_decl = StdEnvironment::declare_std_const("false", "0");
         let true_decl = StdEnvironment::declare_std_const("true", "1");
+
+        // operators
+
         let not_decl =
             StdEnvironment::declare_std_unary_operator("\\", bool_type.clone(), bool_type.clone());
 
@@ -196,66 +207,77 @@ impl Default for StdEnvironment {
 
         let neg_decl =
             StdEnvironment::declare_std_unary_operator("-", int_type.clone(), int_type.clone());
+
         let add_decl = StdEnvironment::declare_std_binary_operator(
             "+",
             int_type.clone(),
             int_type.clone(),
             int_type.clone(),
         );
+
         let sub_decl = StdEnvironment::declare_std_binary_operator(
             "-",
             int_type.clone(),
             int_type.clone(),
             int_type.clone(),
         );
+
         let mult_decl = StdEnvironment::declare_std_binary_operator(
             "*",
             int_type.clone(),
             int_type.clone(),
             int_type.clone(),
         );
+
         let div_decl = StdEnvironment::declare_std_binary_operator(
             "/",
             int_type.clone(),
             int_type.clone(),
             int_type.clone(),
         );
+
         let mod_decl = StdEnvironment::declare_std_binary_operator(
             "//",
             int_type.clone(),
             int_type.clone(),
             int_type.clone(),
         );
+
         let lt_decl = StdEnvironment::declare_std_binary_operator(
             "<",
             int_type.clone(),
             int_type.clone(),
             bool_type.clone(),
         );
+
         let le_decl = StdEnvironment::declare_std_binary_operator(
             "<=",
             int_type.clone(),
             int_type.clone(),
             bool_type.clone(),
         );
+
         let gt_decl = StdEnvironment::declare_std_binary_operator(
             ">",
             int_type.clone(),
             int_type.clone(),
             bool_type.clone(),
         );
+
         let ge_decl = StdEnvironment::declare_std_binary_operator(
             ">=",
             int_type.clone(),
             int_type.clone(),
             bool_type.clone(),
         );
+
         let eq_decl = StdEnvironment::declare_std_binary_operator(
             "=",
             any_type.clone(),
             any_type.clone(),
             bool_type.clone(),
         );
+
         let ne_decl = StdEnvironment::declare_std_binary_operator(
             "/=",
             any_type.clone(),
@@ -263,21 +285,227 @@ impl Default for StdEnvironment {
             bool_type.clone(),
         );
 
-        let put_decl = todo!();
-        let get_decl = todo!();
-        let geteol_decl = todo!();
-        let getint_decl = todo!();
-        let puteol_decl = todo!();
-        let putint_decl = todo!();
+        // procedures
 
-        let id_decl = todo!();
-        let succ_decl = todo!();
-        let pred_decl = todo!();
-        let eol_decl = todo!();
-        let eof_decl = todo!();
-        let new_decl = todo!();
-        let dispose_decl = todo!();
+        let succ_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::VarFormalParameter(
+                    VarFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("succ", fps, cmd)
+        };
 
-        todo!()
+        let pred_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::VarFormalParameter(
+                    VarFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("pred", fps, cmd)
+        };
+
+        let put_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, char_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("put", fps, cmd)
+        };
+
+        let get_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::VarFormalParameter(
+                    VarFormalParameterState::new(dummy_id, char_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("get", fps, cmd)
+        };
+
+        let geteol_decl = {
+            let fps = FormalParameterSequence::EmptyFormalParameterSequence(
+                EmptyFormalParameterSequenceState::new(),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("geteol", fps, cmd)
+        };
+
+        let getint_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::VarFormalParameter(
+                    VarFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("getint", fps, cmd)
+        };
+
+        let puteol_decl = {
+            let fps = FormalParameterSequence::EmptyFormalParameterSequence(
+                EmptyFormalParameterSequenceState::new(),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("puteol", fps, cmd)
+        };
+
+        let putint_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("putint", fps, cmd)
+        };
+
+        let new_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("new", fps, cmd)
+        };
+
+        let dispose_decl = {
+            let dummy_id1 = Identifier::default();
+            let dummy_id2 = Identifier::default();
+            let fps = FormalParameterSequence::MultipleFormalParameterSequence(
+                MultipleFormalParameterSequenceState::new(
+                    FormalParameter::ConstFormalParameter(ConstFormalParameterState::new(
+                        dummy_id1,
+                        int_type.clone(),
+                    )),
+                    FormalParameterSequence::SingleFormalParameterSequence(
+                        SingleFormalParameterSequenceState::new(
+                            FormalParameter::ConstFormalParameter(ConstFormalParameterState::new(
+                                dummy_id2,
+                                int_type.clone(),
+                            )),
+                        ),
+                    ),
+                ),
+            );
+            let cmd = Command::EmptyCommand(EmptyCommandState::new());
+            StdEnvironment::declare_std_procedure("dispose", fps, cmd)
+        };
+
+        // functions
+
+        let id_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, any_type.clone()),
+                )),
+            );
+            let expr = Expression::EmptyExpression(EmptyExpressionState::new());
+            StdEnvironment::declare_std_function("id", fps, any_type.clone(), expr)
+        };
+
+        let chr_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, int_type.clone()),
+                )),
+            );
+            let expr = Expression::EmptyExpression(EmptyExpressionState::new());
+
+            StdEnvironment::declare_std_function("chr", fps, char_type.clone(), expr)
+        };
+
+        let ord_decl = {
+            let dummy_id = Identifier::default();
+            let fps = FormalParameterSequence::SingleFormalParameterSequence(
+                SingleFormalParameterSequenceState::new(FormalParameter::ConstFormalParameter(
+                    ConstFormalParameterState::new(dummy_id, char_type.clone()),
+                )),
+            );
+            let expr = Expression::EmptyExpression(EmptyExpressionState::new());
+            StdEnvironment::declare_std_function("ord", fps, int_type.clone(), expr)
+        };
+
+        let eol_decl = {
+            let fps = FormalParameterSequence::EmptyFormalParameterSequence(
+                EmptyFormalParameterSequenceState::new(),
+            );
+            let expr = Expression::EmptyExpression(EmptyExpressionState::new());
+            StdEnvironment::declare_std_function("eol", fps, bool_type.clone(), expr)
+        };
+
+        let eof_decl = {
+            let fps = FormalParameterSequence::EmptyFormalParameterSequence(
+                EmptyFormalParameterSequenceState::new(),
+            );
+            let expr = Expression::EmptyExpression(EmptyExpressionState::new());
+            StdEnvironment::declare_std_function("eof", fps, bool_type.clone(), expr)
+        };
+
+        StdEnvironment {
+            any_type,
+            error_type,
+            int_type,
+            char_type,
+            bool_type,
+
+            int_decl,
+            char_decl,
+            bool_decl,
+            false_decl,
+            true_decl,
+
+            id_decl,
+            not_decl,
+            and_decl,
+            or_decl,
+            succ_decl,
+            pred_decl,
+            neg_decl,
+            add_decl,
+            sub_decl,
+            mult_decl,
+            div_decl,
+            mod_decl,
+            lt_decl,
+            le_decl,
+            ge_decl,
+            gt_decl,
+            eq_decl,
+            ne_decl,
+            eol_decl,
+            eof_decl,
+            get_decl,
+            put_decl,
+            geteol_decl,
+            puteol_decl,
+            getint_decl,
+            putint_decl,
+            chr_decl,
+            ord_decl,
+            new_decl,
+            dispose_decl,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_print_default_std_env() {
+        println!("{:#?}", unsafe { STANDARD_ENVIRONMENT.lock().unwrap() });
     }
 }

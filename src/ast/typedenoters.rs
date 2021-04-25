@@ -5,6 +5,7 @@ use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::default::Default;
 use std::fmt;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum TypeDenoter {
@@ -312,22 +313,22 @@ impl Ast for SimpleTypeDenoterState {
 #[derive(Debug, Clone)]
 pub struct ArrayTypeDenoterState {
     pub il: IntegerLiteral,
-    pub td: Box<TypeDenoter>,
+    pub td: Arc<Mutex<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
 impl ArrayTypeDenoterState {
-    pub fn new(il: IntegerLiteral, td: TypeDenoter) -> Self {
+    pub fn new(il: IntegerLiteral, td: Arc<Mutex<TypeDenoter>>) -> Self {
         ArrayTypeDenoterState {
             il: il,
-            td: Box::new(td),
+            td: td,
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
         il: IntegerLiteral,
-        td: TypeDenoter,
+        td: Arc<Mutex<TypeDenoter>>,
         position: SourcePosition,
     ) -> Self {
         let mut atd = ArrayTypeDenoterState::new(il, td);
@@ -338,7 +339,7 @@ impl ArrayTypeDenoterState {
 
 impl PartialEq for ArrayTypeDenoterState {
     fn eq(&self, other: &Self) -> bool {
-        self.il == other.il && self.td == other.td
+        self.il == other.il && *self.td.lock().unwrap() == *other.td.lock().unwrap()
     }
 }
 
@@ -346,7 +347,12 @@ impl Eq for ArrayTypeDenoterState {}
 
 impl fmt::Display for ArrayTypeDenoterState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ArrayTypeDenoterState::new({}, {})", self.il, self.td)
+        write!(
+            f,
+            "ArrayTypeDenoterState::new({}, {})",
+            self.il,
+            *self.td.lock().unwrap()
+        )
     }
 }
 
@@ -435,20 +441,24 @@ impl fmt::Display for FieldTypeDenoter {
 #[derive(Debug, Clone)]
 pub struct SingleFieldTypeDenoterState {
     pub id: Identifier,
-    pub td: Box<TypeDenoter>,
+    pub td: Arc<Mutex<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
 impl SingleFieldTypeDenoterState {
-    pub fn new(id: Identifier, td: TypeDenoter) -> Self {
+    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>) -> Self {
         SingleFieldTypeDenoterState {
             id: id,
-            td: Box::new(td),
+            td: td,
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
+    pub fn new_with_position(
+        id: Identifier,
+        td: Arc<Mutex<TypeDenoter>>,
+        position: SourcePosition,
+    ) -> Self {
         let mut sftd = SingleFieldTypeDenoterState::new(id, td);
         sftd.common_state.position = position;
         sftd
@@ -457,7 +467,7 @@ impl SingleFieldTypeDenoterState {
 
 impl PartialEq for SingleFieldTypeDenoterState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && self.td == other.td
+        self.id == other.id && *self.td.lock().unwrap() == *other.td.lock().unwrap()
     }
 }
 
@@ -468,7 +478,8 @@ impl fmt::Display for SingleFieldTypeDenoterState {
         write!(
             f,
             "SingleFieldTypeDenoterState::new({}, {})",
-            self.id, self.td
+            self.id,
+            *self.td.lock().unwrap()
         )
     }
 }
@@ -482,16 +493,16 @@ impl Ast for SingleFieldTypeDenoterState {
 #[derive(Debug, Clone)]
 pub struct MultipleFieldTypeDenoterState {
     pub id: Identifier,
-    pub td: Box<TypeDenoter>,
+    pub td: Arc<Mutex<TypeDenoter>>,
     pub ftd: Box<FieldTypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl MultipleFieldTypeDenoterState {
-    pub fn new(id: Identifier, td: TypeDenoter, ftd: FieldTypeDenoter) -> Self {
+    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>, ftd: FieldTypeDenoter) -> Self {
         MultipleFieldTypeDenoterState {
             id: id,
-            td: Box::new(td),
+            td: td,
             ftd: Box::new(ftd),
             common_state: CommonState::default(),
         }
@@ -499,7 +510,7 @@ impl MultipleFieldTypeDenoterState {
 
     pub fn new_with_position(
         id: Identifier,
-        td: TypeDenoter,
+        td: Arc<Mutex<TypeDenoter>>,
         ftd: FieldTypeDenoter,
         position: SourcePosition,
     ) -> Self {
@@ -511,7 +522,9 @@ impl MultipleFieldTypeDenoterState {
 
 impl PartialEq for MultipleFieldTypeDenoterState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && self.td == other.td && self.ftd == other.ftd
+        self.id == other.id
+            && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+            && self.ftd == other.ftd
     }
 }
 
@@ -522,7 +535,9 @@ impl fmt::Display for MultipleFieldTypeDenoterState {
         write!(
             f,
             "MultipleFieldTypeDenoterState::new({}, {}, {})",
-            self.id, self.td, self.ftd
+            self.id,
+            *self.td.lock().unwrap(),
+            self.ftd
         )
     }
 }
