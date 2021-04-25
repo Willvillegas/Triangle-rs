@@ -26,6 +26,7 @@ use crate::ast::vnames::*;
 use crate::ast::Program;
 use crate::error::{self, GenError, ParserError};
 use crate::scanner::{Scanner, SourcePosition, Token, TokenType};
+use std::sync::{Arc, Mutex};
 
 pub struct Parser {
     scanner: Scanner,
@@ -276,7 +277,7 @@ impl Parser {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut decl_pos);
                 VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos))
             }
@@ -302,7 +303,7 @@ impl Parser {
                 let fps = self.parse_formal_parameter_sequence();
                 self.accept(TokenType::RightParen);
                 self.accept(TokenType::Colon);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.accept(TokenType::Is);
                 let expr = self.parse_expression();
                 self.finish(&mut decl_pos);
@@ -315,7 +316,7 @@ impl Parser {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Is);
-                let td = self.parse_type_denoter();
+                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
                 self.finish(&mut decl_pos);
                 TypeDeclaration(TypeDeclarationState::new_with_position(id, td, decl_pos))
             }

@@ -8,6 +8,7 @@ use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum Command {

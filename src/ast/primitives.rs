@@ -5,6 +5,7 @@ use super::typedenoters::TypeDenoter;
 use super::CommonState;
 use crate::scanner::SourcePosition;
 use std::fmt;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub struct IntegerLiteral {
@@ -79,8 +80,8 @@ impl fmt::Display for CharacterLiteral {
 #[derive(Debug, Clone)]
 pub struct Identifier {
     pub spelling: String,
-    pub td: Option<Box<TypeDenoter>>,
-    pub decl: Option<Box<Declaration>>,
+    pub td: Option<Arc<Mutex<TypeDenoter>>>,
+    pub decl: Option<Arc<Mutex<Declaration>>>,
     pub common_state: CommonState,
 }
 
@@ -118,7 +119,7 @@ impl fmt::Display for Identifier {
 #[derive(Debug, Clone)]
 pub struct Operator {
     pub spelling: String,
-    pub decl: Option<Box<Declaration>>,
+    pub decl: Option<Arc<Mutex<Declaration>>>,
     pub common_state: CommonState,
 }
 
