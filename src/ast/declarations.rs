@@ -489,23 +489,23 @@ impl Ast for TypeDeclarationState {
 
 #[derive(Debug, Clone)]
 pub struct SequentialDeclarationState {
-    pub decl1: Box<Declaration>,
-    pub decl2: Box<Declaration>,
+    pub decl1: Arc<Mutex<Declaration>>,
+    pub decl2: Arc<Mutex<Declaration>>,
     pub common_state: CommonState,
 }
 
 impl SequentialDeclarationState {
-    pub fn new(decl1: Declaration, decl2: Declaration) -> Self {
+    pub fn new(decl1: Arc<Mutex<Declaration>>, decl2: Arc<Mutex<Declaration>>) -> Self {
         SequentialDeclarationState {
-            decl1: Box::new(decl1),
-            decl2: Box::new(decl2),
+            decl1: decl1,
+            decl2: decl2,
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
-        decl1: Declaration,
-        decl2: Declaration,
+        decl1: Arc<Mutex<Declaration>>,
+        decl2: Arc<Mutex<Declaration>>,
         position: SourcePosition,
     ) -> Self {
         let mut seqdecl = SequentialDeclarationState::new(decl1, decl2);
@@ -516,7 +516,8 @@ impl SequentialDeclarationState {
 
 impl PartialEq for SequentialDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.decl1 == other.decl1 && self.decl2 == other.decl2
+        *self.decl1.lock().unwrap() == *other.decl1.lock().unwrap()
+            && *self.decl2.lock().unwrap() == *other.decl2.lock().unwrap()
     }
 }
 
@@ -527,7 +528,8 @@ impl fmt::Display for SequentialDeclarationState {
         write!(
             f,
             "SequentialDeclarationState::new({}, {})",
-            self.decl1, self.decl2
+            *self.decl1.lock().unwrap(),
+            *self.decl2.lock().unwrap()
         )
     }
 }

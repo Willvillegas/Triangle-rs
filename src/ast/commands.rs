@@ -202,21 +202,25 @@ impl Ast for EmptyCommandState {
 }
 #[derive(Debug, Clone)]
 pub struct LetCommandState {
-    pub decl: Box<Declaration>,
+    pub decl: Arc<Mutex<Declaration>>,
     pub cmd: Box<Command>,
     pub common_state: CommonState,
 }
 
 impl LetCommandState {
-    pub fn new(decl: Declaration, cmd: Command) -> Self {
+    pub fn new(decl: Arc<Mutex<Declaration>>, cmd: Command) -> Self {
         LetCommandState {
-            decl: Box::new(decl),
+            decl: decl,
             cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(decl: Declaration, cmd: Command, position: SourcePosition) -> Self {
+    pub fn new_with_position(
+        decl: Arc<Mutex<Declaration>>,
+        cmd: Command,
+        position: SourcePosition,
+    ) -> Self {
         let mut cmd = LetCommandState::new(decl, cmd);
         cmd.common_state.position = position;
         cmd
@@ -225,7 +229,7 @@ impl LetCommandState {
 
 impl PartialEq for LetCommandState {
     fn eq(&self, other: &Self) -> bool {
-        self.decl == other.decl && self.cmd == other.cmd
+        *self.decl.lock().unwrap() == *other.decl.lock().unwrap() && self.cmd == other.cmd
     }
 }
 
@@ -233,7 +237,12 @@ impl Eq for LetCommandState {}
 
 impl fmt::Display for LetCommandState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "LetCommandState::new({}, {})", self.decl, self.cmd)
+        write!(
+            f,
+            "LetCommandState::new({}, {})",
+            *self.decl.lock().unwrap(),
+            self.cmd
+        )
     }
 }
 

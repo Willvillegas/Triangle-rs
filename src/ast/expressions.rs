@@ -8,6 +8,7 @@ use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum Expression {
@@ -352,22 +353,22 @@ impl Ast for IfExpressionState {
 
 #[derive(Debug, Clone)]
 pub struct LetExpressionState {
-    pub decl: Box<Declaration>,
+    pub decl: Arc<Mutex<Declaration>>,
     pub expr: Box<Expression>,
     pub common_state: CommonState,
 }
 
 impl LetExpressionState {
-    pub fn new(decl: Declaration, expr: Expression) -> Self {
+    pub fn new(decl: Arc<Mutex<Declaration>>, expr: Expression) -> Self {
         LetExpressionState {
-            decl: Box::new(decl),
+            decl: decl,
             expr: Box::new(expr),
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
-        decl: Declaration,
+        decl: Arc<Mutex<Declaration>>,
         expr: Expression,
         position: SourcePosition,
     ) -> Self {
@@ -379,7 +380,7 @@ impl LetExpressionState {
 
 impl PartialEq for LetExpressionState {
     fn eq(&self, other: &Self) -> bool {
-        self.decl == other.decl && self.expr == other.expr
+        *self.decl.lock().unwrap() == *other.decl.lock().unwrap() && self.expr == other.expr
     }
 }
 
@@ -387,7 +388,12 @@ impl Eq for LetExpressionState {}
 
 impl fmt::Display for LetExpressionState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "LetExpressionState::new({}, {})", self.decl, self.expr)
+        write!(
+            f,
+            "LetExpressionState::new({}, {})",
+            *self.decl.lock().unwrap(),
+            self.expr
+        )
     }
 }
 

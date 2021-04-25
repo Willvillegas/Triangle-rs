@@ -235,7 +235,7 @@ impl Parser {
     /// Declaration ::= single-Declaration
     ///             | Declaration ; single-Declaration
     ///
-    fn parse_declaration(&mut self) -> Declaration {
+    fn parse_declaration(&mut self) -> Arc<Mutex<Declaration>> {
         let mut decl_pos = SourcePosition::default();
         self.start(&mut decl_pos);
 
@@ -244,9 +244,9 @@ impl Parser {
             self.accept_it();
             self.finish(&mut decl_pos);
             let decl1 = self.parse_single_declaration();
-            decl = SequentialDeclaration(SequentialDeclarationState::new_with_position(
-                decl, decl1, decl_pos,
-            ));
+            decl = Arc::new(Mutex::new(SequentialDeclaration(
+                SequentialDeclarationState::new_with_position(decl, decl1, decl_pos),
+            )));
         }
 
         decl
@@ -259,7 +259,7 @@ impl Parser {
     ///                 | FuncDeclaration
     ///                 | TypeDeclaration
     ///
-    fn parse_single_declaration(&mut self) -> Declaration {
+    fn parse_single_declaration(&mut self) -> Arc<Mutex<Declaration>> {
         let mut decl_pos = SourcePosition::default();
         self.start(&mut decl_pos);
 
@@ -270,16 +270,20 @@ impl Parser {
                 self.accept(TokenType::Is);
                 let expr = self.parse_expression();
                 self.finish(&mut decl_pos);
-                ConstDeclaration(ConstDeclarationState::new_with_position(id, expr, decl_pos))
+                Arc::new(Mutex::new(ConstDeclaration(
+                    ConstDeclarationState::new_with_position(id, expr, decl_pos),
+                )))
             }
 
             TokenType::Var => {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.finish(&mut decl_pos);
-                VarDeclaration(VarDeclarationState::new_with_position(id, td, decl_pos))
+                Arc::new(Mutex::new(VarDeclaration(
+                    VarDeclarationState::new_with_position(id, td, decl_pos),
+                )))
             }
 
             TokenType::Procedure => {
@@ -291,9 +295,9 @@ impl Parser {
                 self.accept(TokenType::Is);
                 let cmd = self.parse_single_command();
                 self.finish(&mut decl_pos);
-                ProcDeclaration(ProcDeclarationState::new_with_position(
-                    id, fps, cmd, decl_pos,
-                ))
+                Arc::new(Mutex::new(ProcDeclaration(
+                    ProcDeclarationState::new_with_position(id, fps, cmd, decl_pos),
+                )))
             }
 
             TokenType::Function => {
@@ -303,22 +307,24 @@ impl Parser {
                 let fps = self.parse_formal_parameter_sequence();
                 self.accept(TokenType::RightParen);
                 self.accept(TokenType::Colon);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.accept(TokenType::Is);
                 let expr = self.parse_expression();
                 self.finish(&mut decl_pos);
-                FuncDeclaration(FuncDeclarationState::new_with_position(
-                    id, fps, td, expr, decl_pos,
-                ))
+                Arc::new(Mutex::new(FuncDeclaration(
+                    FuncDeclarationState::new_with_position(id, fps, td, expr, decl_pos),
+                )))
             }
 
             TokenType::Type => {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Is);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.finish(&mut decl_pos);
-                TypeDeclaration(TypeDeclarationState::new_with_position(id, td, decl_pos))
+                Arc::new(Mutex::new(TypeDeclaration(
+                    TypeDeclarationState::new_with_position(id, td, decl_pos),
+                )))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -333,7 +339,7 @@ impl Parser {
     ///               | ArrayTypeDenoter
     ///               | RecordTypeDenoter
     ///
-    fn parse_type_denoter(&mut self) -> TypeDenoter {
+    fn parse_type_denoter(&mut self) -> Arc<Mutex<TypeDenoter>> {
         let mut td_pos = SourcePosition::default();
         self.start(&mut td_pos);
 
@@ -341,16 +347,20 @@ impl Parser {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
                 self.finish(&mut td_pos);
-                SimpleTypeDenoter(SimpleTypeDenoterState::new_with_position(id, td_pos))
+                Arc::new(Mutex::new(SimpleTypeDenoter(
+                    SimpleTypeDenoterState::new_with_position(id, td_pos),
+                )))
             }
 
             TokenType::Array => {
                 self.accept_it();
                 let il = self.parse_integer_literal();
                 self.accept(TokenType::Of);
-                let td1 = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td1 = self.parse_type_denoter();
                 self.finish(&mut td_pos);
-                ArrayTypeDenoter(ArrayTypeDenoterState::new_with_position(il, td1, td_pos))
+                Arc::new(Mutex::new(ArrayTypeDenoter(
+                    ArrayTypeDenoterState::new_with_position(il, td1, td_pos),
+                )))
             }
 
             TokenType::Record => {
@@ -358,7 +368,9 @@ impl Parser {
                 let ftd = self.parse_field_type_denoter();
                 self.accept(TokenType::End);
                 self.finish(&mut td_pos);
-                RecordTypeDenoter(RecordTypeDenoterState::new_with_position(ftd, td_pos))
+                Arc::new(Mutex::new(RecordTypeDenoter(
+                    RecordTypeDenoterState::new_with_position(ftd, td_pos),
+                )))
             }
 
             _ => error::report_error_and_exit(GenError::from(ParserError::new(
@@ -381,7 +393,7 @@ impl Parser {
 
         let id = self.parse_identifier();
         self.accept(TokenType::Colon);
-        let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+        let td = self.parse_type_denoter();
 
         if self.current_token.kind == TokenType::Comma {
             self.accept_it();
@@ -444,7 +456,7 @@ impl Parser {
             TokenType::Identifier => {
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
                 ConstFormalParameter(ConstFormalParameterState::new_with_position(id, td, fp_pos))
             }
@@ -453,7 +465,7 @@ impl Parser {
                 self.accept_it();
                 let id = self.parse_identifier();
                 self.accept(TokenType::Colon);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
                 VarFormalParameter(VarFormalParameterState::new_with_position(id, td, fp_pos))
             }
@@ -475,7 +487,7 @@ impl Parser {
                 let fps = self.parse_formal_parameter_sequence();
                 self.accept(TokenType::RightParen);
                 self.accept(TokenType::Colon);
-                let td = Arc::new(Mutex::new(self.parse_type_denoter()));
+                let td = self.parse_type_denoter();
                 self.finish(&mut fp_pos);
                 FuncFormalParameter(FuncFormalParameterState::new_with_position(
                     id, fps, td, fp_pos,
