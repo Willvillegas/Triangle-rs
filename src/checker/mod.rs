@@ -17,7 +17,7 @@ mod id_table;
 mod std_env;
 
 use id_table::IdentificationTable;
-use std_env::StdEnvironment;
+use std_env::STANDARD_ENVIRONMENT;
 
 pub struct Checker {
     id_table: IdentificationTable,
