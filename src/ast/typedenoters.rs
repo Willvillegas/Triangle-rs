@@ -43,14 +43,18 @@ impl fmt::Display for TypeDenoter {
         use TypeDenoter::*;
 
         match *self {
-            AnyTypeDenoter(ref td) => write!(f, "AnyTypeDenoter({})", td),
-            ArrayTypeDenoter(ref td) => write!(f, "ArrayTypeDenoter({})", td),
-            BoolTypeDenoter(ref td) => write!(f, "BoolTypeDenoter({})", td),
-            CharTypeDenoter(ref td) => write!(f, "CharTypeDenoter({})", td),
-            ErrorTypeDenoter(ref td) => write!(f, "ErrorTypeDenoter({})", td),
-            IntTypeDenoter(ref td) => write!(f, "IntTypeDenoter({})", td),
-            RecordTypeDenoter(ref td) => write!(f, "RecordTypeDenoter({})", td),
-            SimpleTypeDenoter(ref td) => write!(f, "SimpleTypeDenoter({})", td),
+            AnyTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(AnyTypeDenoter({})))", td),
+            ArrayTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(ArrayTypeDenoter({})))", td),
+            BoolTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(BoolTypeDenoter({})))", td),
+            CharTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(CharTypeDenoter({})))", td),
+            ErrorTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(ErrorTypeDenoter({})))", td),
+            IntTypeDenoter(ref td) => write!(f, "Arc::new(Mutex::new(IntTypeDenoter({})))", td),
+            RecordTypeDenoter(ref td) => {
+                write!(f, "Arc::new(Mutex::new(RecordTypeDenoter({})))", td)
+            }
+            SimpleTypeDenoter(ref td) => {
+                write!(f, "Arc::new(Mutex::new(SimpleTypeDenoter({})))", td)
+            }
         }
     }
 }

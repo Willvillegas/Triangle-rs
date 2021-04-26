@@ -60,14 +60,32 @@ impl fmt::Display for Declaration {
         use Declaration::*;
 
         match *self {
-            BinaryOperatorDeclaration(ref decl) => write!(f, "BinaryOperatorDeclaration({})", decl),
-            ConstDeclaration(ref decl) => write!(f, "ConstDeclaration({})", decl),
-            FuncDeclaration(ref decl) => write!(f, "FuncDeclaration({})", decl),
-            ProcDeclaration(ref decl) => write!(f, "ProcDeclaration({})", decl),
-            SequentialDeclaration(ref decl) => write!(f, "SequentialDeclaration({})", decl),
-            TypeDeclaration(ref decl) => write!(f, "TypeDeclaration({})", decl),
-            UnaryOperatorDeclaration(ref decl) => write!(f, "UnaryOperatorDeclaration({})", decl),
-            VarDeclaration(ref decl) => write!(f, "VarDeclaration({})", decl),
+            BinaryOperatorDeclaration(ref decl) => write!(
+                f,
+                "Arc::new(Mutex::new(BinaryOperatorDeclaration({})))",
+                decl
+            ),
+            ConstDeclaration(ref decl) => {
+                write!(f, "Arc::new(Mutex::new(ConstDeclaration({})))", decl)
+            }
+            FuncDeclaration(ref decl) => {
+                write!(f, "Arc::new(Mutex::new(FuncDeclaration({})))", decl)
+            }
+            ProcDeclaration(ref decl) => {
+                write!(f, "Arc::new(Mutex::new(ProcDeclaration({})))", decl)
+            }
+            SequentialDeclaration(ref decl) => {
+                write!(f, "Arc::new(Mutex::new(SequentialDeclaration({})))", decl)
+            }
+            TypeDeclaration(ref decl) => {
+                write!(f, "Arc::new(Mutex::new(TypeDeclaration({})))", decl)
+            }
+            UnaryOperatorDeclaration(ref decl) => write!(
+                f,
+                "Arc::new(Mutex::new(UnaryOperatorDeclaration({})))",
+                decl
+            ),
+            VarDeclaration(ref decl) => write!(f, "Arc::new(Mutex::new(VarDeclaration({})))", decl),
         }
     }
 }

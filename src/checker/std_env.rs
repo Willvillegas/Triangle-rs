@@ -17,6 +17,7 @@ lazy_static! {
 /// The Standard Environment provides pre-defined functionality in the form of constants, types,
 /// operators, procedures, and function declarations. It is what is known as the "Prelude" in some
 /// other languages
+#[derive(Debug)]
 pub struct StdEnvironment {
     pub any_type: Arc<Mutex<TypeDenoter>>,
     pub error_type: Arc<Mutex<TypeDenoter>>,
@@ -504,6 +505,8 @@ impl Default for StdEnvironment {
 
 #[cfg(test)]
 mod tests {
+    use super::STANDARD_ENVIRONMENT;
+
     #[test]
     fn test_print_default_std_env() {
         println!("{:#?}", unsafe { STANDARD_ENVIRONMENT.lock().unwrap() });

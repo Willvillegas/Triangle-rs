@@ -32,6 +32,7 @@ impl Checker {
         checker
     }
 
+    /// set up the standard environment (the prelude)
     fn establish_standard_environment(&mut self) {
         self.id_table.enter(
             String::from("Integer"),
@@ -178,6 +179,9 @@ impl Checker {
         );
     }
 
+    /// Check that the AST is well-formed, link all applied occurrences of identifiers and
+    /// operators to their declarations, check that all expressions and typedenoters have
+    /// proper types.
     pub fn check(&self, program: &mut Program) {}
 }
 
