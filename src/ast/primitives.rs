@@ -3,6 +3,7 @@
 use super::declarations::Declaration;
 use super::typedenoters::TypeDenoter;
 use super::CommonState;
+use super::{Ast, AstObject, AstVisitor};
 use crate::scanner::SourcePosition;
 use std::default::Default;
 use std::fmt;
@@ -42,6 +43,12 @@ impl fmt::Display for IntegerLiteral {
     }
 }
 
+impl Ast for IntegerLiteral {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_integer_literal(self, arg)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct CharacterLiteral {
     pub spelling: String,
@@ -74,6 +81,12 @@ impl Eq for CharacterLiteral {}
 impl fmt::Display for CharacterLiteral {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "CharacterLiteral::new({:?})", self.spelling)
+    }
+}
+
+impl Ast for CharacterLiteral {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_character_literal(self, arg)
     }
 }
 
@@ -113,6 +126,12 @@ impl Eq for Identifier {}
 impl fmt::Display for Identifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Identifier::new({:?})", self.spelling)
+    }
+}
+
+impl Ast for Identifier {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_identifier(self, arg)
     }
 }
 
@@ -161,5 +180,11 @@ impl Eq for Operator {}
 impl fmt::Display for Operator {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Operator::new({:?})", self.spelling)
+    }
+}
+
+impl Ast for Operator {
+    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+        visitor.visit_operator(self, arg)
     }
 }

@@ -27,7 +27,6 @@ pub mod checkers;
 
 use checkers::*;
 
-#[ignore]
 #[test]
 fn test_emptycommandeot() {
     let source_file = "samples/source/emptycommandeot.t";
@@ -38,7 +37,6 @@ fn test_emptycommandeot() {
     assert!(emptycommandeot_checker::check(&program));
 }
 
-#[ignore]
 #[test]
 fn test_emptycommandsemicolon() {
     let source_file = "samples/source/emptycommandsemicolon.t";
@@ -49,7 +47,6 @@ fn test_emptycommandsemicolon() {
     assert!(emptycommandsemicolon_checker::check(&program));
 }
 
-#[ignore]
 #[test]
 fn test_hello() {
     let source_file = "samples/source/hello.t";

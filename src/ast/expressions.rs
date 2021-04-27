@@ -4,6 +4,7 @@ use super::aggregates::{ArrayAggregate, RecordAggregate};
 use super::declarations::Declaration;
 use super::parameters::ActualParameterSequence;
 use super::primitives::{CharacterLiteral, Identifier, IntegerLiteral, Operator};
+use super::typedenoters::TypeDenoter;
 use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
@@ -90,6 +91,7 @@ impl Ast for Expression {
 #[derive(Debug, Clone)]
 pub struct IntegerExpressionState {
     pub il: IntegerLiteral,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -97,6 +99,7 @@ impl IntegerExpressionState {
     pub fn new(il: IntegerLiteral) -> Self {
         IntegerExpressionState {
             il: il,
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -131,6 +134,7 @@ impl Ast for IntegerExpressionState {
 #[derive(Debug, Clone)]
 pub struct CharacterExpressionState {
     pub cl: CharacterLiteral,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -138,6 +142,7 @@ impl CharacterExpressionState {
     pub fn new(cl: CharacterLiteral) -> Self {
         CharacterExpressionState {
             cl: cl,
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -211,6 +216,7 @@ impl Ast for EmptyExpressionState {
 #[derive(Debug, Clone)]
 pub struct VnameExpressionState {
     pub vname: Box<Vname>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -218,6 +224,7 @@ impl VnameExpressionState {
     pub fn new(vname: Vname) -> Self {
         VnameExpressionState {
             vname: Box::new(vname),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -253,6 +260,7 @@ impl Ast for VnameExpressionState {
 pub struct CallExpressionState {
     pub id: Identifier,
     pub aps: Box<ActualParameterSequence>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -261,6 +269,7 @@ impl CallExpressionState {
         CallExpressionState {
             id: id,
             aps: Box::new(aps),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -301,6 +310,7 @@ pub struct IfExpressionState {
     pub expr1: Box<Expression>,
     pub expr2: Box<Expression>,
     pub expr3: Box<Expression>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -310,6 +320,7 @@ impl IfExpressionState {
             expr1: Box::new(expr1),
             expr2: Box::new(expr2),
             expr3: Box::new(expr3),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -354,6 +365,7 @@ impl Ast for IfExpressionState {
 pub struct LetExpressionState {
     pub decl: Box<Declaration>,
     pub expr: Box<Expression>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -362,6 +374,7 @@ impl LetExpressionState {
         LetExpressionState {
             decl: Box::new(decl),
             expr: Box::new(expr),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -401,6 +414,7 @@ impl Ast for LetExpressionState {
 pub struct UnaryExpressionState {
     pub op: Operator,
     pub expr: Box<Expression>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -409,6 +423,7 @@ impl UnaryExpressionState {
         UnaryExpressionState {
             op: op,
             expr: Box::new(expr),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -445,6 +460,7 @@ pub struct BinaryExpressionState {
     pub expr1: Box<Expression>,
     pub op: Operator,
     pub expr2: Box<Expression>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -454,6 +470,7 @@ impl BinaryExpressionState {
             expr1: Box::new(expr1),
             op: op,
             expr2: Box::new(expr2),
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -498,6 +515,7 @@ impl Ast for BinaryExpressionState {
 pub struct ArrayExpressionState {
     pub aa: Box<ArrayAggregate>,
     pub elem_count: usize,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -506,6 +524,7 @@ impl ArrayExpressionState {
         ArrayExpressionState {
             aa: Box::new(aa),
             elem_count: 0,
+            td: None,
             common_state: CommonState::default(),
         }
     }
@@ -540,6 +559,7 @@ impl Ast for ArrayExpressionState {
 #[derive(Debug, Clone)]
 pub struct RecordExpressionState {
     pub ra: Box<RecordAggregate>,
+    pub td: Option<Box<TypeDenoter>>,
     pub common_state: CommonState,
 }
 
@@ -547,6 +567,7 @@ impl RecordExpressionState {
     pub fn new(ra: RecordAggregate) -> Self {
         RecordExpressionState {
             ra: Box::new(ra),
+            td: None,
             common_state: CommonState::default(),
         }
     }

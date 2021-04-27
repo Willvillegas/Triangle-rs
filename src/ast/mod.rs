@@ -39,11 +39,29 @@ pub trait Ast {
 /// processing of the Ast, returning different values at each phase, or even within the
 /// same phase.
 /// This object enumerates all the possible variants that can be returned by a visitor method.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AstObject {
     Null,
     Frame(Frame),
     Size(usize),
+    Declaration(Box<Declaration>),
+}
+
+/// helper module to check for types more efficiently and with less boilerplate
+pub mod introspection {
+    use std::any::{Any, TypeId};
+
+    pub fn is_of_type<T: Any + ?Sized>(obj: &dyn Any) -> bool {
+        TypeId::of::<T>() == obj.type_id()
+    }
+
+    pub fn get_of_type<T: Any + Sized>(obj: &dyn Any) -> Option<&T> {
+        if let Some(val) = obj.downcast_ref::<T>() {
+            Some(&val)
+        } else {
+            None
+        }
+    }
 }
 
 /// Visitor for the Triangle Ast - both the checker and the encoder (code generator)
@@ -234,14 +252,14 @@ pub trait AstVisitor {
     fn visit_simple_vname(&self, vname: &mut SimpleVnameState, arg: AstObject) -> AstObject;
     fn visit_dot_vname(&self, vname: &mut DotVnameState, arg: AstObject) -> AstObject;
     fn visit_subscript_vname(&self, vname: &mut SubscriptVnameState, arg: AstObject) -> AstObject;
-    fn visit_identifier(&self, id: Identifier, arg: AstObject) -> AstObject;
-    fn visit_integer_literal(&self, il: IntegerLiteral, arg: AstObject) -> AstObject;
-    fn visit_character_literal(&self, cl: CharacterLiteral, arg: AstObject) -> AstObject;
-    fn visit_operator(&self, op: Operator, arg: AstObject) -> AstObject;
+    fn visit_identifier(&self, id: &mut Identifier, arg: AstObject) -> AstObject;
+    fn visit_integer_literal(&self, il: &mut IntegerLiteral, arg: AstObject) -> AstObject;
+    fn visit_character_literal(&self, cl: &mut CharacterLiteral, arg: AstObject) -> AstObject;
+    fn visit_operator(&self, op: &mut Operator, arg: AstObject) -> AstObject;
 }
 
 /// A frame represents the runtime state of execution of a function
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Frame {
     pub level: usize,
     pub size: usize,
@@ -274,14 +292,14 @@ impl default::Default for CommonState {
 
 #[derive(Debug)]
 pub struct Program {
-    pub cmd: Command,
+    pub cmd: Box<Command>,
     pub common_state: CommonState,
 }
 
 impl Program {
     pub fn new(cmd: Command) -> Self {
         Program {
-            cmd: cmd,
+            cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
     }

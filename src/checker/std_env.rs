@@ -194,7 +194,7 @@ impl Default for StdEnvironment {
         );
 
         let neg_decl =
-            StdEnvironment::declare_std_unary_operator("-", int_type.clone(), int_type.clone());
+            StdEnvironment::declare_std_unary_operator("neg", int_type.clone(), int_type.clone());
 
         let add_decl = StdEnvironment::declare_std_binary_operator(
             "+",

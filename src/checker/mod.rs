@@ -7,14 +7,16 @@ use crate::ast::aggregates::*;
 use crate::ast::commands::*;
 use crate::ast::declarations::*;
 use crate::ast::expressions::*;
+use crate::ast::introspection::{get_of_type, is_of_type};
 use crate::ast::parameters::*;
 use crate::ast::primitives::*;
 use crate::ast::typedenoters::*;
 use crate::ast::vnames::*;
 use crate::ast::*;
+use crate::error::{report_error_and_exit, CheckerError, GenError};
 
 mod id_table;
-mod std_env;
+pub mod std_env;
 
 use id_table::IdentificationTable;
 use std_env::STANDARD_ENVIRONMENT;
@@ -82,7 +84,7 @@ impl Checker {
             STANDARD_ENVIRONMENT.lock().unwrap().pred_decl.clone(),
         );
         self.id_table.enter(
-            String::from("-"),
+            String::from("neg"),
             STANDARD_ENVIRONMENT.lock().unwrap().neg_decl.clone(),
         );
         self.id_table.enter(
@@ -182,11 +184,14 @@ impl Checker {
     /// Check that the AST is well-formed, link all applied occurrences of identifiers and
     /// operators to their declarations, check that all expressions and typedenoters have
     /// proper types.
-    pub fn check(&self, program: &mut Program) {}
+    pub fn check(&self, program: &mut Program) {
+        program.accept(self, AstObject::Null);
+    }
 }
 
 impl AstVisitor for Checker {
     fn visit_program(&self, program: &mut Program, arg: AstObject) -> AstObject {
+        program.cmd.accept(self, arg.clone());
         AstObject::Null
     }
 
@@ -199,6 +204,8 @@ impl AstVisitor for Checker {
     }
 
     fn visit_call_command(&self, cmd: &mut CallCommandState, arg: AstObject) -> AstObject {
+        let id_decl_ast = cmd.id.accept(self, arg.clone());
+        cmd.aps.accept(self, id_decl_ast);
         AstObject::Null
     }
 
@@ -550,19 +557,23 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
-    fn visit_identifier(&self, id: Identifier, arg: AstObject) -> AstObject {
+    fn visit_identifier(&self, id: &mut Identifier, arg: AstObject) -> AstObject {
+        if let Some(decl) = self.id_table.retrieve(&id.spelling) {
+            id.decl = Some(Box::new(*decl.clone()));
+            return AstObject::Declaration(id.decl.clone().unwrap());
+        }
         AstObject::Null
     }
 
-    fn visit_integer_literal(&self, il: IntegerLiteral, arg: AstObject) -> AstObject {
+    fn visit_integer_literal(&self, il: &mut IntegerLiteral, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_character_literal(&self, cl: CharacterLiteral, arg: AstObject) -> AstObject {
+    fn visit_character_literal(&self, cl: &mut CharacterLiteral, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_operator(&self, op: Operator, arg: AstObject) -> AstObject {
+    fn visit_operator(&self, op: &mut Operator, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 }
