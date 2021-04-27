@@ -7,7 +7,6 @@ use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum FormalParameterSequence {
@@ -249,24 +248,20 @@ impl fmt::Display for FormalParameter {
 #[derive(Debug, Clone)]
 pub struct VarFormalParameterState {
     pub id: Identifier,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl VarFormalParameterState {
-    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>) -> Self {
+    pub fn new(id: Identifier, td: TypeDenoter) -> Self {
         VarFormalParameterState {
             id: id,
-            td: td,
+            td: Box::new(td),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        id: Identifier,
-        td: Arc<Mutex<TypeDenoter>>,
-        position: SourcePosition,
-    ) -> Self {
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
         let mut vfp = VarFormalParameterState::new(id, td);
         vfp.common_state.position = position;
         vfp
@@ -275,7 +270,7 @@ impl VarFormalParameterState {
 
 impl PartialEq for VarFormalParameterState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+        self.id == other.id && self.td == other.td
     }
 }
 
@@ -283,12 +278,7 @@ impl Eq for VarFormalParameterState {}
 
 impl fmt::Display for VarFormalParameterState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "VarFormalParameterState::new({}, {})",
-            self.id,
-            *self.td.lock().unwrap()
-        )
+        write!(f, "VarFormalParameterState::new({}, {})", self.id, self.td)
     }
 }
 
@@ -301,24 +291,20 @@ impl Ast for VarFormalParameterState {
 #[derive(Debug, Clone)]
 pub struct ConstFormalParameterState {
     pub id: Identifier,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl ConstFormalParameterState {
-    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>) -> Self {
+    pub fn new(id: Identifier, td: TypeDenoter) -> Self {
         ConstFormalParameterState {
             id: id,
-            td: td,
+            td: Box::new(td),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        id: Identifier,
-        td: Arc<Mutex<TypeDenoter>>,
-        position: SourcePosition,
-    ) -> Self {
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
         let mut cfp = ConstFormalParameterState::new(id, td);
         cfp.common_state.position = position;
         cfp
@@ -327,7 +313,7 @@ impl ConstFormalParameterState {
 
 impl PartialEq for ConstFormalParameterState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+        self.id == other.id && self.td == other.td
     }
 }
 
@@ -338,8 +324,7 @@ impl fmt::Display for ConstFormalParameterState {
         write!(
             f,
             "ConstFormalParameterState::new({}, {})",
-            self.id,
-            *self.td.lock().unwrap()
+            self.id, self.td
         )
     }
 }
@@ -405,16 +390,16 @@ impl Ast for ProcFormalParameterState {
 pub struct FuncFormalParameterState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl FuncFormalParameterState {
-    pub fn new(id: Identifier, fps: FormalParameterSequence, td: Arc<Mutex<TypeDenoter>>) -> Self {
+    pub fn new(id: Identifier, fps: FormalParameterSequence, td: TypeDenoter) -> Self {
         FuncFormalParameterState {
             id: id,
             fps: Box::new(fps),
-            td: td,
+            td: Box::new(td),
             common_state: CommonState::default(),
         }
     }
@@ -422,7 +407,7 @@ impl FuncFormalParameterState {
     pub fn new_with_position(
         id: Identifier,
         fps: FormalParameterSequence,
-        td: Arc<Mutex<TypeDenoter>>,
+        td: TypeDenoter,
         position: SourcePosition,
     ) -> Self {
         let mut ffp = FuncFormalParameterState::new(id, fps, td);
@@ -433,9 +418,7 @@ impl FuncFormalParameterState {
 
 impl PartialEq for FuncFormalParameterState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-            && self.fps == other.fps
-            && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+        self.id == other.id && self.fps == other.fps && self.td == other.td
     }
 }
 
@@ -446,9 +429,7 @@ impl fmt::Display for FuncFormalParameterState {
         write!(
             f,
             "FuncFormalParameterState::new({}, {}, {})",
-            self.id,
-            self.fps,
-            *self.td.lock().unwrap()
+            self.id, self.fps, self.td
         )
     }
 }

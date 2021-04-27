@@ -8,7 +8,6 @@ use super::vnames::Vname;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum Command {
@@ -202,25 +201,21 @@ impl Ast for EmptyCommandState {
 }
 #[derive(Debug, Clone)]
 pub struct LetCommandState {
-    pub decl: Arc<Mutex<Declaration>>,
+    pub decl: Box<Declaration>,
     pub cmd: Box<Command>,
     pub common_state: CommonState,
 }
 
 impl LetCommandState {
-    pub fn new(decl: Arc<Mutex<Declaration>>, cmd: Command) -> Self {
+    pub fn new(decl: Declaration, cmd: Command) -> Self {
         LetCommandState {
-            decl: decl,
+            decl: Box::new(decl),
             cmd: Box::new(cmd),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        decl: Arc<Mutex<Declaration>>,
-        cmd: Command,
-        position: SourcePosition,
-    ) -> Self {
+    pub fn new_with_position(decl: Declaration, cmd: Command, position: SourcePosition) -> Self {
         let mut cmd = LetCommandState::new(decl, cmd);
         cmd.common_state.position = position;
         cmd
@@ -229,7 +224,7 @@ impl LetCommandState {
 
 impl PartialEq for LetCommandState {
     fn eq(&self, other: &Self) -> bool {
-        *self.decl.lock().unwrap() == *other.decl.lock().unwrap() && self.cmd == other.cmd
+        self.decl == other.decl && self.cmd == other.cmd
     }
 }
 
@@ -237,12 +232,7 @@ impl Eq for LetCommandState {}
 
 impl fmt::Display for LetCommandState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "LetCommandState::new({}, {})",
-            *self.decl.lock().unwrap(),
-            self.cmd
-        )
+        write!(f, "LetCommandState::new({}, {})", self.decl, self.cmd)
     }
 }
 
@@ -251,6 +241,7 @@ impl Ast for LetCommandState {
         visitor.visit_let_command(self, arg)
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct IfCommandState {
     pub expr: Box<Expression>,

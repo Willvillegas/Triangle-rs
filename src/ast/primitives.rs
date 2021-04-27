@@ -6,7 +6,6 @@ use super::CommonState;
 use crate::scanner::SourcePosition;
 use std::default::Default;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub struct IntegerLiteral {
@@ -81,8 +80,8 @@ impl fmt::Display for CharacterLiteral {
 #[derive(Debug, Clone)]
 pub struct Identifier {
     pub spelling: String,
-    pub td: Option<Arc<Mutex<TypeDenoter>>>,
-    pub decl: Option<Arc<Mutex<Declaration>>>,
+    pub td: Option<Box<TypeDenoter>>,
+    pub decl: Option<Box<Declaration>>,
     pub common_state: CommonState,
 }
 
@@ -131,7 +130,7 @@ impl Default for Identifier {
 #[derive(Debug, Clone)]
 pub struct Operator {
     pub spelling: String,
-    pub decl: Option<Arc<Mutex<Declaration>>>,
+    pub decl: Option<Box<Declaration>>,
     pub common_state: CommonState,
 }
 

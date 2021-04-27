@@ -1,4 +1,7 @@
 //! aggregate asts
+//!
+//! These represent aggregate expressions like array expressions
+//! and record expressions.
 
 use super::expressions::Expression;
 use super::primitives::Identifier;
@@ -6,7 +9,6 @@ use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum ArrayAggregate {
@@ -55,7 +57,7 @@ impl Ast for ArrayAggregate {
 #[derive(Debug, Clone)]
 pub struct SingleArrayAggregateState {
     pub expr: Box<Expression>,
-    pub td: Option<Arc<Mutex<TypeDenoter>>>,
+    pub td: Option<Box<TypeDenoter>>,
     pub elem_count: usize,
     pub common_state: CommonState,
 }

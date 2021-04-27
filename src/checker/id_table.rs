@@ -2,7 +2,6 @@ use crate::ast::declarations::Declaration;
 use crate::error;
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 type Level = u8;
 
@@ -10,7 +9,7 @@ type Level = u8;
 /// applied occurrences in a program - it maps a given applied occurrence
 /// to its declaration in the AST, if present.
 pub struct IdentificationTable {
-    table: HashMap<Level, HashMap<String, Arc<Mutex<Declaration>>>>,
+    table: HashMap<Level, HashMap<String, Box<Declaration>>>,
     curr_level: Level,
 }
 
@@ -22,7 +21,7 @@ impl IdentificationTable {
         }
     }
 
-    pub fn enter(&mut self, id: String, val: Arc<Mutex<Declaration>>) {
+    pub fn enter(&mut self, id: String, val: Declaration) {
         if !self.table.contains_key(&self.curr_level) {
             self.table.insert(self.curr_level, HashMap::new());
         }
@@ -39,10 +38,10 @@ impl IdentificationTable {
         self.table
             .get_mut(&self.curr_level)
             .unwrap()
-            .insert(id, val);
+            .insert(id, Box::new(val));
     }
 
-    pub fn retrieve(&self, id: &String) -> Option<&Arc<Mutex<Declaration>>> {
+    pub fn retrieve(&self, id: &String) -> Option<&Box<Declaration>> {
         let mut level = self.curr_level;
 
         loop {
@@ -75,7 +74,7 @@ impl fmt::Display for IdentificationTable {
             let _ = writeln!(f, "Level {}", level);
 
             for (key, val) in entries {
-                let _ = writeln!(f, "{} => {}", key, *val.lock().unwrap());
+                let _ = writeln!(f, "{} => {}", key, *val);
             }
         }
         writeln!(f, "{}", "")

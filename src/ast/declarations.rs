@@ -8,7 +8,6 @@ use super::typedenoters::TypeDenoter;
 use super::{Ast, AstObject, AstVisitor, CommonState};
 use crate::scanner::SourcePosition;
 use std::fmt;
-use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub enum Declaration {
@@ -60,32 +59,24 @@ impl fmt::Display for Declaration {
         use Declaration::*;
 
         match *self {
-            BinaryOperatorDeclaration(ref decl) => write!(
-                f,
-                "Arc::new(Mutex::new(BinaryOperatorDeclaration({})))",
-                decl
-            ),
+            BinaryOperatorDeclaration(ref decl) => write!(f, "BinaryOperatorDeclaration({})", decl),
             ConstDeclaration(ref decl) => {
-                write!(f, "Arc::new(Mutex::new(ConstDeclaration({})))", decl)
+                write!(f, "ConstDeclaration({})", decl)
             }
             FuncDeclaration(ref decl) => {
-                write!(f, "Arc::new(Mutex::new(FuncDeclaration({})))", decl)
+                write!(f, "FuncDeclaration({})", decl)
             }
             ProcDeclaration(ref decl) => {
-                write!(f, "Arc::new(Mutex::new(ProcDeclaration({})))", decl)
+                write!(f, "ProcDeclaration({})", decl)
             }
             SequentialDeclaration(ref decl) => {
-                write!(f, "Arc::new(Mutex::new(SequentialDeclaration({})))", decl)
+                write!(f, "SequentialDeclaration({})", decl)
             }
             TypeDeclaration(ref decl) => {
-                write!(f, "Arc::new(Mutex::new(TypeDeclaration({})))", decl)
+                write!(f, "TypeDeclaration({})", decl)
             }
-            UnaryOperatorDeclaration(ref decl) => write!(
-                f,
-                "Arc::new(Mutex::new(UnaryOperatorDeclaration({})))",
-                decl
-            ),
-            VarDeclaration(ref decl) => write!(f, "Arc::new(Mutex::new(VarDeclaration({})))", decl),
+            UnaryOperatorDeclaration(ref decl) => write!(f, "UnaryOperatorDeclaration({})", decl),
+            VarDeclaration(ref decl) => write!(f, "VarDeclaration({})", decl),
         }
     }
 }
@@ -109,34 +100,34 @@ impl Ast for Declaration {
 
 #[derive(Debug, Clone)]
 pub struct BinaryOperatorDeclarationState {
-    pub arg1_type: Arc<Mutex<TypeDenoter>>,
+    pub arg1_type: Box<TypeDenoter>,
     pub op: Operator,
-    pub arg2_type: Arc<Mutex<TypeDenoter>>,
-    pub res_type: Arc<Mutex<TypeDenoter>>,
+    pub arg2_type: Box<TypeDenoter>,
+    pub res_type: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl BinaryOperatorDeclarationState {
     pub fn new(
-        arg1_type: Arc<Mutex<TypeDenoter>>,
+        arg1_type: TypeDenoter,
         op: Operator,
-        arg2_type: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
     ) -> Self {
         BinaryOperatorDeclarationState {
-            arg1_type: arg1_type,
+            arg1_type: Box::new(arg1_type),
             op: op,
-            arg2_type: arg2_type,
-            res_type: res_type,
+            arg2_type: Box::new(arg2_type),
+            res_type: Box::new(res_type),
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
-        arg1_type: Arc<Mutex<TypeDenoter>>,
+        arg1_type: TypeDenoter,
         op: Operator,
-        arg2_type: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
         position: SourcePosition,
     ) -> Self {
         let mut binopdecl = BinaryOperatorDeclarationState::new(arg1_type, op, arg2_type, res_type);
@@ -147,10 +138,10 @@ impl BinaryOperatorDeclarationState {
 
 impl PartialEq for BinaryOperatorDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        *self.arg1_type.lock().unwrap() == *other.arg1_type.lock().unwrap()
+        self.arg1_type == other.arg1_type
             && self.op == other.op
-            && *self.arg2_type.lock().unwrap() == *other.arg2_type.lock().unwrap()
-            && *self.res_type.lock().unwrap() == *other.res_type.lock().unwrap()
+            && self.arg2_type == other.arg2_type
+            && self.res_type == other.res_type
     }
 }
 
@@ -161,10 +152,7 @@ impl fmt::Display for BinaryOperatorDeclarationState {
         write!(
             f,
             "BinaryOperatorDeclarationState::new({}, {}, {}, {})",
-            *self.arg1_type.lock().unwrap(),
-            self.op,
-            *self.arg2_type.lock().unwrap(),
-            *self.res_type.lock().unwrap()
+            self.arg1_type, self.op, self.arg2_type, self.res_type
         )
     }
 }
@@ -178,29 +166,25 @@ impl Ast for BinaryOperatorDeclarationState {
 #[derive(Debug, Clone)]
 pub struct UnaryOperatorDeclarationState {
     pub op: Operator,
-    pub argtype: Arc<Mutex<TypeDenoter>>,
-    pub res_type: Arc<Mutex<TypeDenoter>>,
+    pub argtype: Box<TypeDenoter>,
+    pub res_type: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl UnaryOperatorDeclarationState {
-    pub fn new(
-        op: Operator,
-        argtype: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
-    ) -> Self {
+    pub fn new(op: Operator, argtype: TypeDenoter, res_type: TypeDenoter) -> Self {
         UnaryOperatorDeclarationState {
             op: op,
-            argtype: argtype,
-            res_type: res_type,
+            argtype: Box::new(argtype),
+            res_type: Box::new(res_type),
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
         op: Operator,
-        argtype: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
+        argtype: TypeDenoter,
+        res_type: TypeDenoter,
         position: SourcePosition,
     ) -> Self {
         let mut unopdecl = UnaryOperatorDeclarationState::new(op, argtype, res_type);
@@ -211,9 +195,7 @@ impl UnaryOperatorDeclarationState {
 
 impl PartialEq for UnaryOperatorDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.op == other.op
-            && *self.argtype.lock().unwrap() == *other.argtype.lock().unwrap()
-            && *self.res_type.lock().unwrap() == *other.res_type.lock().unwrap()
+        self.op == other.op && self.argtype == other.argtype && self.res_type == other.res_type
     }
 }
 
@@ -224,9 +206,7 @@ impl fmt::Display for UnaryOperatorDeclarationState {
         write!(
             f,
             "UnaryOperatorDeclarationState::new({}, {}, {})",
-            self.op,
-            *self.argtype.lock().unwrap(),
-            *self.res_type.lock().unwrap()
+            self.op, self.argtype, self.res_type
         )
     }
 }
@@ -283,24 +263,20 @@ impl Ast for ConstDeclarationState {
 #[derive(Debug, Clone)]
 pub struct VarDeclarationState {
     pub id: Identifier,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl VarDeclarationState {
-    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>) -> Self {
+    pub fn new(id: Identifier, td: TypeDenoter) -> Self {
         VarDeclarationState {
             id: id,
-            td: td,
+            td: Box::new(td),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        id: Identifier,
-        td: Arc<Mutex<TypeDenoter>>,
-        position: SourcePosition,
-    ) -> Self {
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
         let mut vardecl = VarDeclarationState::new(id, td);
         vardecl.common_state.position = position;
         vardecl
@@ -309,7 +285,7 @@ impl VarDeclarationState {
 
 impl PartialEq for VarDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+        self.id == other.id && self.td == other.td
     }
 }
 
@@ -317,12 +293,7 @@ impl Eq for VarDeclarationState {}
 
 impl fmt::Display for VarDeclarationState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "VarDeclarationState::new({}, {})",
-            self.id,
-            *self.td.lock().unwrap()
-        )
+        write!(f, "VarDeclarationState::new({}, {})", self.id, self.td)
     }
 }
 
@@ -389,7 +360,7 @@ impl Ast for ProcDeclarationState {
 pub struct FuncDeclarationState {
     pub id: Identifier,
     pub fps: Box<FormalParameterSequence>,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub expr: Box<Expression>,
     pub common_state: CommonState,
 }
@@ -398,13 +369,13 @@ impl FuncDeclarationState {
     pub fn new(
         id: Identifier,
         fps: FormalParameterSequence,
-        td: Arc<Mutex<TypeDenoter>>,
+        td: TypeDenoter,
         expr: Expression,
     ) -> Self {
         FuncDeclarationState {
             id: id,
             fps: Box::new(fps),
-            td: td,
+            td: Box::new(td),
             expr: Box::new(expr),
             common_state: CommonState::default(),
         }
@@ -413,7 +384,7 @@ impl FuncDeclarationState {
     pub fn new_with_position(
         id: Identifier,
         fps: FormalParameterSequence,
-        td: Arc<Mutex<TypeDenoter>>,
+        td: TypeDenoter,
         expr: Expression,
         position: SourcePosition,
     ) -> Self {
@@ -427,7 +398,7 @@ impl PartialEq for FuncDeclarationState {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
             && self.fps == other.fps
-            && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+            && self.td == other.td
             && self.expr == other.expr
     }
 }
@@ -439,10 +410,7 @@ impl fmt::Display for FuncDeclarationState {
         write!(
             f,
             "FuncDeclarationState::new({}, {}, {}, {})",
-            self.id,
-            self.fps,
-            *self.td.lock().unwrap(),
-            self.expr
+            self.id, self.fps, self.td, self.expr
         )
     }
 }
@@ -456,24 +424,20 @@ impl Ast for FuncDeclarationState {
 #[derive(Debug, Clone)]
 pub struct TypeDeclarationState {
     pub id: Identifier,
-    pub td: Arc<Mutex<TypeDenoter>>,
+    pub td: Box<TypeDenoter>,
     pub common_state: CommonState,
 }
 
 impl TypeDeclarationState {
-    pub fn new(id: Identifier, td: Arc<Mutex<TypeDenoter>>) -> Self {
+    pub fn new(id: Identifier, td: TypeDenoter) -> Self {
         TypeDeclarationState {
             id: id,
-            td: td,
+            td: Box::new(td),
             common_state: CommonState::default(),
         }
     }
 
-    pub fn new_with_position(
-        id: Identifier,
-        td: Arc<Mutex<TypeDenoter>>,
-        position: SourcePosition,
-    ) -> Self {
+    pub fn new_with_position(id: Identifier, td: TypeDenoter, position: SourcePosition) -> Self {
         let mut typedecl = TypeDeclarationState::new(id, td);
         typedecl.common_state.position = position;
         typedecl
@@ -482,7 +446,7 @@ impl TypeDeclarationState {
 
 impl PartialEq for TypeDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && *self.td.lock().unwrap() == *other.td.lock().unwrap()
+        self.id == other.id && self.td == other.td
     }
 }
 
@@ -490,12 +454,7 @@ impl Eq for TypeDeclarationState {}
 
 impl fmt::Display for TypeDeclarationState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "TypeDeclarationState::new({}, {})",
-            self.id,
-            *self.td.lock().unwrap()
-        )
+        write!(f, "TypeDeclarationState::new({}, {})", self.id, self.td)
     }
 }
 
@@ -507,23 +466,23 @@ impl Ast for TypeDeclarationState {
 
 #[derive(Debug, Clone)]
 pub struct SequentialDeclarationState {
-    pub decl1: Arc<Mutex<Declaration>>,
-    pub decl2: Arc<Mutex<Declaration>>,
+    pub decl1: Box<Declaration>,
+    pub decl2: Box<Declaration>,
     pub common_state: CommonState,
 }
 
 impl SequentialDeclarationState {
-    pub fn new(decl1: Arc<Mutex<Declaration>>, decl2: Arc<Mutex<Declaration>>) -> Self {
+    pub fn new(decl1: Declaration, decl2: Declaration) -> Self {
         SequentialDeclarationState {
-            decl1: decl1,
-            decl2: decl2,
+            decl1: Box::new(decl1),
+            decl2: Box::new(decl2),
             common_state: CommonState::default(),
         }
     }
 
     pub fn new_with_position(
-        decl1: Arc<Mutex<Declaration>>,
-        decl2: Arc<Mutex<Declaration>>,
+        decl1: Declaration,
+        decl2: Declaration,
         position: SourcePosition,
     ) -> Self {
         let mut seqdecl = SequentialDeclarationState::new(decl1, decl2);
@@ -534,8 +493,7 @@ impl SequentialDeclarationState {
 
 impl PartialEq for SequentialDeclarationState {
     fn eq(&self, other: &Self) -> bool {
-        *self.decl1.lock().unwrap() == *other.decl1.lock().unwrap()
-            && *self.decl2.lock().unwrap() == *other.decl2.lock().unwrap()
+        self.decl1 == other.decl1 && self.decl2 == other.decl2
     }
 }
 
@@ -546,8 +504,7 @@ impl fmt::Display for SequentialDeclarationState {
         write!(
             f,
             "SequentialDeclarationState::new({}, {})",
-            *self.decl1.lock().unwrap(),
-            *self.decl2.lock().unwrap()
+            self.decl1, self.decl2
         )
     }
 }

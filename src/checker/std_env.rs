@@ -5,7 +5,7 @@ use crate::ast::parameters::*;
 use crate::ast::primitives::*;
 use crate::ast::typedenoters::*;
 use std::default::Default;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use lazy_static::lazy_static;
 
@@ -19,81 +19,76 @@ lazy_static! {
 /// other languages
 #[derive(Debug)]
 pub struct StdEnvironment {
-    pub any_type: Arc<Mutex<TypeDenoter>>,
-    pub error_type: Arc<Mutex<TypeDenoter>>,
-    pub int_type: Arc<Mutex<TypeDenoter>>,
-    pub char_type: Arc<Mutex<TypeDenoter>>,
-    pub bool_type: Arc<Mutex<TypeDenoter>>,
+    pub any_type: TypeDenoter,
+    pub error_type: TypeDenoter,
+    pub int_type: TypeDenoter,
+    pub char_type: TypeDenoter,
+    pub bool_type: TypeDenoter,
 
-    pub int_decl: Arc<Mutex<Declaration>>,
-    pub char_decl: Arc<Mutex<Declaration>>,
-    pub bool_decl: Arc<Mutex<Declaration>>,
-    pub false_decl: Arc<Mutex<Declaration>>,
-    pub true_decl: Arc<Mutex<Declaration>>,
+    pub int_decl: Declaration,
+    pub char_decl: Declaration,
+    pub bool_decl: Declaration,
+    pub false_decl: Declaration,
+    pub true_decl: Declaration,
 
-    pub id_decl: Arc<Mutex<Declaration>>,
-    pub not_decl: Arc<Mutex<Declaration>>,
-    pub and_decl: Arc<Mutex<Declaration>>,
-    pub or_decl: Arc<Mutex<Declaration>>,
-    pub succ_decl: Arc<Mutex<Declaration>>,
-    pub pred_decl: Arc<Mutex<Declaration>>,
-    pub neg_decl: Arc<Mutex<Declaration>>,
-    pub add_decl: Arc<Mutex<Declaration>>,
-    pub sub_decl: Arc<Mutex<Declaration>>,
-    pub mult_decl: Arc<Mutex<Declaration>>,
-    pub div_decl: Arc<Mutex<Declaration>>,
-    pub mod_decl: Arc<Mutex<Declaration>>,
-    pub lt_decl: Arc<Mutex<Declaration>>,
-    pub le_decl: Arc<Mutex<Declaration>>,
-    pub ge_decl: Arc<Mutex<Declaration>>,
-    pub gt_decl: Arc<Mutex<Declaration>>,
-    pub eq_decl: Arc<Mutex<Declaration>>,
-    pub ne_decl: Arc<Mutex<Declaration>>,
-    pub eol_decl: Arc<Mutex<Declaration>>,
-    pub eof_decl: Arc<Mutex<Declaration>>,
-    pub get_decl: Arc<Mutex<Declaration>>,
-    pub put_decl: Arc<Mutex<Declaration>>,
-    pub geteol_decl: Arc<Mutex<Declaration>>,
-    pub puteol_decl: Arc<Mutex<Declaration>>,
-    pub getint_decl: Arc<Mutex<Declaration>>,
-    pub putint_decl: Arc<Mutex<Declaration>>,
-    pub chr_decl: Arc<Mutex<Declaration>>,
-    pub ord_decl: Arc<Mutex<Declaration>>,
-    pub new_decl: Arc<Mutex<Declaration>>,
-    pub dispose_decl: Arc<Mutex<Declaration>>,
+    pub id_decl: Declaration,
+    pub not_decl: Declaration,
+    pub and_decl: Declaration,
+    pub or_decl: Declaration,
+    pub succ_decl: Declaration,
+    pub pred_decl: Declaration,
+    pub neg_decl: Declaration,
+    pub add_decl: Declaration,
+    pub sub_decl: Declaration,
+    pub mult_decl: Declaration,
+    pub div_decl: Declaration,
+    pub mod_decl: Declaration,
+    pub lt_decl: Declaration,
+    pub le_decl: Declaration,
+    pub ge_decl: Declaration,
+    pub gt_decl: Declaration,
+    pub eq_decl: Declaration,
+    pub ne_decl: Declaration,
+    pub eol_decl: Declaration,
+    pub eof_decl: Declaration,
+    pub get_decl: Declaration,
+    pub put_decl: Declaration,
+    pub geteol_decl: Declaration,
+    pub puteol_decl: Declaration,
+    pub getint_decl: Declaration,
+    pub putint_decl: Declaration,
+    pub chr_decl: Declaration,
+    pub ord_decl: Declaration,
+    pub new_decl: Declaration,
+    pub dispose_decl: Declaration,
 }
 
 impl StdEnvironment {
-    fn declare_std_type(id: &str, td: Arc<Mutex<TypeDenoter>>) -> Arc<Mutex<Declaration>> {
-        Arc::new(Mutex::new(Declaration::TypeDeclaration(
-            TypeDeclarationState::new(Identifier::new(id), td),
-        )))
+    fn declare_std_type(id: &str, td: TypeDenoter) -> Declaration {
+        Declaration::TypeDeclaration(TypeDeclarationState::new(Identifier::new(id), td))
     }
 
-    fn declare_std_const(id: &str, val: &str) -> Arc<Mutex<Declaration>> {
-        Arc::new(Mutex::new(Declaration::ConstDeclaration(
-            ConstDeclarationState::new(
-                Identifier::new(id),
-                Expression::IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new(
-                    val,
-                ))),
-            ),
-        )))
+    fn declare_std_const(id: &str, val: &str) -> Declaration {
+        Declaration::ConstDeclaration(ConstDeclarationState::new(
+            Identifier::new(id),
+            Expression::IntegerExpression(IntegerExpressionState::new(IntegerLiteral::new(val))),
+        ))
     }
 
     fn declare_std_unary_operator(
         id: &str,
-        arg_type: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
-    ) -> Arc<Mutex<Declaration>> {
-        let decl = Arc::new(Mutex::new(Declaration::UnaryOperatorDeclaration(
-            UnaryOperatorDeclarationState::new(Operator::new(id), arg_type, res_type),
-        )));
+        arg_type: TypeDenoter,
+        res_type: TypeDenoter,
+    ) -> Declaration {
+        let mut decl = Declaration::UnaryOperatorDeclaration(UnaryOperatorDeclarationState::new(
+            Operator::new(id),
+            arg_type,
+            res_type,
+        ));
 
-        if let &mut Declaration::UnaryOperatorDeclaration(ref mut state) =
-            &mut *decl.lock().unwrap()
-        {
-            state.op.decl = Some(decl.clone());
+        let decl_clone = decl.clone();
+        if let Declaration::UnaryOperatorDeclaration(ref mut state) = decl {
+            state.op.decl = Some(Box::new(decl_clone));
         }
 
         decl
@@ -101,34 +96,32 @@ impl StdEnvironment {
 
     fn declare_std_binary_operator(
         id: &str,
-        arg1_type: Arc<Mutex<TypeDenoter>>,
-        arg2_type: Arc<Mutex<TypeDenoter>>,
-        res_type: Arc<Mutex<TypeDenoter>>,
-    ) -> Arc<Mutex<Declaration>> {
-        let decl = Arc::new(Mutex::new(Declaration::BinaryOperatorDeclaration(
-            BinaryOperatorDeclarationState::new(arg1_type, Operator::new(id), arg2_type, res_type),
-        )));
+        arg1_type: TypeDenoter,
+        arg2_type: TypeDenoter,
+        res_type: TypeDenoter,
+    ) -> Declaration {
+        let mut decl = Declaration::BinaryOperatorDeclaration(BinaryOperatorDeclarationState::new(
+            arg1_type,
+            Operator::new(id),
+            arg2_type,
+            res_type,
+        ));
 
-        if let &mut Declaration::BinaryOperatorDeclaration(ref mut state) =
-            &mut *decl.lock().unwrap()
-        {
-            state.op.decl = Some(decl.clone());
+        let decl_clone = decl.clone();
+        if let Declaration::BinaryOperatorDeclaration(ref mut state) = decl {
+            state.op.decl = Some(Box::new(decl_clone));
         }
 
         decl
     }
 
-    fn declare_std_procedure(
-        id: &str,
-        fps: FormalParameterSequence,
-        cmd: Command,
-    ) -> Arc<Mutex<Declaration>> {
-        let decl = Arc::new(Mutex::new(Declaration::ProcDeclaration(
-            ProcDeclarationState::new(Identifier::new(id), fps, cmd),
-        )));
+    fn declare_std_procedure(id: &str, fps: FormalParameterSequence, cmd: Command) -> Declaration {
+        let mut decl =
+            Declaration::ProcDeclaration(ProcDeclarationState::new(Identifier::new(id), fps, cmd));
 
-        if let &mut Declaration::ProcDeclaration(ref mut state) = &mut *decl.lock().unwrap() {
-            state.id.decl = Some(decl.clone());
+        let decl_clone = decl.clone();
+        if let Declaration::ProcDeclaration(ref mut state) = decl {
+            state.id.decl = Some(Box::new(decl_clone));
         }
 
         decl
@@ -137,15 +130,19 @@ impl StdEnvironment {
     fn declare_std_function(
         id: &str,
         fps: FormalParameterSequence,
-        td: Arc<Mutex<TypeDenoter>>,
+        td: TypeDenoter,
         expr: Expression,
-    ) -> Arc<Mutex<Declaration>> {
-        let decl = Arc::new(Mutex::new(Declaration::FuncDeclaration(
-            FuncDeclarationState::new(Identifier::new(id), fps, td, expr),
-        )));
+    ) -> Declaration {
+        let mut decl = Declaration::FuncDeclaration(FuncDeclarationState::new(
+            Identifier::new(id),
+            fps,
+            td,
+            expr,
+        ));
 
-        if let &mut Declaration::FuncDeclaration(ref mut state) = &mut *decl.lock().unwrap() {
-            state.id.decl = Some(decl.clone());
+        let decl_clone = decl.clone();
+        if let Declaration::FuncDeclaration(ref mut state) = decl {
+            state.id.decl = Some(Box::new(decl_clone));
         }
 
         decl
@@ -156,25 +153,15 @@ impl Default for StdEnvironment {
     fn default() -> Self {
         // primitive types
 
-        let any_type = Arc::new(Mutex::new(TypeDenoter::AnyTypeDenoter(
-            AnyTypeDenoterState::new(),
-        )));
+        let any_type = TypeDenoter::AnyTypeDenoter(AnyTypeDenoterState::new());
 
-        let error_type = Arc::new(Mutex::new(TypeDenoter::ErrorTypeDenoter(
-            ErrorTypeDenoterState::new(),
-        )));
+        let error_type = TypeDenoter::ErrorTypeDenoter(ErrorTypeDenoterState::new());
 
-        let int_type = Arc::new(Mutex::new(TypeDenoter::IntTypeDenoter(
-            IntTypeDenoterState::new(),
-        )));
+        let int_type = TypeDenoter::IntTypeDenoter(IntTypeDenoterState::new());
 
-        let char_type = Arc::new(Mutex::new(TypeDenoter::CharTypeDenoter(
-            CharTypeDenoterState::new(),
-        )));
+        let char_type = TypeDenoter::CharTypeDenoter(CharTypeDenoterState::new());
 
-        let bool_type = Arc::new(Mutex::new(TypeDenoter::BoolTypeDenoter(
-            BoolTypeDenoterState::new(),
-        )));
+        let bool_type = TypeDenoter::BoolTypeDenoter(BoolTypeDenoterState::new());
 
         // declarations for the primitive types
 
