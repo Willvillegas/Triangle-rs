@@ -21,12 +21,12 @@ impl IdentificationTable {
         }
     }
 
-    pub fn enter(&mut self, id: String, val: Declaration) {
+    pub fn enter(&mut self, id: &str, val: Declaration) {
         if !self.table.contains_key(&self.curr_level) {
             self.table.insert(self.curr_level, HashMap::new());
         }
 
-        if self.table.get(&self.curr_level).unwrap().contains_key(&id) {
+        if self.table.get(&self.curr_level).unwrap().contains_key(id) {
             error::report_error_and_exit(error::GenError::from(error::CheckerError::new(
                 &format!(
                     "identifier {} is already defined at level {}",
@@ -38,7 +38,7 @@ impl IdentificationTable {
         self.table
             .get_mut(&self.curr_level)
             .unwrap()
-            .insert(id, Box::new(val));
+            .insert(id.to_owned(), Box::new(val));
     }
 
     pub fn retrieve(&self, id: &String) -> Option<&Box<Declaration>> {

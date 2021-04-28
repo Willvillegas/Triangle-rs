@@ -36,146 +36,100 @@ impl Checker {
     /// set up the standard environment (the prelude)
     fn establish_standard_environment(&mut self) {
         self.id_table.enter(
-            String::from("Integer"),
+            "Integer",
             STANDARD_ENVIRONMENT.lock().unwrap().int_decl.clone(),
         );
 
         self.id_table.enter(
-            String::from("Char"),
+            "Char",
             STANDARD_ENVIRONMENT.lock().unwrap().char_decl.clone(),
         );
 
         self.id_table.enter(
-            String::from("Boolean"),
+            "Boolean",
             STANDARD_ENVIRONMENT.lock().unwrap().bool_decl.clone(),
         );
         self.id_table.enter(
-            String::from("false"),
+            "false",
             STANDARD_ENVIRONMENT.lock().unwrap().false_decl.clone(),
         );
         self.id_table.enter(
-            String::from("true"),
+            "true",
             STANDARD_ENVIRONMENT.lock().unwrap().true_decl.clone(),
         );
 
+        self.id_table
+            .enter("id", STANDARD_ENVIRONMENT.lock().unwrap().id_decl.clone());
+        self.id_table
+            .enter("\\", STANDARD_ENVIRONMENT.lock().unwrap().not_decl.clone());
+        self.id_table
+            .enter("/\\", STANDARD_ENVIRONMENT.lock().unwrap().and_decl.clone());
+        self.id_table
+            .enter("\\/", STANDARD_ENVIRONMENT.lock().unwrap().or_decl.clone());
         self.id_table.enter(
-            String::from("id"),
-            STANDARD_ENVIRONMENT.lock().unwrap().id_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("\\"),
-            STANDARD_ENVIRONMENT.lock().unwrap().not_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("/\\"),
-            STANDARD_ENVIRONMENT.lock().unwrap().and_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("\\/"),
-            STANDARD_ENVIRONMENT.lock().unwrap().or_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("succ"),
+            "succ",
             STANDARD_ENVIRONMENT.lock().unwrap().succ_decl.clone(),
         );
         self.id_table.enter(
-            String::from("pred"),
+            "pred",
             STANDARD_ENVIRONMENT.lock().unwrap().pred_decl.clone(),
         );
+        self.id_table
+            .enter("neg", STANDARD_ENVIRONMENT.lock().unwrap().neg_decl.clone());
+        self.id_table
+            .enter("+", STANDARD_ENVIRONMENT.lock().unwrap().add_decl.clone());
+        self.id_table
+            .enter("-", STANDARD_ENVIRONMENT.lock().unwrap().sub_decl.clone());
+        self.id_table
+            .enter("*", STANDARD_ENVIRONMENT.lock().unwrap().mult_decl.clone());
+        self.id_table
+            .enter("/", STANDARD_ENVIRONMENT.lock().unwrap().div_decl.clone());
+        self.id_table
+            .enter("//", STANDARD_ENVIRONMENT.lock().unwrap().mod_decl.clone());
+        self.id_table
+            .enter("<", STANDARD_ENVIRONMENT.lock().unwrap().lt_decl.clone());
+        self.id_table
+            .enter("<=", STANDARD_ENVIRONMENT.lock().unwrap().le_decl.clone());
+        self.id_table
+            .enter(">=", STANDARD_ENVIRONMENT.lock().unwrap().ge_decl.clone());
+        self.id_table
+            .enter(">", STANDARD_ENVIRONMENT.lock().unwrap().gt_decl.clone());
+        self.id_table
+            .enter("=", STANDARD_ENVIRONMENT.lock().unwrap().eq_decl.clone());
+        self.id_table
+            .enter("/=", STANDARD_ENVIRONMENT.lock().unwrap().ne_decl.clone());
+        self.id_table
+            .enter("eol", STANDARD_ENVIRONMENT.lock().unwrap().eol_decl.clone());
+        self.id_table
+            .enter("eof", STANDARD_ENVIRONMENT.lock().unwrap().eof_decl.clone());
+        self.id_table
+            .enter("get", STANDARD_ENVIRONMENT.lock().unwrap().get_decl.clone());
+        self.id_table
+            .enter("put", STANDARD_ENVIRONMENT.lock().unwrap().put_decl.clone());
         self.id_table.enter(
-            String::from("neg"),
-            STANDARD_ENVIRONMENT.lock().unwrap().neg_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("+"),
-            STANDARD_ENVIRONMENT.lock().unwrap().add_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("-"),
-            STANDARD_ENVIRONMENT.lock().unwrap().sub_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("*"),
-            STANDARD_ENVIRONMENT.lock().unwrap().mult_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("/"),
-            STANDARD_ENVIRONMENT.lock().unwrap().div_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("//"),
-            STANDARD_ENVIRONMENT.lock().unwrap().mod_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("<"),
-            STANDARD_ENVIRONMENT.lock().unwrap().lt_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("<="),
-            STANDARD_ENVIRONMENT.lock().unwrap().le_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from(">="),
-            STANDARD_ENVIRONMENT.lock().unwrap().ge_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from(">"),
-            STANDARD_ENVIRONMENT.lock().unwrap().gt_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("="),
-            STANDARD_ENVIRONMENT.lock().unwrap().eq_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("/="),
-            STANDARD_ENVIRONMENT.lock().unwrap().ne_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("eol"),
-            STANDARD_ENVIRONMENT.lock().unwrap().eol_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("eof"),
-            STANDARD_ENVIRONMENT.lock().unwrap().eof_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("get"),
-            STANDARD_ENVIRONMENT.lock().unwrap().get_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("put"),
-            STANDARD_ENVIRONMENT.lock().unwrap().put_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("geteol"),
+            "geteol",
             STANDARD_ENVIRONMENT.lock().unwrap().geteol_decl.clone(),
         );
         self.id_table.enter(
-            String::from("puteol"),
+            "puteol",
             STANDARD_ENVIRONMENT.lock().unwrap().puteol_decl.clone(),
         );
         self.id_table.enter(
-            String::from("getint"),
+            "getint",
             STANDARD_ENVIRONMENT.lock().unwrap().getint_decl.clone(),
         );
         self.id_table.enter(
-            String::from("putint"),
+            "putint",
             STANDARD_ENVIRONMENT.lock().unwrap().putint_decl.clone(),
         );
+        self.id_table
+            .enter("chr", STANDARD_ENVIRONMENT.lock().unwrap().chr_decl.clone());
+        self.id_table
+            .enter("ord", STANDARD_ENVIRONMENT.lock().unwrap().ord_decl.clone());
+        self.id_table
+            .enter("new", STANDARD_ENVIRONMENT.lock().unwrap().new_decl.clone());
         self.id_table.enter(
-            String::from("chr"),
-            STANDARD_ENVIRONMENT.lock().unwrap().chr_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("ord"),
-            STANDARD_ENVIRONMENT.lock().unwrap().ord_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("new"),
-            STANDARD_ENVIRONMENT.lock().unwrap().new_decl.clone(),
-        );
-        self.id_table.enter(
-            String::from("dispose"),
+            "dispose",
             STANDARD_ENVIRONMENT.lock().unwrap().dispose_decl.clone(),
         );
     }
@@ -189,15 +143,21 @@ impl Checker {
 }
 
 impl AstVisitor for Checker {
+    /// check the program by recursively checking all its components. For semantic analysis,
+    /// the AstObject parameter is not particularly used apart from a few instances - return
+    /// Null.
     fn visit_program(&mut self, program: &mut Program, arg: AstObject) -> AstObject {
         program.cmd.accept(self, arg.clone());
         AstObject::Null
     }
 
+    /// check the empty command - trivially checked, return Null
     fn visit_empty_command(&mut self, cmd: &mut EmptyCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
+    /// check the assign command - check the vname, check the expression, and confirm that the
+    /// types are compatible. Return Null.
     fn visit_assign_command(&mut self, cmd: &mut AssignCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
@@ -245,11 +205,14 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    /// check the first command, and then check the second command
     fn visit_sequential_command(
         &mut self,
         cmd: &mut SequentialCommandState,
         arg: AstObject,
     ) -> AstObject {
+        cmd.cmd1.accept(self, AstObject::Null);
+        cmd.cmd2.accept(self, AstObject::Null);
         AstObject::Null
     }
 
@@ -381,11 +344,17 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    /// check all the components of the declaration, and then enter entries for the identifier
+    /// representing this declaration against the declaration itself, into the id table.
     fn visit_var_declaration(
         &mut self,
         decl: &mut VarDeclarationState,
         arg: AstObject,
     ) -> AstObject {
+        decl.id.accept(self, AstObject::Null);
+        decl.td.accept(self, AstObject::Null);
+        self.id_table
+            .enter(&decl.id.spelling, Declaration::VarDeclaration(decl.clone()));
         AstObject::Null
     }
 
@@ -429,11 +398,14 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    /// check the first declaration, and then check the second declaration.
     fn visit_sequential_declaration(
         &mut self,
         decl: &mut SequentialDeclarationState,
         arg: AstObject,
     ) -> AstObject {
+        decl.decl1.accept(self, AstObject::Null);
+        decl.decl2.accept(self, AstObject::Null);
         AstObject::Null
     }
 
