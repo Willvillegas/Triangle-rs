@@ -25,6 +25,85 @@ pub enum Expression {
     VnameExpression(VnameExpressionState),
 }
 
+impl Expression {
+    pub fn get_array_expression(&self) -> Option<&ArrayExpressionState> {
+        match *self {
+            Expression::ArrayExpression(ref array) => Some(&array),
+            _ => None,
+        }
+    }
+
+    pub fn get_binary_expression(&self) -> Option<&BinaryExpressionState> {
+        match *self {
+            Expression::BinaryExpression(ref binary) => Some(&binary),
+            _ => None,
+        }
+    }
+
+    pub fn get_call_expression(&self) -> Option<&CallExpressionState> {
+        match *self {
+            Expression::CallExpression(ref call) => Some(&call),
+            _ => None,
+        }
+    }
+
+    pub fn get_character_expression(&self) -> Option<&CharacterExpressionState> {
+        match *self {
+            Expression::CharacterExpression(ref character) => Some(&character),
+            _ => None,
+        }
+    }
+
+    pub fn get_empty_expression(&self) -> Option<&EmptyExpressionState> {
+        match *self {
+            Expression::EmptyExpression(ref empty) => Some(&empty),
+            _ => None,
+        }
+    }
+
+    pub fn get_if_expression(&self) -> Option<&IfExpressionState> {
+        match *self {
+            Expression::IfExpression(ref iff) => Some(&iff),
+            _ => None,
+        }
+    }
+
+    pub fn get_integer_expression(&self) -> Option<&IntegerExpressionState> {
+        match *self {
+            Expression::IntegerExpression(ref int) => Some(&int),
+            _ => None,
+        }
+    }
+
+    pub fn get_let_expression(&self) -> Option<&LetExpressionState> {
+        match *self {
+            Expression::LetExpression(ref lett) => Some(&lett),
+            _ => None,
+        }
+    }
+
+    pub fn get_record_expression(&self) -> Option<&RecordExpressionState> {
+        match *self {
+            Expression::RecordExpression(ref record) => Some(&record),
+            _ => None,
+        }
+    }
+
+    pub fn get_unary_expression(&self) -> Option<&UnaryExpressionState> {
+        match *self {
+            Expression::UnaryExpression(ref unary) => Some(&unary),
+            _ => None,
+        }
+    }
+
+    pub fn get_vname_expression(&self) -> Option<&VnameExpressionState> {
+        match *self {
+            Expression::VnameExpression(ref vname) => Some(&vname),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for Expression {
     fn eq(&self, other: &Self) -> bool {
         use Expression::*;

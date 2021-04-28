@@ -21,6 +21,64 @@ pub enum Declaration {
     VarDeclaration(VarDeclarationState),
 }
 
+impl Declaration {
+    pub fn get_binary_operator_declaration(&self) -> Option<&BinaryOperatorDeclarationState> {
+        match *self {
+            Declaration::BinaryOperatorDeclaration(ref binary) => Some(&binary),
+            _ => None,
+        }
+    }
+
+    pub fn get_const_declaration(&self) -> Option<&ConstDeclarationState> {
+        match *self {
+            Declaration::ConstDeclaration(ref cnst) => Some(&cnst),
+            _ => None,
+        }
+    }
+
+    pub fn get_func_declaration(&self) -> Option<&FuncDeclarationState> {
+        match *self {
+            Declaration::FuncDeclaration(ref func) => Some(&func),
+            _ => None,
+        }
+    }
+
+    pub fn get_proc_declaration(&self) -> Option<&ProcDeclarationState> {
+        match *self {
+            Declaration::ProcDeclaration(ref proc) => Some(&proc),
+            _ => None,
+        }
+    }
+
+    pub fn get_sequential_declaration(&self) -> Option<&SequentialDeclarationState> {
+        match *self {
+            Declaration::SequentialDeclaration(ref sequential) => Some(&sequential),
+            _ => None,
+        }
+    }
+
+    pub fn get_type_declaration(&self) -> Option<&TypeDeclarationState> {
+        match *self {
+            Declaration::TypeDeclaration(ref typ) => Some(&typ),
+            _ => None,
+        }
+    }
+
+    pub fn get_unary_operator_declaration(&self) -> Option<&UnaryOperatorDeclarationState> {
+        match *self {
+            Declaration::UnaryOperatorDeclaration(ref unary) => Some(&unary),
+            _ => None,
+        }
+    }
+
+    pub fn get_var_declaration(&self) -> Option<&VarDeclarationState> {
+        match *self {
+            Declaration::VarDeclaration(ref var) => Some(&var),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for Declaration {
     fn eq(&self, other: &Self) -> bool {
         use Declaration::*;

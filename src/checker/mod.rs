@@ -502,6 +502,7 @@ impl AstVisitor for Checker {
         aps: &mut SingleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
+        // use intropection methods along with retrieval methods in the enums
         AstObject::Null
     }
 

@@ -16,6 +16,22 @@ pub enum ArrayAggregate {
     MultipleArrayAggregate(MultipleArrayAggregateState),
 }
 
+impl ArrayAggregate {
+    pub fn get_single_array_aggregate(&self) -> Option<&SingleArrayAggregateState> {
+        match *self {
+            ArrayAggregate::SingleArrayAggregate(ref single) => Some(&single),
+            _ => None,
+        }
+    }
+
+    pub fn get_multiple_array_aggregate(&self) -> Option<&MultipleArrayAggregateState> {
+        match *self {
+            ArrayAggregate::MultipleArrayAggregate(ref multiple) => Some(&multiple),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for ArrayAggregate {
     fn eq(&self, other: &Self) -> bool {
         use ArrayAggregate::*;
@@ -158,6 +174,22 @@ impl Ast for MultipleArrayAggregateState {
 pub enum RecordAggregate {
     SingleRecordAggregate(SingleRecordAggregateState),
     MultipleRecordAggregate(MultipleRecordAggregateState),
+}
+
+impl RecordAggregate {
+    pub fn get_single_record_aggregate(&self) -> Option<&SingleRecordAggregateState> {
+        match *self {
+            RecordAggregate::SingleRecordAggregate(ref single) => Some(&single),
+            _ => None,
+        }
+    }
+
+    pub fn get_multiple_record_aggregate(&self) -> Option<&MultipleRecordAggregateState> {
+        match *self {
+            RecordAggregate::MultipleRecordAggregate(ref multiple) => Some(&multiple),
+            _ => None,
+        }
+    }
 }
 
 impl PartialEq for RecordAggregate {

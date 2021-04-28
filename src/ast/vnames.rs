@@ -13,6 +13,29 @@ pub enum Vname {
     SubscriptVname(SubscriptVnameState),
 }
 
+impl Vname {
+    pub fn get_dot_vname(&self) -> Option<&DotVnameState> {
+        match *self {
+            Vname::DotVname(ref dot) => Some(&dot),
+            _ => None,
+        }
+    }
+
+    pub fn get_simple_vname(&self) -> Option<&SimpleVnameState> {
+        match *self {
+            Vname::SimpleVname(ref simple) => Some(&simple),
+            _ => None,
+        }
+    }
+
+    pub fn get_subscript_vname(&self) -> Option<&SubscriptVnameState> {
+        match *self {
+            Vname::SubscriptVname(ref subscript) => Some(&subscript),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for Vname {
     fn eq(&self, other: &Self) -> bool {
         use Vname::*;

@@ -20,6 +20,57 @@ pub enum Command {
     WhileCommand(WhileCommandState),
 }
 
+impl Command {
+    pub fn get_assign_command(&self) -> Option<&AssignCommandState> {
+        match *self {
+            Command::AssignCommand(ref assign) => Some(&assign),
+            _ => None,
+        }
+    }
+
+    pub fn get_call_command(&self) -> Option<&CallCommandState> {
+        match *self {
+            Command::CallCommand(ref call) => Some(&call),
+            _ => None,
+        }
+    }
+
+    pub fn get_empty_command(&self) -> Option<&EmptyCommandState> {
+        match *self {
+            Command::EmptyCommand(ref empty) => Some(&empty),
+            _ => None,
+        }
+    }
+
+    pub fn get_if_command(&self) -> Option<&IfCommandState> {
+        match *self {
+            Command::IfCommand(ref iff) => Some(&iff),
+            _ => None,
+        }
+    }
+
+    pub fn get_let_command(&self) -> Option<&LetCommandState> {
+        match *self {
+            Command::LetCommand(ref lett) => Some(&lett),
+            _ => None,
+        }
+    }
+
+    pub fn get_sequential_command(&self) -> Option<&SequentialCommandState> {
+        match *self {
+            Command::SequentialCommand(ref sequential) => Some(&sequential),
+            _ => None,
+        }
+    }
+
+    pub fn get_while_command(&self) -> Option<&WhileCommandState> {
+        match *self {
+            Command::WhileCommand(ref whil) => Some(&whil),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for Command {
     fn eq(&self, other: &Self) -> bool {
         use Command::*;

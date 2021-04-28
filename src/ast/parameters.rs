@@ -15,6 +15,37 @@ pub enum FormalParameterSequence {
     MultipleFormalParameterSequence(MultipleFormalParameterSequenceState),
 }
 
+impl FormalParameterSequence {
+    pub fn get_empty_formal_parameter_sequence(
+        &self,
+    ) -> Option<&EmptyFormalParameterSequenceState> {
+        match *self {
+            FormalParameterSequence::EmptyFormalParameterSequence(ref empty) => Some(&empty),
+            _ => None,
+        }
+    }
+
+    pub fn get_single_formal_parameter_sequence(
+        &self,
+    ) -> Option<&SingleFormalParameterSequenceState> {
+        match *self {
+            FormalParameterSequence::SingleFormalParameterSequence(ref single) => Some(&single),
+            _ => None,
+        }
+    }
+
+    pub fn get_multiple_formal_parameter_sequence(
+        &self,
+    ) -> Option<&MultipleFormalParameterSequenceState> {
+        match *self {
+            FormalParameterSequence::MultipleFormalParameterSequence(ref multiple) => {
+                Some(&multiple)
+            }
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for FormalParameterSequence {
     fn eq(&self, other: &Self) -> bool {
         use FormalParameterSequence::*;
@@ -201,6 +232,36 @@ pub enum FormalParameter {
     FuncFormalParameter(FuncFormalParameterState),
     ProcFormalParameter(ProcFormalParameterState),
     VarFormalParameter(VarFormalParameterState),
+}
+
+impl FormalParameter {
+    pub fn get_const_formal_parameter(&self) -> Option<&ConstFormalParameterState> {
+        match *self {
+            FormalParameter::ConstFormalParameter(ref cnst) => Some(&cnst),
+            _ => None,
+        }
+    }
+
+    pub fn get_func_formal_parameter(&self) -> Option<&FuncFormalParameterState> {
+        match *self {
+            FormalParameter::FuncFormalParameter(ref func) => Some(&func),
+            _ => None,
+        }
+    }
+
+    pub fn get_proc_formal_parameter(&self) -> Option<&ProcFormalParameterState> {
+        match *self {
+            FormalParameter::ProcFormalParameter(ref proc) => Some(&proc),
+            _ => None,
+        }
+    }
+
+    pub fn get_var_formal_parameter(&self) -> Option<&VarFormalParameterState> {
+        match *self {
+            FormalParameter::VarFormalParameter(ref var) => Some(&var),
+            _ => None,
+        }
+    }
 }
 
 impl Ast for FormalParameter {
@@ -447,6 +508,56 @@ pub enum ActualParameterSequence {
     MultipleActualParameterSequence(MultipleActualParameterSequenceState),
 }
 
+impl ActualParameterSequence {
+    pub fn get_empty_actual_parameter_sequence(
+        &self,
+    ) -> Option<&EmptyActualParameterSequenceState> {
+        match *self {
+            ActualParameterSequence::EmptyActualParameterSequence(ref empty) => Some(&empty),
+            _ => None,
+        }
+    }
+
+    pub fn get_single_actual_parameter_sequence(
+        &self,
+    ) -> Option<&SingleActualParameterSequenceState> {
+        match *self {
+            ActualParameterSequence::SingleActualParameterSequence(ref single) => Some(&single),
+            _ => None,
+        }
+    }
+
+    pub fn get_multiple_actual_parameter_sequence(
+        &self,
+    ) -> Option<&MultipleActualParameterSequenceState> {
+        match *self {
+            ActualParameterSequence::MultipleActualParameterSequence(ref multiple) => {
+                Some(&multiple)
+            }
+            _ => None,
+        }
+    }
+}
+
+impl ActualParameterSequence {
+    pub fn get_empty(&self) -> Option<&EmptyActualParameterSequenceState> {
+        use ActualParameterSequence::*;
+
+        match *self {
+            EmptyActualParameterSequence(ref empty) => Some(&empty),
+            _ => None,
+        }
+    }
+
+    pub fn get_single(&self) -> Option<&SingleActualParameterSequenceState> {
+        todo!()
+    }
+
+    pub fn get_multiple(&self) -> Option<&MultipleActualParameterSequenceState> {
+        todo!()
+    }
+}
+
 impl PartialEq for ActualParameterSequence {
     fn eq(&self, other: &Self) -> bool {
         use ActualParameterSequence::*;
@@ -635,6 +746,34 @@ pub enum ActualParameter {
     FuncActualParameter(FuncActualParameterState),
     ProcActualParameter(ProcActualParameterState),
     VarActualParameter(VarActualParameterState),
+}
+
+impl ActualParameter {
+    pub fn get_const_actual_parameter(&self) -> Option<&ConstActualParameterState> {
+        match *self {
+            ActualParameter::ConstActualParameter(ref cnst) => Some(&cnst),
+            _ => None,
+        }
+    }
+
+    pub fn get_func_actual_parameter(&self) -> Option<&FuncActualParameterState> {
+        match *self {
+            ActualParameter::FuncActualParameter(ref func) => Some(&func),
+            _ => None,
+        }
+    }
+    pub fn get_proc_actual_parameter(&self) -> Option<&ProcActualParameterState> {
+        match *self {
+            ActualParameter::ProcActualParameter(ref proc) => Some(&proc),
+            _ => None,
+        }
+    }
+    pub fn get_var_actual_parameter(&self) -> Option<&VarActualParameterState> {
+        match *self {
+            ActualParameter::VarActualParameter(ref var) => Some(&var),
+            _ => None,
+        }
+    }
 }
 
 impl PartialEq for ActualParameter {

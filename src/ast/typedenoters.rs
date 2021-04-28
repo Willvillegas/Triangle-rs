@@ -18,6 +18,64 @@ pub enum TypeDenoter {
     SimpleTypeDenoter(SimpleTypeDenoterState),
 }
 
+impl TypeDenoter {
+    pub fn get_any_type_denoter(&self) -> Option<&AnyTypeDenoterState> {
+        match *self {
+            TypeDenoter::AnyTypeDenoter(ref any) => Some(&any),
+            _ => None,
+        }
+    }
+
+    pub fn get_array_type_denoter(&self) -> Option<&ArrayTypeDenoterState> {
+        match *self {
+            TypeDenoter::ArrayTypeDenoter(ref array) => Some(&array),
+            _ => None,
+        }
+    }
+
+    pub fn get_bool_type_denoter(&self) -> Option<&BoolTypeDenoterState> {
+        match *self {
+            TypeDenoter::BoolTypeDenoter(ref bool) => Some(&bool),
+            _ => None,
+        }
+    }
+
+    pub fn get_char_type_denoter(&self) -> Option<&CharTypeDenoterState> {
+        match *self {
+            TypeDenoter::CharTypeDenoter(ref character) => Some(&character),
+            _ => None,
+        }
+    }
+
+    pub fn get_error_type_denoter(&self) -> Option<&ErrorTypeDenoterState> {
+        match *self {
+            TypeDenoter::ErrorTypeDenoter(ref error) => Some(&error),
+            _ => None,
+        }
+    }
+
+    pub fn get_int_type_denoter(&self) -> Option<&IntTypeDenoterState> {
+        match *self {
+            TypeDenoter::IntTypeDenoter(ref int) => Some(&int),
+            _ => None,
+        }
+    }
+
+    pub fn get_record_type_denoter(&self) -> Option<&RecordTypeDenoterState> {
+        match *self {
+            TypeDenoter::RecordTypeDenoter(ref record) => Some(&record),
+            _ => None,
+        }
+    }
+
+    pub fn get_simple_type_denoter(&self) -> Option<&SimpleTypeDenoterState> {
+        match *self {
+            TypeDenoter::SimpleTypeDenoter(ref simple) => Some(&simple),
+            _ => None,
+        }
+    }
+}
+
 impl PartialEq for TypeDenoter {
     fn eq(&self, other: &Self) -> bool {
         use TypeDenoter::*;
@@ -405,6 +463,22 @@ impl Ast for RecordTypeDenoterState {
 pub enum FieldTypeDenoter {
     SingleFieldTypeDenoter(SingleFieldTypeDenoterState),
     MultipleFieldTypeDenoter(MultipleFieldTypeDenoterState),
+}
+
+impl FieldTypeDenoter {
+    pub fn get_single_field_type_denoter(&self) -> Option<&SingleFieldTypeDenoterState> {
+        match *self {
+            FieldTypeDenoter::SingleFieldTypeDenoter(ref single) => Some(&single),
+            _ => None,
+        }
+    }
+
+    pub fn get_multiple_field_type_denoter(&self) -> Option<&MultipleFieldTypeDenoterState> {
+        match *self {
+            FieldTypeDenoter::MultipleFieldTypeDenoter(ref multiple) => Some(&multiple),
+            _ => None,
+        }
+    }
 }
 
 impl PartialEq for FieldTypeDenoter {
