@@ -62,6 +62,9 @@ fn test_inc() {
     let source_file = "samples/source/inc.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let mut program = parser.parse_program();
+    let checker = Checker::new();
+    checker.check(&mut program);
+    assert!(inc_checker::check(&program));
 }
 
 #[test]
