@@ -60,7 +60,7 @@ impl fmt::Display for ArrayAggregate {
 }
 
 impl Ast for ArrayAggregate {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use ArrayAggregate::*;
 
         match *self {
@@ -110,7 +110,7 @@ impl fmt::Display for SingleArrayAggregateState {
 }
 
 impl Ast for SingleArrayAggregateState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_array_aggregate(self, arg)
     }
 }
@@ -165,7 +165,7 @@ impl fmt::Display for MultipleArrayAggregateState {
 }
 
 impl Ast for MultipleArrayAggregateState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_array_aggregate(self, arg)
     }
 }
@@ -220,7 +220,7 @@ impl fmt::Display for RecordAggregate {
 }
 
 impl Ast for RecordAggregate {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use RecordAggregate::*;
 
         match *self {
@@ -272,7 +272,7 @@ impl fmt::Display for SingleRecordAggregateState {
 }
 
 impl Ast for SingleRecordAggregateState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_record_aggregate(self, arg)
     }
 }
@@ -326,7 +326,7 @@ impl fmt::Display for MultipleRecordAggregateState {
 }
 
 impl Ast for MultipleRecordAggregateState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_record_aggregate(self, arg)
     }
 }

@@ -64,7 +64,7 @@ impl fmt::Display for Vname {
 }
 
 impl Ast for Vname {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use Vname::*;
 
         match *self {
@@ -111,7 +111,7 @@ impl fmt::Display for SimpleVnameState {
 }
 
 impl Ast for SimpleVnameState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_simple_vname(self, arg)
     }
 }
@@ -153,7 +153,7 @@ impl fmt::Display for SubscriptVnameState {
 }
 
 impl Ast for SubscriptVnameState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_subscript_vname(self, arg)
     }
 }
@@ -196,7 +196,7 @@ impl fmt::Display for DotVnameState {
 }
 
 impl Ast for DotVnameState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_dot_vname(self, arg)
     }
 }

@@ -140,7 +140,7 @@ impl fmt::Display for Declaration {
 }
 
 impl Ast for Declaration {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use Declaration::*;
 
         match *self {
@@ -216,7 +216,7 @@ impl fmt::Display for BinaryOperatorDeclarationState {
 }
 
 impl Ast for BinaryOperatorDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_binary_operator_declaration(self, arg)
     }
 }
@@ -270,7 +270,7 @@ impl fmt::Display for UnaryOperatorDeclarationState {
 }
 
 impl Ast for UnaryOperatorDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_unary_operator_declaration(self, arg)
     }
 }
@@ -313,7 +313,7 @@ impl fmt::Display for ConstDeclarationState {
 }
 
 impl Ast for ConstDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_const_declaration(self, arg)
     }
 }
@@ -356,7 +356,7 @@ impl fmt::Display for VarDeclarationState {
 }
 
 impl Ast for VarDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_var_declaration(self, arg)
     }
 }
@@ -410,7 +410,7 @@ impl fmt::Display for ProcDeclarationState {
 }
 
 impl Ast for ProcDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_proc_declaration(self, arg)
     }
 }
@@ -474,7 +474,7 @@ impl fmt::Display for FuncDeclarationState {
 }
 
 impl Ast for FuncDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_func_declaration(self, arg)
     }
 }
@@ -517,7 +517,7 @@ impl fmt::Display for TypeDeclarationState {
 }
 
 impl Ast for TypeDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_type_declaration(self, arg)
     }
 }
@@ -568,7 +568,7 @@ impl fmt::Display for SequentialDeclarationState {
 }
 
 impl Ast for SequentialDeclarationState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_sequential_declaration(self, arg)
     }
 }

@@ -117,7 +117,7 @@ impl fmt::Display for TypeDenoter {
 }
 
 impl Ast for TypeDenoter {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use TypeDenoter::*;
 
         match *self {
@@ -173,7 +173,7 @@ impl fmt::Display for BoolTypeDenoterState {
 }
 
 impl Ast for BoolTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_bool_type_denoter(self, arg)
     }
 }
@@ -211,7 +211,7 @@ impl fmt::Display for CharTypeDenoterState {
 }
 
 impl Ast for CharTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_char_type_denoter(self, arg)
     }
 }
@@ -250,7 +250,7 @@ impl fmt::Display for IntTypeDenoterState {
 }
 
 impl Ast for IntTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_int_type_denoter(self, arg)
     }
 }
@@ -288,7 +288,7 @@ impl fmt::Display for AnyTypeDenoterState {
 }
 
 impl Ast for AnyTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_any_type_denoter(self, arg)
     }
 }
@@ -327,7 +327,7 @@ impl fmt::Display for ErrorTypeDenoterState {
 }
 
 impl Ast for ErrorTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_error_type_denoter(self, arg)
     }
 }
@@ -367,7 +367,7 @@ impl fmt::Display for SimpleTypeDenoterState {
 }
 
 impl Ast for SimpleTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_simple_type_denoter(self, arg)
     }
 }
@@ -413,7 +413,7 @@ impl fmt::Display for ArrayTypeDenoterState {
 }
 
 impl Ast for ArrayTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_array_type_denoter(self, arg)
     }
 }
@@ -454,7 +454,7 @@ impl fmt::Display for RecordTypeDenoterState {
 }
 
 impl Ast for RecordTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_record_type_denoter(self, arg)
     }
 }
@@ -552,7 +552,7 @@ impl fmt::Display for SingleFieldTypeDenoterState {
 }
 
 impl Ast for SingleFieldTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_field_type_denoter(self, arg)
     }
 }
@@ -606,7 +606,7 @@ impl fmt::Display for MultipleFieldTypeDenoterState {
 }
 
 impl Ast for MultipleFieldTypeDenoterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_field_type_denoter(self, arg)
     }
 }

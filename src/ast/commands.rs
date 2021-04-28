@@ -107,7 +107,7 @@ impl fmt::Display for Command {
 }
 
 impl Ast for Command {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use Command::*;
 
         match *self {
@@ -160,7 +160,7 @@ impl fmt::Display for AssignCommandState {
 }
 
 impl Ast for AssignCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_assign_command(self, arg)
     }
 }
@@ -207,7 +207,7 @@ impl fmt::Display for CallCommandState {
 }
 
 impl Ast for CallCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_call_command(self, arg)
     }
 }
@@ -246,7 +246,7 @@ impl fmt::Display for EmptyCommandState {
 }
 
 impl Ast for EmptyCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_command(self, arg)
     }
 }
@@ -288,7 +288,7 @@ impl fmt::Display for LetCommandState {
 }
 
 impl Ast for LetCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_let_command(self, arg)
     }
 }
@@ -342,7 +342,7 @@ impl fmt::Display for IfCommandState {
 }
 
 impl Ast for IfCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_if_command(self, arg)
     }
 }
@@ -385,7 +385,7 @@ impl fmt::Display for WhileCommandState {
 }
 
 impl Ast for WhileCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_while_command(self, arg)
     }
 }
@@ -432,7 +432,7 @@ impl fmt::Display for SequentialCommandState {
 }
 
 impl Ast for SequentialCommandState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_sequential_command(self, arg)
     }
 }

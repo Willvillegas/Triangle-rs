@@ -7,7 +7,6 @@ use crate::ast::aggregates::*;
 use crate::ast::commands::*;
 use crate::ast::declarations::*;
 use crate::ast::expressions::*;
-use crate::ast::introspection::{get_of_type, is_of_type};
 use crate::ast::parameters::*;
 use crate::ast::primitives::*;
 use crate::ast::typedenoters::*;
@@ -184,29 +183,29 @@ impl Checker {
     /// Check that the AST is well-formed, link all applied occurrences of identifiers and
     /// operators to their declarations, check that all expressions and typedenoters have
     /// proper types.
-    pub fn check(&self, program: &mut Program) {
+    pub fn check(&mut self, program: &mut Program) {
         program.accept(self, AstObject::Null);
     }
 }
 
 impl AstVisitor for Checker {
-    fn visit_program(&self, program: &mut Program, arg: AstObject) -> AstObject {
+    fn visit_program(&mut self, program: &mut Program, arg: AstObject) -> AstObject {
         program.cmd.accept(self, arg.clone());
         AstObject::Null
     }
 
-    fn visit_empty_command(&self, cmd: &mut EmptyCommandState, arg: AstObject) -> AstObject {
+    fn visit_empty_command(&mut self, cmd: &mut EmptyCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_assign_command(&self, cmd: &mut AssignCommandState, arg: AstObject) -> AstObject {
+    fn visit_assign_command(&mut self, cmd: &mut AssignCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    // check that the identifier represents a procedure declaration, and then pass the formal
-    // parameter sequence downstream so that the actual parameter sequence can be validated against
-    // it.
-    fn visit_call_command(&self, cmd: &mut CallCommandState, arg: AstObject) -> AstObject {
+    /// check that the identifier represents a procedure declaration, and then pass the formal
+    /// parameter sequence downstream so that the actual parameter sequence can be validated against
+    /// it.
+    fn visit_call_command(&mut self, cmd: &mut CallCommandState, arg: AstObject) -> AstObject {
         let id_decl_ast = cmd.id.accept(self, arg.clone());
 
         if let Some(id_decl) = id_decl_ast.get_declaration() {
@@ -228,33 +227,43 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
-    fn visit_let_command(&self, cmd: &mut LetCommandState, arg: AstObject) -> AstObject {
+    /// open a new scope, expand the declarations, and check the command in the context of the
+    /// declarations, and finally close the scope.
+    fn visit_let_command(&mut self, cmd: &mut LetCommandState, arg: AstObject) -> AstObject {
+        self.id_table.open_scope();
+        cmd.decl.accept(self, AstObject::Null);
+        cmd.cmd.accept(self, AstObject::Null);
+        self.id_table.close_scope();
         AstObject::Null
     }
 
-    fn visit_if_command(&self, cmd: &mut IfCommandState, arg: AstObject) -> AstObject {
+    fn visit_if_command(&mut self, cmd: &mut IfCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_while_command(&self, cmd: &mut WhileCommandState, arg: AstObject) -> AstObject {
+    fn visit_while_command(&mut self, cmd: &mut WhileCommandState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
     fn visit_sequential_command(
-        &self,
+        &mut self,
         cmd: &mut SequentialCommandState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_empty_expression(&self, expr: &mut EmptyExpressionState, arg: AstObject) -> AstObject {
+    fn visit_empty_expression(
+        &mut self,
+        expr: &mut EmptyExpressionState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    // annotate the integer expression with its type
+    /// annotate the integer expression with its type
     fn visit_integer_expression(
-        &self,
+        &mut self,
         expr: &mut IntegerExpressionState,
         arg: AstObject,
     ) -> AstObject {
@@ -269,47 +278,63 @@ impl AstVisitor for Checker {
     }
 
     fn visit_character_expression(
-        &self,
+        &mut self,
         expr: &mut CharacterExpressionState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_vname_expression(&self, expr: &mut VnameExpressionState, arg: AstObject) -> AstObject {
+    fn visit_vname_expression(
+        &mut self,
+        expr: &mut VnameExpressionState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_let_expression(&self, expr: &mut LetExpressionState, arg: AstObject) -> AstObject {
+    fn visit_let_expression(&mut self, expr: &mut LetExpressionState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_call_expression(&self, expr: &mut CallExpressionState, arg: AstObject) -> AstObject {
+    fn visit_call_expression(
+        &mut self,
+        expr: &mut CallExpressionState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_if_expression(&self, expr: &mut IfExpressionState, arg: AstObject) -> AstObject {
+    fn visit_if_expression(&mut self, expr: &mut IfExpressionState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_unary_expression(&self, expr: &mut UnaryExpressionState, arg: AstObject) -> AstObject {
+    fn visit_unary_expression(
+        &mut self,
+        expr: &mut UnaryExpressionState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
     fn visit_binary_expression(
-        &self,
+        &mut self,
         expr: &mut BinaryExpressionState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_array_expression(&self, expr: &mut ArrayExpressionState, arg: AstObject) -> AstObject {
+    fn visit_array_expression(
+        &mut self,
+        expr: &mut ArrayExpressionState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
     fn visit_record_expression(
-        &self,
+        &mut self,
         expr: &mut RecordExpressionState,
         arg: AstObject,
     ) -> AstObject {
@@ -317,7 +342,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_single_array_aggregate(
-        &self,
+        &mut self,
         agg: &mut SingleArrayAggregateState,
         arg: AstObject,
     ) -> AstObject {
@@ -325,7 +350,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_multiple_array_aggregate(
-        &self,
+        &mut self,
         agg: &mut MultipleArrayAggregateState,
         arg: AstObject,
     ) -> AstObject {
@@ -333,7 +358,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_single_record_aggregate(
-        &self,
+        &mut self,
         agg: &mut SingleRecordAggregateState,
         arg: AstObject,
     ) -> AstObject {
@@ -341,7 +366,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_multiple_record_aggregate(
-        &self,
+        &mut self,
         agg: &mut MultipleRecordAggregateState,
         arg: AstObject,
     ) -> AstObject {
@@ -349,31 +374,47 @@ impl AstVisitor for Checker {
     }
 
     fn visit_const_declaration(
-        &self,
+        &mut self,
         decl: &mut ConstDeclarationState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_var_declaration(&self, decl: &mut VarDeclarationState, arg: AstObject) -> AstObject {
+    fn visit_var_declaration(
+        &mut self,
+        decl: &mut VarDeclarationState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_proc_declaration(&self, decl: &mut ProcDeclarationState, arg: AstObject) -> AstObject {
+    fn visit_proc_declaration(
+        &mut self,
+        decl: &mut ProcDeclarationState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_func_declaration(&self, decl: &mut FuncDeclarationState, arg: AstObject) -> AstObject {
+    fn visit_func_declaration(
+        &mut self,
+        decl: &mut FuncDeclarationState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_type_declaration(&self, decl: &mut TypeDeclarationState, arg: AstObject) -> AstObject {
+    fn visit_type_declaration(
+        &mut self,
+        decl: &mut TypeDeclarationState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
     fn visit_unary_operator_declaration(
-        &self,
+        &mut self,
         decl: &mut UnaryOperatorDeclarationState,
         arg: AstObject,
     ) -> AstObject {
@@ -381,7 +422,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_binary_operator_declaration(
-        &self,
+        &mut self,
         decl: &mut BinaryOperatorDeclarationState,
         arg: AstObject,
     ) -> AstObject {
@@ -389,39 +430,55 @@ impl AstVisitor for Checker {
     }
 
     fn visit_sequential_declaration(
-        &self,
+        &mut self,
         decl: &mut SequentialDeclarationState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_any_type_denoter(&self, td: &mut AnyTypeDenoterState, arg: AstObject) -> AstObject {
+    fn visit_any_type_denoter(
+        &mut self,
+        td: &mut AnyTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
     fn visit_error_type_denoter(
-        &self,
+        &mut self,
         td: &mut ErrorTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_bool_type_denoter(&self, td: &mut BoolTypeDenoterState, arg: AstObject) -> AstObject {
+    fn visit_bool_type_denoter(
+        &mut self,
+        td: &mut BoolTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_char_type_denoter(&self, td: &mut CharTypeDenoterState, arg: AstObject) -> AstObject {
+    fn visit_char_type_denoter(
+        &mut self,
+        td: &mut CharTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_int_type_denoter(&self, td: &mut IntTypeDenoterState, arg: AstObject) -> AstObject {
+    fn visit_int_type_denoter(
+        &mut self,
+        td: &mut IntTypeDenoterState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
     fn visit_array_type_denoter(
-        &self,
+        &mut self,
         td: &mut ArrayTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
@@ -429,7 +486,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_simple_type_denoter(
-        &self,
+        &mut self,
         td: &mut SimpleTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
@@ -437,7 +494,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_single_field_type_denoter(
-        &self,
+        &mut self,
         td: &mut SingleFieldTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
@@ -445,7 +502,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_multiple_field_type_denoter(
-        &self,
+        &mut self,
         td: &mut MultipleFieldTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
@@ -453,7 +510,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_record_type_denoter(
-        &self,
+        &mut self,
         td: &mut RecordTypeDenoterState,
         arg: AstObject,
     ) -> AstObject {
@@ -461,7 +518,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_empty_formal_parameter_sequence(
-        &self,
+        &mut self,
         fps: &mut EmptyFormalParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
@@ -469,7 +526,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_single_formal_parameter_sequence(
-        &self,
+        &mut self,
         fps: &mut SingleFormalParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
@@ -477,7 +534,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_multiple_formal_parameter_sequence(
-        &self,
+        &mut self,
         fps: &mut MultipleFormalParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
@@ -485,7 +542,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_const_formal_parameter(
-        &self,
+        &mut self,
         fp: &mut ConstFormalParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -493,7 +550,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_var_formal_parameter(
-        &self,
+        &mut self,
         fp: &mut VarFormalParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -501,7 +558,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_proc_formal_parameter(
-        &self,
+        &mut self,
         fp: &mut ProcFormalParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -509,7 +566,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_func_formal_parameter(
-        &self,
+        &mut self,
         fp: &mut FuncFormalParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -517,18 +574,18 @@ impl AstVisitor for Checker {
     }
 
     fn visit_empty_actual_parameter_sequence(
-        &self,
+        &mut self,
         aps: &mut EmptyActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    // check that the formal parameter sequence passed in via arg is a single formal parameter
-    // sequence, extract the formal parameter, and pass that downstream to validate the actual
-    // parameter against.
+    /// check that the formal parameter sequence passed in via arg is a single formal parameter
+    /// sequence, extract the formal parameter, and pass that downstream to validate the actual
+    /// parameter against.
     fn visit_single_actual_parameter_sequence(
-        &self,
+        &mut self,
         aps: &mut SingleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
@@ -550,11 +607,11 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
-    // check that the formal parameter sequence passed in via arg is a multiple formal parameter
-    // sequence, extract the formal parameter, pass that downstream to validate against the actual
-    // parameter, and then check the remaining formal parameter sequence as well.
+    /// check that the formal parameter sequence passed in via arg is a multiple formal parameter
+    /// sequence, extract the formal parameter, pass that downstream to validate against the actual
+    /// parameter, and then check the remaining formal parameter sequence as well.
     fn visit_multiple_actual_parameter_sequence(
-        &self,
+        &mut self,
         aps: &mut MultipleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
@@ -577,10 +634,10 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
-    // check that the formal parameter passed in via arg is a const formal parameter,
-    // and check that its type matches that of the const actual parameter.
+    /// check that the formal parameter passed in via arg is a const formal parameter,
+    /// and check that its type matches that of the const actual parameter.
     fn visit_const_actual_parameter(
-        &self,
+        &mut self,
         ap: &mut ConstActualParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -614,7 +671,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_var_actual_parameter(
-        &self,
+        &mut self,
         ap: &mut VarActualParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -622,7 +679,7 @@ impl AstVisitor for Checker {
     }
 
     fn visit_proc_actual_parameter(
-        &self,
+        &mut self,
         ap: &mut ProcActualParameterState,
         arg: AstObject,
     ) -> AstObject {
@@ -630,26 +687,30 @@ impl AstVisitor for Checker {
     }
 
     fn visit_func_actual_parameter(
-        &self,
+        &mut self,
         ap: &mut FuncActualParameterState,
         arg: AstObject,
     ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_simple_vname(&self, vname: &mut SimpleVnameState, arg: AstObject) -> AstObject {
+    fn visit_simple_vname(&mut self, vname: &mut SimpleVnameState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_dot_vname(&self, vname: &mut DotVnameState, arg: AstObject) -> AstObject {
+    fn visit_dot_vname(&mut self, vname: &mut DotVnameState, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_subscript_vname(&self, vname: &mut SubscriptVnameState, arg: AstObject) -> AstObject {
+    fn visit_subscript_vname(
+        &mut self,
+        vname: &mut SubscriptVnameState,
+        arg: AstObject,
+    ) -> AstObject {
         AstObject::Null
     }
 
-    fn visit_identifier(&self, id: &mut Identifier, arg: AstObject) -> AstObject {
+    fn visit_identifier(&mut self, id: &mut Identifier, arg: AstObject) -> AstObject {
         if let Some(decl) = self.id_table.retrieve(&id.spelling) {
             id.decl = Some(Box::new(*decl.clone()));
             return AstObject::Declaration(id.decl.clone().unwrap());
@@ -657,18 +718,20 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
-    // this is the standard int type
-    fn visit_integer_literal(&self, il: &mut IntegerLiteral, arg: AstObject) -> AstObject {
+    /// this is the standard int type
+    fn visit_integer_literal(&mut self, il: &mut IntegerLiteral, arg: AstObject) -> AstObject {
         AstObject::TypeDenoter(Box::new(
             STANDARD_ENVIRONMENT.lock().unwrap().int_type.clone(),
         ))
     }
 
-    fn visit_character_literal(&self, cl: &mut CharacterLiteral, arg: AstObject) -> AstObject {
-        AstObject::Null
+    fn visit_character_literal(&mut self, cl: &mut CharacterLiteral, arg: AstObject) -> AstObject {
+        AstObject::TypeDenoter(Box::new(
+            STANDARD_ENVIRONMENT.lock().unwrap().char_type.clone(),
+        ))
     }
 
-    fn visit_operator(&self, op: &mut Operator, arg: AstObject) -> AstObject {
+    fn visit_operator(&mut self, op: &mut Operator, arg: AstObject) -> AstObject {
         AstObject::Null
     }
 }

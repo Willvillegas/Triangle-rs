@@ -84,7 +84,7 @@ impl fmt::Display for FormalParameterSequence {
 }
 
 impl Ast for FormalParameterSequence {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use FormalParameterSequence::*;
 
         match *self {
@@ -129,7 +129,7 @@ impl fmt::Display for EmptyFormalParameterSequenceState {
 }
 
 impl Ast for EmptyFormalParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_formal_parameter_sequence(self, arg)
     }
 }
@@ -170,7 +170,7 @@ impl fmt::Display for SingleFormalParameterSequenceState {
 }
 
 impl Ast for SingleFormalParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_formal_parameter_sequence(self, arg)
     }
 }
@@ -221,7 +221,7 @@ impl fmt::Display for MultipleFormalParameterSequenceState {
 }
 
 impl Ast for MultipleFormalParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_formal_parameter_sequence(self, arg)
     }
 }
@@ -265,7 +265,7 @@ impl FormalParameter {
 }
 
 impl Ast for FormalParameter {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use FormalParameter::*;
 
         match *self {
@@ -344,7 +344,7 @@ impl fmt::Display for VarFormalParameterState {
 }
 
 impl Ast for VarFormalParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_var_formal_parameter(self, arg)
     }
 }
@@ -391,7 +391,7 @@ impl fmt::Display for ConstFormalParameterState {
 }
 
 impl Ast for ConstFormalParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_const_formal_parameter(self, arg)
     }
 }
@@ -442,7 +442,7 @@ impl fmt::Display for ProcFormalParameterState {
 }
 
 impl Ast for ProcFormalParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_proc_formal_parameter(self, arg)
     }
 }
@@ -496,7 +496,7 @@ impl fmt::Display for FuncFormalParameterState {
 }
 
 impl Ast for FuncFormalParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_func_formal_parameter(self, arg)
     }
 }
@@ -598,7 +598,7 @@ impl fmt::Display for ActualParameterSequence {
 }
 
 impl Ast for ActualParameterSequence {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use ActualParameterSequence::*;
 
         match *self {
@@ -643,7 +643,7 @@ impl fmt::Display for EmptyActualParameterSequenceState {
 }
 
 impl Ast for EmptyActualParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_actual_parameter_sequence(self, arg)
     }
 }
@@ -684,7 +684,7 @@ impl fmt::Display for SingleActualParameterSequenceState {
 }
 
 impl Ast for SingleActualParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_single_actual_parameter_sequence(self, arg)
     }
 }
@@ -735,7 +735,7 @@ impl fmt::Display for MultipleActualParameterSequenceState {
 }
 
 impl Ast for MultipleActualParameterSequenceState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_multiple_actual_parameter_sequence(self, arg)
     }
 }
@@ -806,7 +806,7 @@ impl fmt::Display for ActualParameter {
 }
 
 impl Ast for ActualParameter {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use ActualParameter::*;
 
         match *self {
@@ -854,7 +854,7 @@ impl fmt::Display for VarActualParameterState {
 }
 
 impl Ast for VarActualParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_var_actual_parameter(self, arg)
     }
 }
@@ -895,7 +895,7 @@ impl fmt::Display for ConstActualParameterState {
 }
 
 impl Ast for ConstActualParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_const_actual_parameter(self, arg)
     }
 }
@@ -936,7 +936,7 @@ impl fmt::Display for ProcActualParameterState {
 }
 
 impl Ast for ProcActualParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_proc_actual_parameter(self, arg)
     }
 }
@@ -977,7 +977,7 @@ impl fmt::Display for FuncActualParameterState {
 }
 
 impl Ast for FuncActualParameterState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_func_actual_parameter(self, arg)
     }
 }

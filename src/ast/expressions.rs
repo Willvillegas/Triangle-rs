@@ -148,7 +148,7 @@ impl fmt::Display for Expression {
 }
 
 impl Ast for Expression {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         use Expression::*;
 
         match *self {
@@ -205,7 +205,7 @@ impl fmt::Display for IntegerExpressionState {
 }
 
 impl Ast for IntegerExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_integer_expression(self, arg)
     }
 }
@@ -248,7 +248,7 @@ impl fmt::Display for CharacterExpressionState {
 }
 
 impl Ast for CharacterExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_character_expression(self, arg)
     }
 }
@@ -287,7 +287,7 @@ impl fmt::Display for EmptyExpressionState {
 }
 
 impl Ast for EmptyExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_empty_expression(self, arg)
     }
 }
@@ -330,7 +330,7 @@ impl fmt::Display for VnameExpressionState {
 }
 
 impl Ast for VnameExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_vname_expression(self, arg)
     }
 }
@@ -379,7 +379,7 @@ impl fmt::Display for CallExpressionState {
 }
 
 impl Ast for CallExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_call_expression(self, arg)
     }
 }
@@ -435,7 +435,7 @@ impl fmt::Display for IfExpressionState {
 }
 
 impl Ast for IfExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_if_expression(self, arg)
     }
 }
@@ -484,7 +484,7 @@ impl fmt::Display for LetExpressionState {
 }
 
 impl Ast for LetExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_let_expression(self, arg)
     }
 }
@@ -529,7 +529,7 @@ impl fmt::Display for UnaryExpressionState {
 }
 
 impl Ast for UnaryExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_unary_expression(self, arg)
     }
 }
@@ -585,7 +585,7 @@ impl fmt::Display for BinaryExpressionState {
 }
 
 impl Ast for BinaryExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_binary_expression(self, arg)
     }
 }
@@ -630,7 +630,7 @@ impl fmt::Display for ArrayExpressionState {
 }
 
 impl Ast for ArrayExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_array_expression(self, arg)
     }
 }
@@ -673,7 +673,7 @@ impl fmt::Display for RecordExpressionState {
 }
 
 impl Ast for RecordExpressionState {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_record_expression(self, arg)
     }
 }

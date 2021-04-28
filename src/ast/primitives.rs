@@ -44,7 +44,7 @@ impl fmt::Display for IntegerLiteral {
 }
 
 impl Ast for IntegerLiteral {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_integer_literal(self, arg)
     }
 }
@@ -85,7 +85,7 @@ impl fmt::Display for CharacterLiteral {
 }
 
 impl Ast for CharacterLiteral {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_character_literal(self, arg)
     }
 }
@@ -130,7 +130,7 @@ impl fmt::Display for Identifier {
 }
 
 impl Ast for Identifier {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_identifier(self, arg)
     }
 }
@@ -184,7 +184,7 @@ impl fmt::Display for Operator {
 }
 
 impl Ast for Operator {
-    fn accept(&mut self, visitor: &dyn AstVisitor, arg: AstObject) -> AstObject {
+    fn accept(&mut self, visitor: &mut dyn AstVisitor, arg: AstObject) -> AstObject {
         visitor.visit_operator(self, arg)
     }
 }
