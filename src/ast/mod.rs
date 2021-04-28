@@ -45,6 +45,39 @@ pub enum AstObject {
     Frame(Frame),
     Size(usize),
     Declaration(Box<Declaration>),
+    FormalParameterSequence(Box<FormalParameterSequence>),
+    FormalParameter(Box<FormalParameter>),
+    TypeDenoter(Box<TypeDenoter>),
+}
+
+impl AstObject {
+    pub fn get_declaration(&self) -> Option<&Box<Declaration>> {
+        match *self {
+            AstObject::Declaration(ref decl) => Some(&decl),
+            _ => None,
+        }
+    }
+
+    pub fn get_formal_parameter_sequence(&self) -> Option<&Box<FormalParameterSequence>> {
+        match *self {
+            AstObject::FormalParameterSequence(ref fps) => Some(&fps),
+            _ => None,
+        }
+    }
+
+    pub fn get_formal_parameter(&self) -> Option<&Box<FormalParameter>> {
+        match *self {
+            AstObject::FormalParameter(ref fp) => Some(&fp),
+            _ => None,
+        }
+    }
+
+    pub fn get_type_denoter(&self) -> Option<&Box<TypeDenoter>> {
+        match *self {
+            AstObject::TypeDenoter(ref td) => Some(&td),
+            _ => None,
+        }
+    }
 }
 
 /// helper module to check for types more efficiently and with less boilerplate

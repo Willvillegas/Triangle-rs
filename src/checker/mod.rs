@@ -203,9 +203,28 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    // check that the identifier represents a procedure declaration, and then pass the formal
+    // parameter sequence downstream so that the actual parameter sequence can be validated against
+    // it.
     fn visit_call_command(&self, cmd: &mut CallCommandState, arg: AstObject) -> AstObject {
         let id_decl_ast = cmd.id.accept(self, arg.clone());
-        cmd.aps.accept(self, id_decl_ast);
+
+        if let Some(id_decl) = id_decl_ast.get_declaration() {
+            if let Some(proc_decl) = id_decl.get_proc_declaration() {
+                let fps = proc_decl.fps.clone();
+                cmd.aps
+                    .accept(self, AstObject::FormalParameterSequence(fps));
+            } else {
+                report_error_and_exit(GenError::from(CheckerError::new(
+                    "expected a procedure here",
+                )));
+            }
+        } else {
+            report_error_and_exit(GenError::from(CheckerError::new(
+                "expected a declaration here",
+            )));
+        }
+
         AstObject::Null
     }
 
@@ -233,12 +252,20 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    // annotate the integer expression with its type
     fn visit_integer_expression(
         &self,
         expr: &mut IntegerExpressionState,
         arg: AstObject,
     ) -> AstObject {
-        AstObject::Null
+        if let Some(td) = expr.il.accept(self, arg).get_type_denoter() {
+            expr.td = Some(td.clone());
+        } else {
+            report_error_and_exit(GenError::from(CheckerError::new(
+                "could not resolve the type of an integer expression",
+            )));
+        }
+        AstObject::TypeDenoter(expr.td.clone().unwrap())
     }
 
     fn visit_character_expression(
@@ -497,28 +524,92 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    // check that the formal parameter sequence passed in via arg is a single formal parameter
+    // sequence, extract the formal parameter, and pass that downstream to validate the actual
+    // parameter against.
     fn visit_single_actual_parameter_sequence(
         &self,
         aps: &mut SingleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
-        // use intropection methods along with retrieval methods in the enums
+        if let Some(fps) = arg.get_formal_parameter_sequence() {
+            if let Some(sfps) = fps.get_single_formal_parameter_sequence() {
+                aps.ap
+                    .accept(self, AstObject::FormalParameter(sfps.fp.clone()));
+            } else {
+                report_error_and_exit(GenError::from(CheckerError::new(
+                    "expected a single formal parameter sequence here",
+                )));
+            }
+        } else {
+            report_error_and_exit(GenError::from(CheckerError::new(
+                "expected a formal parameter sequence here",
+            )));
+        }
+
         AstObject::Null
     }
 
+    // check that the formal parameter sequence passed in via arg is a multiple formal parameter
+    // sequence, extract the formal parameter, pass that downstream to validate against the actual
+    // parameter, and then check the remaining formal parameter sequence as well.
     fn visit_multiple_actual_parameter_sequence(
         &self,
         aps: &mut MultipleActualParameterSequenceState,
         arg: AstObject,
     ) -> AstObject {
+        if let Some(fps) = arg.get_formal_parameter_sequence() {
+            if let Some(mfps) = fps.get_multiple_formal_parameter_sequence() {
+                aps.ap
+                    .accept(self, AstObject::FormalParameter(mfps.fp.clone()));
+                aps.aps
+                    .accept(self, AstObject::FormalParameterSequence(mfps.fps.clone()));
+            } else {
+                report_error_and_exit(GenError::from(CheckerError::new(
+                    "expected a multiple formal parameter sequence here",
+                )));
+            }
+        } else {
+            report_error_and_exit(GenError::from(CheckerError::new(
+                "expected a formal parameter sequence here",
+            )));
+        }
         AstObject::Null
     }
 
+    // check that the formal parameter passed in via arg is a const formal parameter,
+    // and check that its type matches that of the const actual parameter.
     fn visit_const_actual_parameter(
         &self,
         ap: &mut ConstActualParameterState,
         arg: AstObject,
     ) -> AstObject {
+        if let Some(fp) = arg.get_formal_parameter() {
+            if let Some(cfp) = fp.get_const_formal_parameter() {
+                let expected_td = cfp.td.clone();
+                let actual_td = ap
+                    .expr
+                    .accept(self, AstObject::Null)
+                    .get_type_denoter()
+                    .unwrap()
+                    .clone();
+
+                if *expected_td != *actual_td {
+                    report_error_and_exit(GenError::from(CheckerError::new(&format!(
+                        "expected type was {}, actual type was {}",
+                        expected_td, actual_td
+                    ))));
+                }
+            } else {
+                report_error_and_exit(GenError::from(CheckerError::new(
+                    "expected a const formal parameter here",
+                )));
+            }
+        } else {
+            report_error_and_exit(GenError::from(CheckerError::new(
+                "expected a formal parameter here",
+            )));
+        }
         AstObject::Null
     }
 
@@ -566,8 +657,11 @@ impl AstVisitor for Checker {
         AstObject::Null
     }
 
+    // this is the standard int type
     fn visit_integer_literal(&self, il: &mut IntegerLiteral, arg: AstObject) -> AstObject {
-        AstObject::Null
+        AstObject::TypeDenoter(Box::new(
+            STANDARD_ENVIRONMENT.lock().unwrap().int_type.clone(),
+        ))
     }
 
     fn visit_character_literal(&self, cl: &mut CharacterLiteral, arg: AstObject) -> AstObject {
