@@ -32,7 +32,7 @@ fn test_emptycommandeot() {
     let source_file = "samples/source/emptycommandeot.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let mut program = parser.parse_program();
-    let checker = Checker::new();
+    let mut checker = Checker::new();
     checker.check(&mut program);
     assert!(emptycommandeot_checker::check(&program));
 }
@@ -42,7 +42,7 @@ fn test_emptycommandsemicolon() {
     let source_file = "samples/source/emptycommandsemicolon.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let mut program = parser.parse_program();
-    let checker = Checker::new();
+    let mut checker = Checker::new();
     checker.check(&mut program);
     assert!(emptycommandsemicolon_checker::check(&program));
 }
@@ -52,7 +52,7 @@ fn test_hello() {
     let source_file = "samples/source/hello.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let mut program = parser.parse_program();
-    let checker = Checker::new();
+    let mut checker = Checker::new();
     checker.check(&mut program);
     assert!(hello_checker::check(&program));
 }
@@ -62,7 +62,7 @@ fn test_inc() {
     let source_file = "samples/source/inc.t";
     let mut parser = Parser::new(Scanner::new(source_file));
     let mut program = parser.parse_program();
-    let checker = Checker::new();
+    let mut checker = Checker::new();
     checker.check(&mut program);
     assert!(inc_checker::check(&program));
 }
